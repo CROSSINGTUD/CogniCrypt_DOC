@@ -1,0 +1,33 @@
+SPEC javax.crypto.CipherOutputStream
+
+OBJECTS
+	java.io.OutputStream os;
+	javax.crypto.Cipher ciph;
+	byte[] data;
+	int offset;
+	int len;
+	int specifiedByte;
+	
+EVENTS
+	c1: CipherOutputStream(os);
+	c2: CipherOutputStream(os, ciph);
+	Cons := c1 | c2;
+	
+	w1: write(specifiedByte);
+	w2: write(data);
+	w3: write(data, offset, len);
+	Writes := w1 | w2 | w3;
+	
+	c: close();
+	
+ORDER
+	Cons, Writes+, c
+	
+CONSTRAINTS
+	len > offset;
+	
+REQUIRES
+	generatedCipher[ciph];	
+
+ENSURES
+	cipheredOutputStream[os, ciph];

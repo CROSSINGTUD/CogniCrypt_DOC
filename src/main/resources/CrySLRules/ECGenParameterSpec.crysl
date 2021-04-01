@@ -1,0 +1,13 @@
+SPEC java.security.spec.ECGenParameterSpec
+
+OBJECTS 
+	java.lang.String stdName;
+	
+EVENTS
+	con: ECGenParameterSpec(stdName);
+
+ORDER
+	con
+
+ENSURES
+	preparedEC[this];

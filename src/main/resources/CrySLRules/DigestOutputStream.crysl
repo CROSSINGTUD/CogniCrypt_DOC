@@ -1,0 +1,33 @@
+SPEC java.security.DigestOutputStream
+
+OBJECTS
+	java.io.OutputStream os;
+	java.security.MessageDigest md;
+	byte[] data;
+	int offset;
+	int len;
+	int specifiedByte;
+
+FORBIDDEN
+	on(boolean) ;
+
+EVENTS
+	con: DigestOutputStream(os, md);
+	
+	r1: write(specifiedByte); 
+	r2: write(data, offset, len);
+	Writes := r1 | r2;
+
+	cl: close();
+
+ORDER
+	con, Writes+, cl
+	
+CONSTRAINTS
+	len > offset;
+	
+REQUIRES
+	generatedMessageDigest[md];
+	
+ENSURES
+	digestedOutputStream[os, md];

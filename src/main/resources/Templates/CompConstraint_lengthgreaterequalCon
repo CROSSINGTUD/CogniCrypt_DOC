@@ -1,0 +1,3 @@
+The length of the ${positionLHS} parameter of the constructor ${LHSMethod} should be greater than or equal to 
+the sum of the ${positionRHSOne} parameter of the constructor ${RHSOnemethodName} 
+and the ${positionRHSTwo} parameter of the constructor ${RHSTwomethodName}.
