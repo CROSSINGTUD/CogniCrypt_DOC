@@ -1,3 +1,11 @@
 /target/
 /ClassDiagram.png/
 /ClassDiagram.ucls/
+.classpath
+.project
+.settings/
+*.iml
+.idea/
+shippable/
+*.class
+*.temp
