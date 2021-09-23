@@ -97,13 +97,13 @@ public class DocSettings {
                     i++;
                     mandatorySettings++;
                     break;
-                case "--booleanA":
+                case "--booleana":
                     setBooleanA(false);
                     break;
-                case "--booleanB":
+                case "--booleanb":
                     setBooleanB(false);
                     break;
-                case "--booleanC":
+                case "--booleanc":
                     setBooleanC(false);
                     break;
                 default:

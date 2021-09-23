@@ -532,12 +532,12 @@ public class Order {
 			int len = queue.size();
 			for (int i = 0; i < len ; i++) {
 				TreeNode<String> node = queue.poll();
-				System.out.print(node.getData() + " ");
+				//System.out.print(node.getData() + " ");
 				for (TreeNode item : node.getChildren()) {
 					queue.offer(item);
 				}
 			}
-			System.out.println();
+			//System.out.println();
 		}
 
 		return stringBuilder.toString();
@@ -550,7 +550,7 @@ public class Order {
 		ans.add(root.getData());
 		//start
 		if (root.getData().equals("-1")) {
-			System.out.println("The order of this class:");
+			//System.out.println("The order of this class:");
 			forStringTest.append("The order of this class:\n");
 		}
 		//leaf
