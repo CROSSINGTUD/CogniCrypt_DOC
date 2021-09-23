@@ -72,9 +72,12 @@ public class ConstraintCrySLInstanceof {
 		ArrayList<String> composedInstaceOf = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
+		/*
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
@@ -347,11 +350,11 @@ public class ConstraintCrySLInstanceof {
 
 					printout = resultmainstringLHS + resultmainstringRHS;
 					composedInstaceOf.add(printout);
-					out.println("" + printout);
+					//out.println("" + printout);
 				}
 			}
 		}
-		out.close();
+		//out.close();
 		return composedInstaceOf;
 	}
 }

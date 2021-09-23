@@ -215,9 +215,11 @@ public class EnsuresCaseTwo {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
-
+/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+ */
 
 		String joined = null;
 		List<Entry<String, String>> dataTypes = rule.getObjects();
@@ -328,7 +330,7 @@ public class EnsuresCaseTwo {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strRetOne);
 								composedEnsures.add(resolvedString);
-								out.println(resolvedString);
+								//out.println(resolvedString);
 
 							} else {
 								verb = verbOrNounList.get(0);
@@ -344,7 +346,7 @@ public class EnsuresCaseTwo {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strRetTwo);
 								composedEnsures.add(resolvedString);
-								out.println(resolvedString);
+								//out.println(resolvedString);
 							}
 							break;
 						}
@@ -361,7 +363,7 @@ public class EnsuresCaseTwo {
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strRetThree);
 						composedEnsures.add(resolvedString);
-						out.println(resolvedString);
+						//out.println(resolvedString);
 
 					} else {
 						verb = verbOrNounList.get(0);
@@ -376,7 +378,7 @@ public class EnsuresCaseTwo {
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strRetFour);
 						composedEnsures.add(resolvedString);
-						out.println(resolvedString);
+						//out.println(resolvedString);
 					}
 				}
 			}
@@ -536,7 +538,7 @@ public class EnsuresCaseTwo {
 								valuesMap.put("joined", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strOne);
-								out.println(resolvedString);
+								//out.println(resolvedString);
 								composedEnsures.add(resolvedString);
 
 							} else {
@@ -552,7 +554,7 @@ public class EnsuresCaseTwo {
 								valuesMap.put("joined", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strTwo);
-							    out.println(resolvedString);
+							    //out.println(resolvedString);
 								composedEnsures.add(resolvedString);
 							}
 							break;
@@ -570,7 +572,7 @@ public class EnsuresCaseTwo {
 						valuesMap.put("verb", verb);
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strThree);
-						out.println(resolvedString);
+						//out.println(resolvedString);
 						composedEnsures.add(resolvedString);
 
 					} else {
@@ -586,14 +588,14 @@ public class EnsuresCaseTwo {
 						valuesMap.put("nouns", nouns);
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strFour);
-						out.println(resolvedString);
+						//out.println(resolvedString);
 						composedEnsures.add(resolvedString);
 						
 					}
 				}
 			}			
 		}
-		out.close();
+		//out.close();
 		return composedEnsures;
 	}
 }

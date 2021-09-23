@@ -134,8 +134,11 @@ public class ConstraintCrySLandencmode {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 
 		List<ISLConstraint> constraintConencmodeList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")
@@ -475,11 +478,11 @@ public class ConstraintCrySLandencmode {
 					}
 					printout = resultmainstringLHS + resultmainstringRHS;
 					composedConAndEnc.add(printout);
-					out.println(printout);
+					//out.println(printout);
 				}
 			}
 		}
-		out.close();
+		//out.close();
 		return composedConAndEnc;
 	}
 }

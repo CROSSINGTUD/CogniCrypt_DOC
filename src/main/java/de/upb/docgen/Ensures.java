@@ -119,9 +119,11 @@ public class Ensures {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
-
+/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+ */
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
@@ -196,7 +198,7 @@ public class Ensures {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbedge);
 								composedEnsures.add(resolvedString);
-								out.println(resolvedString);
+								//out.println(resolvedString);
 							}
 
 							else {
@@ -214,7 +216,7 @@ public class Ensures {
 
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(verbedge);
-									out.println(resolvedString);
+									//out.println(resolvedString);
 									composedEnsures.add(resolvedString);
 
 									break;
@@ -227,7 +229,7 @@ public class Ensures {
 
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbnounedge);
-								out.println(resolvedString);
+								//out.println(resolvedString);
 								composedEnsures.add(resolvedString);
 
 							}
@@ -251,14 +253,14 @@ public class Ensures {
 
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(verbnoun);
-						out.println(resolvedString);
+						//out.println(resolvedString);
 						composedEnsures.add(resolvedString);
 
 					}
 				}
 			}
 		}
-		out.close();
+		//out.close();
 		return composedEnsures;
 	}
 }

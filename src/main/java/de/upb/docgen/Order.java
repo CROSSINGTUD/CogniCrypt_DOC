@@ -372,9 +372,12 @@ public class Order {
 		// for (File file : fileNames)
 
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 
 		Map<String, List<String>> fileContent = readCryslFile(file.toString());
 		List<String> objectList = fileContent.get("OBJECTS");
@@ -509,7 +512,7 @@ public class Order {
 
 
 		// }
-		out.close();
+		//out.close();
 		objectMap.clear();
 		processedresultMap.clear();
 		symbolMap.clear();

@@ -57,9 +57,12 @@ public class Negates {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
@@ -125,7 +128,7 @@ public class Negates {
 
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(strRetOne);
-							out.println(resolvedString);
+							//out.println(resolvedString);
 							composedNegates.add(resolvedString);
 							break;
 
@@ -138,7 +141,7 @@ public class Negates {
 			}
 
 		}
-		out.close();
+		//out.close();
 		return composedNegates;
 
 

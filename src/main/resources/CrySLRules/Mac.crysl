@@ -36,7 +36,7 @@ EVENTS
     Finals := FinalsWU | f3;
 
 ORDER
-    Gets, Inits, (Finals | (Updates+, Finals))
+    Gets, Inits, Finals | (Updates+, Finals)
 
 CONSTRAINTS
     macAlgorithm in {"HmacMD5", "HmacSHA1", "HmacSHA224", "HmacSHA256", "HmacSHA384", "HmacSHA512", "HmacPBESHA1", "PBEWithHmacSHA1", "PBEWithHmacSHA224", "PBEWithHmacSHA256", "PBEWithHmacSHA384", "PBEWithHmacSHA512"};

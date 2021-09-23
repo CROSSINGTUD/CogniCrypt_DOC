@@ -203,9 +203,11 @@ public class ClassEventForb {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
-
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 
 		List<CrySLForbiddenMethod> forbname = rule.getForbiddenMethods().stream().filter(e -> !e.getSilent())
 				.collect(Collectors.toList());

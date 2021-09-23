@@ -196,8 +196,11 @@ public class ConstraintsComparison {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 		if (constraintCompConList.size() > 0) {
 
 			List<String> subListLHS = new ArrayList<>();
@@ -427,7 +430,7 @@ public class ConstraintsComparison {
 										StringSubstitutor sub = new StringSubstitutor(valuesMap);
 										String resolvedString = sub.replace(strOne);
 										composedComparsionConstraint.add(resolvedString);
-										out.println(resolvedString);
+										//out.println(resolvedString);
 
 									} else {
 
@@ -443,7 +446,7 @@ public class ConstraintsComparison {
 										String resolvedString = sub.replace(strOne);
 										composedComparsionConstraint.add(resolvedString);
 
-										out.println(resolvedString);
+										//out.println(resolvedString);
 
 									}
 
@@ -461,7 +464,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strTwo);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 								}
 							}
 						}
@@ -494,7 +497,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strThree);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 
 								} else if (symbolStr.equals(">")) {
 
@@ -508,7 +511,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strThree);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 								}
 							}
 						}
@@ -708,7 +711,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strFive);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 
 								} else if (symbolStr.equals("<")) {
 
@@ -723,7 +726,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strSix);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 								}
 							}
 						}
@@ -749,7 +752,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strFour);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 
 								} else {
 
@@ -762,7 +765,7 @@ public class ConstraintsComparison {
 									String resolvedString = sub.replace(strFour);
 									composedComparsionConstraint.add(resolvedString);
 
-									out.println(resolvedString);
+									//out.println(resolvedString);
 
 								}
 							}
@@ -772,7 +775,7 @@ public class ConstraintsComparison {
 			}
 		}
 
-		out.close();
+		//out.close();
 		return composedComparsionConstraint;
 	}
 }
