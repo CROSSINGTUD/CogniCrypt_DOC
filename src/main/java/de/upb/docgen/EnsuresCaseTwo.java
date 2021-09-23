@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -28,7 +29,6 @@ import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
 import crypto.rules.StateMachineGraph;
 import crypto.rules.TransitionEdge;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -66,7 +66,8 @@ public class EnsuresCaseTwo {
 	}
 
 	private static String getTemplateReturnValueOne() throws IOException {
-
+		String strDOne = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbmeth");
+		/*
 		File fileOne = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verbmeth");
 		BufferedReader brOne = new BufferedReader(new FileReader(fileOne));
 		String strLineOne = "";
@@ -77,11 +78,14 @@ public class EnsuresCaseTwo {
 			strLineOne = brOne.readLine();
 		}
 		brOne.close();
+
+		 */
 		return strDOne;
 	}
 
 	private static String getTemplateReturnValueTwo() throws IOException {
-
+		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnounmeth");
+		/*
 		File fileTwo = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verbnounmeth");
 		BufferedReader brTwo = new BufferedReader(new FileReader(fileTwo));
 		String strLineTwo = "";
@@ -92,10 +96,14 @@ public class EnsuresCaseTwo {
 			strLineTwo = brTwo.readLine();
 		}
 		brTwo.close();
+
+		 */
 		return strDTwo;
 	}
 
 	private static String getTemplateReturnValueThree() throws IOException {
+		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verb");
+		/*
 
 		File fileThree = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verb");
 		BufferedReader brThree = new BufferedReader(new FileReader(fileThree));
@@ -107,11 +115,14 @@ public class EnsuresCaseTwo {
 			strLineThree = brThree.readLine();
 		}
 		brThree.close();
-		return strDThree;
+
+		 */
+		return strDTwo;
 	}
 
 	private static String getTemplateReturnValueFour() throws IOException {
-
+		String strDFour = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnoun");
+		/*
 		File fileFour = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verbnoun");
 		BufferedReader brFour = new BufferedReader(new FileReader(fileFour));
 		String strLineFour = "";
@@ -122,11 +133,14 @@ public class EnsuresCaseTwo {
 			strLineFour = brFour.readLine();
 		}
 		brFour.close();
+
+		 */
 		return strDFour;
 	}
 
 	private static String getTemplateOne() throws IOException {
-
+		String strDFive = Utils.getTemplatesTextString("Ensures-thisNA-verbmeth");
+		/*
 		File fileFive = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verbmeth");
 		BufferedReader brFive = new BufferedReader(new FileReader(fileFive));
 		String strLineFive = "";
@@ -137,11 +151,14 @@ public class EnsuresCaseTwo {
 			strLineFive = brFive.readLine();
 		}
 		brFive.close();
+
+		 */
 		return strDFive;
 	}
 
 	private static String getTemplateTwo() throws IOException {
-
+		String strDSix = Utils.getTemplatesTextString("Ensures-thisNA-verbnounmeth");
+		/*
 		File fileSix = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verbnounmeth");
 		BufferedReader brSix = new BufferedReader(new FileReader(fileSix));
 		String strLineSix = "";
@@ -152,11 +169,14 @@ public class EnsuresCaseTwo {
 			strLineSix = brSix.readLine();
 		}
 		brSix.close();
+
+		 */
 		return strDSix;
 	}
 
 	private static String getTemplateThree() throws IOException {
-
+		String strDSeven = Utils.getTemplatesTextString("Ensures-thisNA-verb");
+		/*
 		File fileSeven = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verb");
 		BufferedReader brSeven = new BufferedReader(new FileReader(fileSeven));
 		String strLineSeven = "";
@@ -167,11 +187,14 @@ public class EnsuresCaseTwo {
 			strLineSeven = brSeven.readLine();
 		}
 		brSeven.close();
+
+		 */
 		return strDSeven;
 	}
 
 	private static String getTemplateFour() throws IOException {
-
+		String strDEight = Utils.getTemplatesTextString("Ensures-thisNA-verbnoun");
+		/*
 		File fileEight = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verbnoun");
 		BufferedReader brEight = new BufferedReader(new FileReader(fileEight));
 		String strLineEight = "";
@@ -182,11 +205,13 @@ public class EnsuresCaseTwo {
 			strLineEight = brEight.readLine();
 		}
 		brEight.close();
+
+		 */
 		return strDEight;
 	}
 
-	public void getEnsures(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getEnsures(CrySLRule rule) throws IOException {
+		ArrayList<String> composedEnsures = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
@@ -302,6 +327,7 @@ public class EnsuresCaseTwo {
 
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strRetOne);
+								composedEnsures.add(resolvedString);
 								out.println(resolvedString);
 
 							} else {
@@ -317,6 +343,7 @@ public class EnsuresCaseTwo {
 								valuesMap.put("joined", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strRetTwo);
+								composedEnsures.add(resolvedString);
 								out.println(resolvedString);
 							}
 							break;
@@ -333,6 +360,7 @@ public class EnsuresCaseTwo {
 						valuesMap.put("verb", verb);
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strRetThree);
+						composedEnsures.add(resolvedString);
 						out.println(resolvedString);
 
 					} else {
@@ -347,6 +375,7 @@ public class EnsuresCaseTwo {
 						valuesMap.put("nouns", nouns);
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strRetFour);
+						composedEnsures.add(resolvedString);
 						out.println(resolvedString);
 					}
 				}
@@ -508,6 +537,7 @@ public class EnsuresCaseTwo {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strOne);
 								out.println(resolvedString);
+								composedEnsures.add(resolvedString);
 
 							} else {
 								verb = verbOrNounList.get(0);
@@ -523,6 +553,7 @@ public class EnsuresCaseTwo {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strTwo);
 							    out.println(resolvedString);
+								composedEnsures.add(resolvedString);
 							}
 							break;
 						}
@@ -540,6 +571,7 @@ public class EnsuresCaseTwo {
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strThree);
 						out.println(resolvedString);
+						composedEnsures.add(resolvedString);
 
 					} else {
 						verb = verbOrNounList.get(0);
@@ -555,11 +587,13 @@ public class EnsuresCaseTwo {
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strFour);
 						out.println(resolvedString);
+						composedEnsures.add(resolvedString);
 						
 					}
 				}
 			}			
 		}
 		out.close();
+		return composedEnsures;
 	}
 }

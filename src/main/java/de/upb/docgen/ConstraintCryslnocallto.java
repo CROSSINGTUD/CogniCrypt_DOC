@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -25,7 +26,6 @@ import com.google.common.collect.Multimap;
 
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -36,7 +36,8 @@ public class ConstraintCryslnocallto {
 	static PrintWriter out;
 
 	private static char[] getTemplatenocallto() throws IOException {
-
+		char[] buffOne = Utils.getTemplatesText("ConsraintCrySLnocalltoClause");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConsraintCrySLnocalltoClause");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
@@ -45,11 +46,13 @@ public class ConstraintCryslnocallto {
 			stringBuffer.append(buffOne, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffOne;
 	}
 
-	public void getnoCalltoConstraint(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getnoCalltoConstraint(CrySLRule rule) throws IOException {
+		ArrayList<String> composedNocallToConstraints = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
@@ -227,6 +230,8 @@ public class ConstraintCryslnocallto {
 
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(str);
+							composedNocallToConstraints.add(resolvedString);
+
 							out.println(resolvedString);
 						}
 
@@ -235,5 +240,6 @@ public class ConstraintCryslnocallto {
 			}
 		}
 		out.close();
+		return composedNocallToConstraints;
 	}
 }

@@ -39,7 +39,7 @@ public class ClassEventForb {
 
 	public static PrintWriter out;
 
-	public void getClassName(CrySLRule rule) throws IOException {
+	public String getClassName(CrySLRule rule) throws IOException {
 
 		File file = new File(".\\src\\main\\resources\\Templates\\ClassNameClause");
 
@@ -63,13 +63,15 @@ public class ClassEventForb {
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
 		String resolvedString = sub.replace(buff);
-		out.println(resolvedString);
 		out.close();
+		return cName;
+		//out.println(resolvedString);
+
 	}
 
-	public void getEventNumbers(CrySLRule rule) throws IOException {
+	public String getLink(CrySLRule rule) throws IOException {
 
-		File file = new File(".\\src\\main\\resources\\Templates\\EventNumClause");
+		File file = new File(".\\src\\main\\resources\\Templates\\LinkToJavaDoc");
 
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
@@ -79,6 +81,68 @@ public class ClassEventForb {
 		}
 		reader.close();
 
+		String link = rule.getClassName().replace(".", "/");
+		String cName = rule.getClassName();
+		Map<String, String> valuesMap = new HashMap<String, String>();
+		valuesMap.put("ClassName", cName);
+		valuesMap.put("ClassLink", link);
+
+		StringSubstitutor sub = new StringSubstitutor(valuesMap);
+		String resolvedString = sub.replace(buff);
+		return resolvedString;
+		//out.println(resolvedString);
+
+	}
+
+	public String getFullClassName(CrySLRule rule) throws IOException {
+
+
+		char[] buff = Utils.getTemplatesText("ClassNameClause");
+		/*
+		File file = new File(".\\src\\main\\resources\\Templates\\ClassNameClause");
+
+		StringBuilder stringBuffer = new StringBuilder();
+		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+		char[] buff = new char[500];
+		for (int charsRead; (charsRead = reader.read(buff)) != -1;) {
+			stringBuffer.append(buff, 0, charsRead);
+		}
+		reader.close();
+
+		 */
+
+		String cname = new String(rule.getClassName().replace(".", ","));
+		List<String> strArray = Arrays.asList(cname.split(","));
+		String classnamecheck = strArray.get((strArray.size()) - 1);
+		String path = "./Output/" + classnamecheck + "_doc.txt";
+		out = new PrintWriter(new FileWriter(path, true));
+
+		String cName = rule.getClassName();
+		Map<String, String> valuesMap = new HashMap<String, String>();
+		valuesMap.put("ClassName", cName);
+
+		StringSubstitutor sub = new StringSubstitutor(valuesMap);
+		String resolvedString = sub.replace(buff);
+		out.close();
+		return resolvedString;
+		//out.println(resolvedString);
+
+	}
+
+	public String getEventNumbers(CrySLRule rule) throws IOException {
+
+		char[] buff = Utils.getTemplatesText("EventNumClause");
+		/*
+		File file = new File(".\\src\\main\\resources\\Templates\\EventNumClause");
+
+		StringBuilder stringBuffer = new StringBuilder();
+		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+		char[] buff = new char[500];
+		for (int charsRead; (charsRead = reader.read(buff)) != -1;) {
+			stringBuffer.append(buff, 0, charsRead);
+		}
+		reader.close();
+*/
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
@@ -105,12 +169,19 @@ public class ClassEventForb {
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
 		String resolvedString = sub.replace(buff);
-		out.println(resolvedString);
 		out.close();
+		//return methodNumber;
+		//out.println(resolvedString);
+		return resolvedString;
+
 	}
 
-	public void getForbiddenMethods(CrySLRule rule) throws IOException {
+	public List<String> getForbiddenMethods(CrySLRule rule) throws IOException {
+		ArrayList<String> arrayList = new ArrayList<>();
+		char[] buff = Utils.getTemplatesText("ForbiddenMethodClause");
+		char[] buffCon = Utils.getTemplatesText("ForbiddenMethodClauseCon");
 
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ForbiddenMethodClause");
 		File fileCon = new File(".\\src\\main\\resources\\Templates\\ForbiddenMethodClauseCon");
 		StringBuilder stringBuffer = new StringBuilder();
@@ -128,7 +199,7 @@ public class ClassEventForb {
 		}
 		reader.close();
 		readerCon.close();
-
+*/
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
@@ -187,19 +258,22 @@ public class ClassEventForb {
 					valuesMap.put("ForbMethodName", joinedStr);
 					StringSubstitutor sub = new StringSubstitutor(valuesMap);
 					String resolvedString = sub.replace(buffCon);
-					out.println(resolvedString);
+					arrayList.add(resolvedString);
+					//out.println(resolvedString);
 				} else {
 
 					Map<String, String> valuesMap = new HashMap<String, String>();
 					valuesMap.put("ForbMethodName", joinedStr);
 					StringSubstitutor sub = new StringSubstitutor(valuesMap);
 					String resolvedString = sub.replace(buff);
-					out.println(resolvedString);
+					arrayList.add(resolvedString);
+					//out.println(resolvedString);
 
 				}
 			}
 		}
 		out.close();
+		return arrayList;
 	}
 
 }

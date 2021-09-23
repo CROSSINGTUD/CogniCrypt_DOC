@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -26,7 +27,6 @@ import com.google.common.collect.Multimap;
 
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -37,6 +37,8 @@ public class ConstraintsVc {
 	PrintWriter out;
 
 	private static char[] getTemplateVC() throws IOException {
+		char[] buff = Utils.getTemplatesText("ConstraintsVcClause");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintsVcClause");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
@@ -45,10 +47,14 @@ public class ConstraintsVc {
 			stringBuffer.append(buff, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buff;
 	}
 
 	private static char[] getTemplateVCCon() throws IOException {
+		char[] buff = Utils.getTemplatesText("ConstraintsVcClauseCon");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintsVcClauseCon");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
@@ -57,11 +63,14 @@ public class ConstraintsVc {
 			stringBuffer.append(buff, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buff;
 	}
 
-	public void getConstraintsVc(CrySLRule rule) throws IOException {
+	public ArrayList<String> getConstraintsVc(CrySLRule rule) throws IOException {
 
+		ArrayList<String> composedConstraints = new ArrayList<>();
 		Map<String, String> constraintVCMap = new LinkedHashMap<>();
 		List<String> methodsList = FunctionUtils.getEventNames(rule);
 		Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
@@ -208,6 +217,7 @@ public class ConstraintsVc {
 					valuesMap.put("var2", var);
 					StringSubstitutor sub = new StringSubstitutor(valuesMap);
 					String resolvedString = sub.replace(str);
+					composedConstraints.add(resolvedString);
 					out.println(resolvedString);
 
 				} else {
@@ -219,10 +229,12 @@ public class ConstraintsVc {
 					valuesMap.put("var2", var);
 					StringSubstitutor sub = new StringSubstitutor(valuesMap);
 					String resolvedString = sub.replace(str);
+					composedConstraints.add(resolvedString);
 					out.println(resolvedString);
 				}
 			}
 		}
 		out.close();
+		return composedConstraints;
 	}
 }

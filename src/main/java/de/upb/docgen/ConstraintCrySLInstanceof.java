@@ -16,12 +16,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -32,7 +32,8 @@ public class ConstraintCrySLInstanceof {
 	static PrintWriter out;
 
 	private static String getTemplateinstanceofLHS() throws IOException {
-
+		String strD = Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseLHS");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLinstanceofClauseLHS");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
@@ -44,11 +45,14 @@ public class ConstraintCrySLInstanceof {
 		}
 
 		br.close();
+
+		 */
 		return strD + "\n\r";
 	}
 
 	private static String getTemplateinstanceofRHS() throws IOException {
-
+		String strD = Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseRHS");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLinstanceofClauseRHS");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
@@ -59,11 +63,13 @@ public class ConstraintCrySLInstanceof {
 			strLine = br.readLine();
 		}
 		br.close();
+
+		 */
 		return strD + "\n\r";
 	}
 
-	public void getInstanceof(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getInstanceof(CrySLRule rule) throws IOException {
+		ArrayList<String> composedInstaceOf = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
@@ -340,10 +346,12 @@ public class ConstraintCrySLInstanceof {
 					}
 
 					printout = resultmainstringLHS + resultmainstringRHS;
+					composedInstaceOf.add(printout);
 					out.println("" + printout);
 				}
 			}
 		}
 		out.close();
+		return composedInstaceOf;
 	}
 }

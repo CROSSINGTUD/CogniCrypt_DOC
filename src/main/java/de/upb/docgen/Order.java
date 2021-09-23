@@ -20,10 +20,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.TreeNode;
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.rules.CrySLRule;
-import de.upb.docgen.utils.Utils;
+import org.xmlet.htmlapifaster.Li;
+import org.xmlet.htmlapifaster.S;
+
+import static org.apache.commons.lang3.StringUtils.substringBetween;
+import static org.apache.commons.lang3.StringUtils.substringsBetween;
 
 /**
  * @author Ritika Singh
@@ -37,6 +43,11 @@ public class Order {
 	static Map<String, String> symbolMap = new LinkedHashMap<>();
 	static Map<String, String> objectMap = new LinkedHashMap<>();
 	public static PrintWriter out;
+	static ArrayList<String> symbols = new ArrayList<>(Arrays.asList("+","*","?","|"));
+	List<String> ans = new ArrayList<String>();
+	StringBuilder forStringTest = new StringBuilder();
+
+
 
 	// retrieve a list of the crysl rule files in the Cryslrules folder
 	private static List<File> getCryslFiles(String folderPath) throws IOException {
@@ -84,7 +95,9 @@ public class Order {
 		Properties properties = new Properties();
 
 		try {
-			File fileone = new File(".\\src\\main\\resources\\symbol.properties");
+			//File fileone = new File(".\\src\\main\\resources\\symbol.properties");
+			//todo: change this
+			File fileone = new File("C:\\Uni\\BA\\cognidoc\\src\\main\\resources\\symbol.properties");
 			FileInputStream fileInput = new FileInputStream(fileone);
 			properties.load(fileInput);
 			fileInput.close();
@@ -98,9 +111,10 @@ public class Order {
 	}
 
 	private static String getTemplateOrder() throws IOException {
+		//String strD = Utils.getTemplatesTextString("OrderClause");
 
-		File file = new File(".\\src\\main\\resources\\Templates\\OrderClause");
-
+		//File file = new File(".\\src\\main\\resources\\Templates\\OrderClause");
+		File file = new File(DocSettings.getInstance().getLangTemplatesPath()+"\\"+"OrderClause");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = br.readLine();
 		String strD = "";
@@ -110,11 +124,14 @@ public class Order {
 			strLine = br.readLine();
 		}
 		br.close();
+
+
 		return strD;
 	}
 
 	// function to map labels with their corresponding method names
 	private static List<Event> processEvents(List<String> lines) {
+		//todo: under construction
 		List<Event> eventList = new ArrayList<>();
 		Map<String, String> methodIdentifiersmap = new LinkedHashMap<>();
 		Map<String, List<String>> labelIdentifiersmap = new LinkedHashMap<>();
@@ -344,8 +361,10 @@ public class Order {
 		});
 	}
 
-	public void runOrder(CrySLRule rule, File file) throws IOException {
-
+	public List<String> runOrder(CrySLRule rule, File file) throws IOException {
+		ans = new ArrayList<>();
+		forStringTest = new StringBuilder();
+		ArrayList<String> arrayList = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		List<File> fileNames = getCryslFiles(FOLDER_PATH);
@@ -371,6 +390,24 @@ public class Order {
 		List<String> fl = new ArrayList<String>();
 		List<String> n = new ArrayList<String>();
 		getSymValues();
+/*
+		if (rule.getClassName().equals("java.security.DigestInputStream")) {
+			List<String> test = parseOrderBetter(originalOrder);
+			TreeNode<String> tree = orderToTree(test);
+			List<String> list = preorder(tree, false);
+			//String sentence = parseTreeToText(tree);
+
+		}
+*/
+
+		if (!rule.getClassName().equals("javax.net.ssl.SSLParameters")) {
+			List<String> test = parseOrderBetter(originalOrder);
+			TreeNode<String> tree = orderToTree(test);
+			List<String> list = preorder(tree, false);
+			//String sentence = parseTreeToText(tree);
+
+		}
+		String myTestString = forStringTest.toString();
 
 		for (String orderStr : originalOrder) {
 
@@ -447,6 +484,8 @@ public class Order {
 			fo.add(a);
 		}
 
+
+
 		String strTemp = getTemplateOrder();
 		List<String> lines = Arrays.asList(strTemp.split("\\r?\\n"));
 		String d = lines.get(1);
@@ -458,18 +497,267 @@ public class Order {
 		for (String ftr : fo) {
 			Map<String, String> valuesMap = new HashMap<String, String>();
 			valuesMap.put("methodName+Cardinality", ftr);
+			//arrayList.add(ftr);
 			StringSubstitutor sub = new StringSubstitutor(valuesMap);
 			String resolvedString = sub.replace(d);
+			arrayList.add(resolvedString);
 			finalresult += resolvedString + "\n";
 		}
 		finalresult += "\n" + b + "\n";
-		out.println(finalresult);
+
+		//out.println(finalresult);
+
 
 		// }
 		out.close();
 		objectMap.clear();
 		processedresultMap.clear();
 		symbolMap.clear();
+
+		List<String> myTestList = new ArrayList<>();
+		myTestList.add(myTestString);
+
+		return myTestList;
+	}
+
+	private String parseTreeToText(TreeNode<String> root) {
+		StringBuilder stringBuilder = new StringBuilder();
+		if(root == null) return stringBuilder.toString();
+		Queue<TreeNode> queue = new LinkedList<>();
+		queue.offer(root);
+		while (!queue.isEmpty()) {
+			int len = queue.size();
+			for (int i = 0; i < len ; i++) {
+				TreeNode<String> node = queue.poll();
+				System.out.print(node.getData() + " ");
+				for (TreeNode item : node.getChildren()) {
+					queue.offer(item);
+				}
+			}
+			System.out.println();
+		}
+
+		return stringBuilder.toString();
+	}
+
+
+
+	public List<String> preorder(TreeNode<String> root, boolean inBlock) {
+		if (root == null) return ans;
+		ans.add(root.getData());
+		//start
+		if (root.getData().equals("-1")) {
+			System.out.println("The order of this class:");
+			forStringTest.append("The order of this class:\n");
+		}
+		//leaf
+		if ((symbols.contains(root.getData())|| root.getData().equals("1")) && root.getChildren().size() == 1) {
+			if (!inBlock) {
+			for (TreeNode<String> leaf : root.getChildren()) {
+				printSymbol(root.getData(),leaf.getData());
+				//System.out.println(root.getData() + " " + leaf.getData());
+				//forStringTest.append(root.getData() + " " + leaf.getData()+"\n");
+				}
+			} else {
+				for (TreeNode<String> leaf : root.getChildren()) {
+					forStringTest.append("\t");
+					printSymbol(root.getData(),leaf.getData());
+					//System.out.println("\t"+root.getData() + " " + leaf.getData());
+					//forStringTest.append("\t"+root.getData() + " " + leaf.getData() + "\n");
+				}
+			}
+		}
+		//aggr
+		if ((symbols.contains(root.getData()) && root.getChildren().size() > 1)) {
+			//System.out.println("The following block has to be called..." + root.getData());
+			forStringTest.append("The following block");
+			printSymbol(root.getData(),"");
+			for (TreeNode<String> child : root.getChildren())
+				preorder(child, true);
+			System.out.println("Block end");
+			forStringTest.append("Block end\n");
+			return ans;
+		} else {
+			for (TreeNode<String> child : root.getChildren())
+				preorder(child, false);
+			return ans;
+		}
+	}
+
+	private void printSymbol(String symbol, String data) {
+		switch (symbol) {
+			case "*":
+				forStringTest.append(data + " can be called as often as desired\n");
+				break;
+			case "+":
+				forStringTest.append(data + " has to be called atleast once \n");
+				break;
+			case "1":
+				forStringTest.append(data + " has to be called exactly once \n");
+				break;
+			case "?":
+				forStringTest.append(data + " can not be called but no more than once \n");
+				break;
+			case "|":
+				forStringTest.append(data + " or  \n");
+				break;
+
+		}
+	}
+
+
+	private TreeNode<String> orderToTree(List<String> test) {
+		TreeNode<String> root = new TreeNode<>("-1");
+		for (String aggr : test) {
+			stringToTree(root, aggr);
+
+		}
+		return root;
+	}
+
+	private void stringToTree(TreeNode<String> root, String aggr) {
+		if (!aggr.contains("(")) {
+			String symbol = aggr.substring(aggr.length() - 1);
+			if (symbols.contains(symbol)) {
+				TreeNode temp = new TreeNode(symbol);
+				root.addChild(temp);
+				temp.addChild(aggr.substring(0,aggr.length()-1));
+			} else {
+				TreeNode temp = new TreeNode("1");
+				root.addChild(temp);
+				temp.addChild(aggr);
+
+			}
+		} else {
+			String breakMeUp = aggr;
+			int bracketcounter = (int) breakMeUp.chars().filter(ch -> ch == '(').count();
+			if (!(bracketcounter > 1)) {
+				String symbol = aggr.substring(aggr.length() - 1);
+				if (!breakMeUp.contains("|")) {
+					if (symbols.contains(symbol)) {
+						TreeNode temp = new TreeNode(symbol);
+						root.addChild(temp);
+						String between = aggr.substring(aggr.indexOf("(")+1, aggr.lastIndexOf(")"));
+						String[] parts = between.trim().split(" ");
+						for (String part : parts) {
+							symbol = part.substring(part.length() - 1);
+							if (symbols.contains(symbol)) {
+								TreeNode temp2 = new TreeNode(symbol);
+								temp.addChild(temp2);
+								temp2.addChild(part.substring(0,part.length()-1));
+							} else {
+								TreeNode temp2 = new TreeNode("1");
+								temp.addChild(temp2);
+								temp2.addChild(part);
+
+							}
+
+						}
+					} else {
+						String[] parts = substringBetween(breakMeUp, "(", ")").trim().split(" ");
+						for (String part : parts) {
+							symbol = part.substring(part.length() - 1);
+							if (symbols.contains(symbol)) {
+								TreeNode temp = new TreeNode(symbol);
+								root.addChild(temp);
+								temp.addChild(part);
+							} else {
+								TreeNode temp = new TreeNode("1");
+								root.addChild(temp);
+								temp.addChild(part);
+
+							}
+
+						}
+					}
+				} else {
+					if (symbols.contains(symbol)) {
+						TreeNode temp = new TreeNode(symbol);
+						root.addChild(temp);
+						String between = aggr.substring(aggr.indexOf("(")+1, aggr.lastIndexOf(")"));
+						stringToTree(temp, between);
+						return;
+					} else {
+						//TreeNode temp = new TreeNode("1");
+						//root.addChild(temp);
+						String[] parts = aggr.split("\\|");
+						TreeNode temp = new TreeNode("|");
+						root.addChild(temp);
+						for (String part: parts) {
+
+							stringToTree(temp, part);
+						}
+						return;
+						//stringToTree(temp, breakMeUp);
+
+					}
+
+				}
+			} else {
+				if (breakMeUp.contains("|")) {
+					//addChilds
+					String symbol = aggr.substring(aggr.length() - 1);
+					if (symbols.contains(symbol)) {
+						TreeNode temp = new TreeNode(symbol);
+						root.addChild(temp);
+						String between = aggr.substring(aggr.indexOf("(")+1, aggr.lastIndexOf(")"));
+						stringToTree(temp, between);
+						return;
+					} else {
+						//TreeNode temp = new TreeNode("1");
+						//root.addChild(temp);
+						String[] parts = aggr.split("\\|");
+						TreeNode temp = new TreeNode("|");
+						root.addChild(temp);
+						for (String part: parts) {
+
+							stringToTree(temp, part);
+						}
+						return;
+						//stringToTree(temp, breakMeUp);
+
+					}
+
+				} else {
+					String[] parts = substringsBetween(breakMeUp, "(", ")");
+				}
+
+				//String[] parts = substringsBetween(breakMeUp, "(", ")");
+				System.out.println("pa");
+
+			}
+
+		}
+	}
+
+	private List<String> parseOrderBetter(List<String> fo) {
+		StringBuilder sb = new StringBuilder();
+		List<String> betterOrder = new ArrayList<>();
+		for (int i = 0; i < fo.size(); i++) {
+			if (fo.get(i).contains("(")) {
+
+				int bracketcounter = 0;
+				int j = i;
+				for (;j < fo.size();j++){
+					bracketcounter += fo.get(j).chars().filter(ch -> ch == '(').count();
+				}
+				for (j=i; j < fo.size(); ++j) {
+					if (bracketcounter == 0) {
+
+						break;
+					}
+					bracketcounter -= fo.get(j).chars().filter(ch -> ch == ')').count();
+					sb.append(fo.get(j));
+				}
+				betterOrder.add(sb.toString());
+				i = j;
+
+
+			} else {
+				betterOrder.add(fo.get(i));
+			}
+		}
+		return betterOrder;
 	}
 }
 

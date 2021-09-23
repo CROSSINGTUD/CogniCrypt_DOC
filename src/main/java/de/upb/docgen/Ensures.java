@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -25,7 +26,6 @@ import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
 import crypto.rules.StateMachineGraph;
 import crypto.rules.TransitionEdge;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -36,6 +36,8 @@ public class Ensures {
 	static PrintWriter out;
 
 	private static String getTemplateverbedge() throws IOException {
+		String strDOne = Utils.getTemplatesTextString("EnsuresClauseVerb-edge");
+		/*
 		File fileOne = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-edge");
 		BufferedReader brOne = new BufferedReader(new FileReader(fileOne));
 		String strLineOne = "";
@@ -46,10 +48,14 @@ public class Ensures {
 			strLineOne = brOne.readLine();
 		}
 		brOne.close();
+
+		 */
 		return strDOne;
 	}
 
 	private static String getTemplateverbnounedge() throws IOException {
+		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edge");
+		/*
 		File fileTwo = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun-edge");
 		BufferedReader brTwo = new BufferedReader(new FileReader(fileTwo));
 		String strLineTwo = "";
@@ -60,10 +66,14 @@ public class Ensures {
 			strLineTwo = brTwo.readLine();
 		}
 		brTwo.close();
+
+		 */
 		return strDTwo;
 	}
 
 	private static String getTemplateverbnoun() throws IOException {
+		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseVerb-noun");
+		/*
 		File fileThree = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun");
 		BufferedReader brThree = new BufferedReader(new FileReader(fileThree));
 		String strLineThree = "";
@@ -74,10 +84,14 @@ public class Ensures {
 			strLineThree = brThree.readLine();
 		}
 		brThree.close();
-		return strDThree;
+
+		 */
+		return strDTwo;
 	}
 
 	private static String getTemplateverbnounedgeCon() throws IOException {
+		String strDCon = Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edgeCons");
+		/*
 		File fileCon = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun-edgeCons");
 		BufferedReader brCon = new BufferedReader(new FileReader(fileCon));
 		String strLineCon = "";
@@ -88,11 +102,13 @@ public class Ensures {
 			strLineCon = brCon.readLine();
 		}
 		brCon.close();
+
+		 */
 		return strDCon;
 	}
 
-	public void getEnsuresThis(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getEnsuresThis(CrySLRule rule) throws IOException {
+		ArrayList<String> composedEnsures = new ArrayList<>();
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
 
@@ -179,6 +195,7 @@ public class Ensures {
 								valuesMap.put("edgeName", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbedge);
+								composedEnsures.add(resolvedString);
 								out.println(resolvedString);
 							}
 
@@ -198,6 +215,8 @@ public class Ensures {
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(verbedge);
 									out.println(resolvedString);
+									composedEnsures.add(resolvedString);
+
 									break;
 								}
 								String verbnounedge = getTemplateverbnounedge();
@@ -209,6 +228,8 @@ public class Ensures {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbnounedge);
 								out.println(resolvedString);
+								composedEnsures.add(resolvedString);
+
 							}
 							break;
 						}
@@ -231,10 +252,13 @@ public class Ensures {
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(verbnoun);
 						out.println(resolvedString);
+						composedEnsures.add(resolvedString);
+
 					}
 				}
 			}
 		}
 		out.close();
+		return composedEnsures;
 	}
 }
