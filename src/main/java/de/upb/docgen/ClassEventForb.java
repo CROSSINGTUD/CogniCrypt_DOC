@@ -114,8 +114,11 @@ public class ClassEventForb {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 
 		String cName = rule.getClassName();
 		Map<String, String> valuesMap = new HashMap<String, String>();
@@ -123,7 +126,7 @@ public class ClassEventForb {
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
 		String resolvedString = sub.replace(buff);
-		out.close();
+		//out.close();
 		return resolvedString;
 		//out.println(resolvedString);
 
