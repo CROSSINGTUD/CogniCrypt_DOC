@@ -134,7 +134,8 @@ public class ClassEventForb {
 
 	public String getEventNumbers(CrySLRule rule) throws IOException {
 
-		char[] buff = Utils.getTemplatesText("EventNumClause");
+		char[] buff1 = Utils.getTemplatesText("EventNumClause");
+		char[] buff2 = Utils.getTemplatesText("EventNumClause2");
 		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\EventNumClause");
 
@@ -171,7 +172,9 @@ public class ClassEventForb {
 		valuesMap.put("number", methodNumber);
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
-		String resolvedString = sub.replace(buff);
+		String resolvedString = "";
+		if (methodNumber.equals("1")) resolvedString = sub.replace(buff1);
+		else resolvedString = sub.replace(buff2);
 		out.close();
 		//return methodNumber;
 		//out.println(resolvedString);
