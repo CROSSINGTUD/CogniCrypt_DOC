@@ -49,7 +49,8 @@ public class StateMachineToGraphviz {
         String States = "node [shape = circle];\n";
         for (StateNode node : smg.getNodes()) {
             if (node.getAccepting()) {
-                acceptingStates.append(" ").append(node.getName());
+               if (node.isInitialState()) acceptingStates.append(" ").append("Start");
+               else acceptingStates.append(" ").append(node.getName());
             }
         }
         stringBuilderToFile.append(acceptingStates.toString()).append(";\n");
