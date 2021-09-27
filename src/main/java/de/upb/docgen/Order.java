@@ -93,9 +93,7 @@ public class Order {
 		Properties properties = new Properties();
 
 		try {
-			//File fileone = new File(".\\src\\main\\resources\\symbol.properties");
-			//todo: change this
-			File fileone = new File("C:\\Uni\\BA\\cognidoc\\src\\main\\resources\\symbol.properties");
+			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath()+"/symbol.properties");
 			FileInputStream fileInput = new FileInputStream(fileone);
 			properties.load(fileInput);
 			fileInput.close();

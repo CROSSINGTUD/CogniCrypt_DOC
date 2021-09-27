@@ -26,8 +26,8 @@ public class DocumentGeneratorMain {
 	public static void main(String[] args) throws IOException, TemplateException {
 		DocSettings docSettings = DocSettings.getInstance();
 		docSettings.parseSettingsFromCLI(args);
-		//generate Graphviz dot and pngs
-		StateMachineToGraphviz.generateGraphvizStateMachines(docSettings.getRulesetPathDir(),docSettings.getReportDirectory());
+		//generate Graphviz dot and pngs set --booleanC to turnOff generation
+		if(docSettings.isBooleanC()) StateMachineToGraphviz.generateGraphvizStateMachines(docSettings.getRulesetPathDir(),docSettings.getReportDirectory());
 		//read CryslRules from absolutePath provided by the user
 		Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
 
