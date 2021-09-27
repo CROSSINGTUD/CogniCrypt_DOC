@@ -170,7 +170,7 @@
 <button class="collapsible">Overview</button>
     <div class="content">
         <div class="spoiler" id="spoiler" style="display:none">
-            This section has 3 parts: The Fully Qualified Name, the link to the JavaDoc of the class and how many methods.
+            This section explains the components of this documentation page.
         </div>
         <p class="pre" style="white-space: pre-line;">
         ${rule.composedFullClass}
@@ -302,7 +302,7 @@
         </div>
 
 
-<button class="collapsible">Crysl Rule</button>
+<button class="collapsible">CrySL Rule</button>
 <div class="content">
     <p class="pre" style="white-space: pre-line;">
         The CrySL rule on <a target="_blank" rel="noopener noreferrer" href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
