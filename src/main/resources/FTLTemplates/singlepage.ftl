@@ -175,7 +175,6 @@
         <p class="pre" style="white-space: pre-line;">
         ${rule.composedFullClass}
             ${rule.composedLink}
-        ${rule.numberOfMethods}
         </p>
     </div>
         <button class="collapsible">Order</button>
@@ -184,7 +183,11 @@
                 This section describes the order, in which the methods of this class can be called.
                 And the order represented as a state machine graph.
             </div>
+            <p class="pre">
+                ${rule.numberOfMethods}
+            </p>
             <pre style="overflow-x:auto;margin-left: -35px">
+
     <#list rule.order as order>
         ${order}
     </#list>
