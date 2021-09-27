@@ -60,7 +60,11 @@ public class StateMachineToGraphviz {
             stringBuilderToFile.append(" [label = ");
             stringBuilderToFile.append("\"");
             for (CrySLMethod label : edge.getLabel()) {
-                stringBuilderToFile.append(label.toString());
+                String labelName = label.getName();
+                for (Map.Entry<String,String> method: label.getParameters()) {
+                    if (!method.getValue().equals("AnyType")) labelName = labelName.replace(method.getKey(), method.getValue());
+                }
+                stringBuilderToFile.append(labelName);
             }
             stringBuilderToFile.append("\"");
             stringBuilderToFile.append("];\n");
