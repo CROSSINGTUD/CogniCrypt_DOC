@@ -1,6 +1,7 @@
 package de.upb.docgen.graphviz;
 
 import crypto.rules.*;
+import de.upb.docgen.DocSettings;
 import de.upb.docgen.crysl.CrySLReader;
 import de.upb.docgen.utils.Constant;
 import guru.nidi.graphviz.engine.Format;
@@ -25,6 +26,27 @@ public class StateMachineToGraphviz {
             rulesOrderSectionToDot(ruleEntry.getValue());
             toPNG(ruleEntry.getValue().getClassName());
         }
+    }
+
+    public static void generateGraphvizStateMachines(String pathToCryslRules, String pathToRootpage) throws IOException {
+        Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(pathToCryslRules);
+        new File(pathToRootpage+"/"+"dotFSMs/").mkdir();
+        for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
+            rulesOrderSectionToDot(ruleEntry.getValue(), pathToRootpage);
+            toPNG(ruleEntry.getValue().getClassName(), pathToRootpage);
+        }
+    }
+
+    private static void rulesOrderSectionToDot(CrySLRule rule, String pathToRootpage) throws IOException {
+        StateMachineGraph smg = rule.getUsagePattern();
+        String fsm = toGraphviz(smg);
+        String path = pathToRootpage+"/"+"dotFSMs/" + rule.getClassName() + ".dot";
+        File output = new File(path);
+        FileWriter writer = new FileWriter(output);
+        writer.write(fsm);
+        writer.flush();
+        writer.close();
+
     }
 
     private static void rulesOrderSectionToDot(CrySLRule rule) throws IOException {
@@ -81,6 +103,15 @@ public class StateMachineToGraphviz {
     public static void toPNG(String name) {
         try {    MutableGraph g = new Parser().read(new File("dotFSMs\\" + name +".dot"));
             Graphviz.fromGraph(g).render(Format.SVG).toFile(new File("dotFSMs/" +name +".svg"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void toPNG(String name, String pathToRootpage) {
+        try {    MutableGraph g = new Parser().read(new File(pathToRootpage+"\\"+"dotFSMs\\" + name +".dot"));
+            Graphviz.fromGraph(g).render(Format.SVG).toFile(new File(pathToRootpage+"/"+"dotFSMs/" +name +".svg"));
 
         } catch (IOException e) {
             e.printStackTrace();
