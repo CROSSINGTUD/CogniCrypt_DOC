@@ -24,6 +24,8 @@
     }
     a {
         padding: 0;
+        font-family: Montserrat,Helvetica Neue,Helvetica,Arial,sans-serif;
+        font-size: 14px;
     }
     </style>
 
