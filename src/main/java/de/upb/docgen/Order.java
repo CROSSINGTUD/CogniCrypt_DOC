@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
@@ -20,16 +19,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import de.upb.docgen.utils.TreeNode;
-import de.upb.docgen.utils.Utils;
-import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.lang3.StringUtils;
 
 import crypto.rules.CrySLRule;
-import org.xmlet.htmlapifaster.Li;
-import org.xmlet.htmlapifaster.S;
 
 import static org.apache.commons.lang3.StringUtils.substringBetween;
-import static org.apache.commons.lang3.StringUtils.substringsBetween;
 
 /**
  * @author Ritika Singh
@@ -43,10 +37,14 @@ public class Order {
 	static Map<String, String> symbolMap = new LinkedHashMap<>();
 	static Map<String, String> objectMap = new LinkedHashMap<>();
 	public static PrintWriter out;
-	static ArrayList<String> symbols = new ArrayList<>(Arrays.asList("+","*","?","|"));
+	static ArrayList<String> symbols = new ArrayList<>(Arrays.asList("+", "*", "?", "|"));
 	List<String> ans = new ArrayList<String>();
 	StringBuilder forStringTest = new StringBuilder();
-
+	int identLevel = 0;
+	String[] orderArr;
+	ArrayList<String> orderList;
+	Iterator<String> iter;
+	int bracketCounter;
 
 
 	// retrieve a list of the crysl rule files in the Cryslrules folder
@@ -114,7 +112,7 @@ public class Order {
 		//String strD = Utils.getTemplatesTextString("OrderClause");
 
 		//File file = new File(".\\src\\main\\resources\\Templates\\OrderClause");
-		File file = new File(DocSettings.getInstance().getLangTemplatesPath()+"\\"+"OrderClause");
+		File file = new File(DocSettings.getInstance().getLangTemplatesPath() + "\\" + "OrderClause");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = br.readLine();
 		String strD = "";
@@ -362,9 +360,6 @@ public class Order {
 	}
 
 	public List<String> runOrder(CrySLRule rule, File file) throws IOException {
-		ans = new ArrayList<>();
-		forStringTest = new StringBuilder();
-		ArrayList<String> arrayList = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		List<File> fileNames = getCryslFiles(FOLDER_PATH);
@@ -390,49 +385,48 @@ public class Order {
 		List<Event> eventList = processEvents(fileContent.get("EVENTS"));
 		List<String> originalOrder = Arrays
 				.asList(fileContent.get("ORDER").get(0).replaceAll("\\(", "\\( ").split(","));
-		List<String> fl = new ArrayList<String>();
-		List<String> n = new ArrayList<String>();
 		getSymValues();
-/*
-		if (rule.getClassName().equals("java.security.DigestInputStream")) {
-			List<String> test = parseOrderBetter(originalOrder);
-			TreeNode<String> tree = orderToTree(test);
-			List<String> list = preorder(tree, false);
-			//String sentence = parseTreeToText(tree);
+		List<String> orderSplittedWithBrackets = connectBrackets(originalOrder);
 
-		}
-*/
-
-		if (!rule.getClassName().equals("javax.net.ssl.SSLParameters")) {
-			List<String> test = parseOrderBetter(originalOrder);
-			TreeNode<String> tree = orderToTree(test);
-			List<String> list = preorder(tree, false);
-			//String sentence = parseTreeToText(tree);
-
-		}
-		String myTestString = forStringTest.toString();
-
-		for (String orderStr : originalOrder) {
-
-			String[] orderArr = orderStr.split("[\\s,]+|(?<![\\s,])(?![a-zA-Z0-9\\s,])");
+		/* old order parsing
+		for (String orderStr : orderSplittedWithBrackets) {
+			identLevel = 0;
+			bracketCounter = 0;
+			orderArr = orderStr.split("[\\s,]+|(?<![\\s,])(?![a-zA-Z0-9\\s,])");
 
 			if (orderArr.length > 1 && orderArr[0].isEmpty()) {
 				orderArr = Arrays.copyOfRange(orderArr, 1, orderArr.length);
 			}
-
+			int orderArrlength = orderArr.length;
 			int delete;
 			String control = "n";
-			for (int q = 0; q < orderArr.length; q++) {
+			orderList = new ArrayList<>(Arrays.asList(orderArr));
+			int number = 0;
+			
+			for (int i = 0; i < orderList.size(); i++) {
+				String s = orderList.get(i);
 				int flag = 0;
 				// control = "n";
 				for (Map.Entry<String, String> entry : symbolMap.entrySet()) {
 
-					if (entry.getKey().equals(orderArr[q])) { // symbol keys
-						String symbolSearchstr = orderArr[q].replace(orderArr[q], entry.getValue()); // symbol values
+					if (entry.getKey().equals(s)) { // symbol keys
+						if (s.equals(")")) identLevel--;
+						String symbolSearchstr = s.replace(s, entry.getValue()); // symbol values
+						if (symbolSearchstr.equals("The next block ")) {
+							symbolSearchstr += decideSymbolOfBracket(orderStr, number);
+							number++;
+							bracketCounter--;
+							control = "n";
+						}
 
 						if (fl.size() - 1 < 0) {
 						} else {
-							if (control.equals("y")) {
+							if (symbolSearchstr.equals("]")) {
+								fl.add(symbolSearchstr);
+								continue;
+							}
+
+							if (control.equals("y") && number == 0) {
 								control = "n";
 								delete = fl.size() - 1;
 								fl.remove(delete);
@@ -445,14 +439,58 @@ public class Order {
 				}
 				if (flag == 0) {
 					control = "y";
-					fl.add(orderArr[q]);
+					fl.add(s);
 					fl.add("must be called exactly once.");
 				}
 				flag = 0;
 			}
 		}
+		
+		 */
 
-		for (String ff : fl) {
+		ArrayList<String> allNLsentences = parseOrderToNL(orderSplittedWithBrackets);
+
+		List<String> resolvedSentences = aggrgatesToMethods(allNLsentences);
+
+		List<String> orderConstructed = combineAndIndentation(resolvedSentences);
+
+		/*
+		String strTemp = getTemplateOrder();
+		List<String> lines = Arrays.asList(strTemp.split("\\r?\\n"));
+		String d = lines.get(1);
+		String c = lines.get(0);
+		String b = lines.get(3);
+		String finalresult = "";
+		finalresult = c + "\n" + "\n";
+
+		for (String ftr : orderConstructed) {
+			Map<String, String> valuesMap = new HashMap<String, String>();
+			valuesMap.put("methodName+Cardinality", ftr);
+			//arrayList.add(ftr);
+			StringSubstitutor sub = new StringSubstitutor(valuesMap);
+			String resolvedString = sub.replace(d);
+			arrayList.add(resolvedString);
+			finalresult += resolvedString + "\n";
+		}
+		finalresult += "\n" + b + "\n";
+
+		 */
+
+		//out.println(finalresult);
+
+
+		// }
+		//out.close();
+		objectMap.clear();
+		processedresultMap.clear();
+		symbolMap.clear();
+
+		return orderConstructed;
+	}
+
+	private List<String> aggrgatesToMethods(ArrayList<String> allNLsentences) {
+		List<String> n = new ArrayList<>();
+		for (String ff : allNLsentences) {
 			int flag = 0;
 			for (Map.Entry<String, String> en : processedresultMap.entrySet()) {
 				if (ff.equals(en.getKey())) {
@@ -466,276 +504,153 @@ public class Order {
 			}
 			flag = 0;
 		}
+		return n;
+	}
 
+	private List<String> combineAndIndentation(List<String> n) {
 		List<String> fo = new ArrayList<>();
 		String a = "";
+		int identlevel = 0;
 		if (n.size() > 2) {
-			if (n.size() % 2 == 0) {
-				for (int i = 0; i <= n.size() - 2; i += 2) {
-					a = n.get(i) + " " + n.get(i + 1);
+			for (int i = 0; i <= n.size() - 2; i += 2) {
+				if (n.get(i).startsWith("The next") ) {
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
+					identlevel++;
+					n.remove(i);
+					i -= 2;
+				} else if  (n.get(i).startsWith("or") && (n.get(i+1).startsWith("The next"))){
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1));
+					identlevel++;
+					n.remove(i);
+					n.remove(i);
+					i -= 2;
+				} else if  (n.get(i).startsWith("or")){
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1) + n.get(i+2));
+					n.remove(i);
+					n.remove(i);
+					n.remove(i);
+					i -=2;
+				} else if (n.get(i).startsWith("]")) {
+					//removing closing brackets and lowering the le
+					while (n.get(i).startsWith("]")) {
+						identlevel--;
+						n.remove(i);
+					}
+					//remove already processes sentence
+					if (!n.get(i).startsWith("or")) {
+						n.remove(i);
+					}
+					i -= 2;
+				} else if (n.get(i+1).startsWith("or")) {
+					a = StringUtils.repeat("\t", identlevel) + n.get(i);
+					fo.add(a);
+					n.remove(i);
+					i -= 2;
+				} else {
+ 					a = StringUtils.repeat("\t", identlevel) + n.get(i) + " " + n.get(i + 1);
 					fo.add(a);
 				}
-			} else {
-				for (int i = 0; i <= n.size() - 2; i += 2) {
-					a = n.get(i) + " " + n.get(i + 1);
-					fo.add(a);
-				}
-				fo.add(n.get(n.size() - 1));
+			}} else{
+
+				a = StringUtils.repeat("\t", identlevel) + n.get(0) + " " + n.get(1);
+				fo.add(a);
 			}
-		} else {
-			a = n.get(0) + " " + n.get(1);
-			fo.add(a);
-		}
-
-
-
-		String strTemp = getTemplateOrder();
-		List<String> lines = Arrays.asList(strTemp.split("\\r?\\n"));
-		String d = lines.get(1);
-		String c = lines.get(0);
-		String b = lines.get(3);
-		String finalresult = "";
-		finalresult = c + "\n" + "\n";
-
-		for (String ftr : fo) {
-			Map<String, String> valuesMap = new HashMap<String, String>();
-			valuesMap.put("methodName+Cardinality", ftr);
-			//arrayList.add(ftr);
-			StringSubstitutor sub = new StringSubstitutor(valuesMap);
-			String resolvedString = sub.replace(d);
-			arrayList.add(resolvedString);
-			finalresult += resolvedString + "\n";
-		}
-		finalresult += "\n" + b + "\n";
-
-		//out.println(finalresult);
-
-
-		// }
-		//out.close();
-		objectMap.clear();
-		processedresultMap.clear();
-		symbolMap.clear();
-
-		List<String> myTestList = new ArrayList<>();
-		myTestList.add(myTestString);
-
-		return myTestList;
+		return fo;
 	}
 
-	private String parseTreeToText(TreeNode<String> root) {
-		StringBuilder stringBuilder = new StringBuilder();
-		if(root == null) return stringBuilder.toString();
-		Queue<TreeNode> queue = new LinkedList<>();
-		queue.offer(root);
-		while (!queue.isEmpty()) {
-			int len = queue.size();
-			for (int i = 0; i < len ; i++) {
-				TreeNode<String> node = queue.poll();
-				//System.out.print(node.getData() + " ");
-				for (TreeNode item : node.getChildren()) {
-					queue.offer(item);
-				}
+	private ArrayList<String> parseOrderToNL(List<String> test) {
+		ArrayList<String> fl = new ArrayList<>();
+		boolean added = false;
+		for (String orderstr : test) {
+			String[] orderArray = orderstr.split("[\\s,]+|(?<![\\s,])(?![a-zA-Z0-9\\s,])");
+			if (orderArray.length > 1 && orderArray[0].isEmpty()) {
+				orderArray = Arrays.copyOfRange(orderArray, 1, orderArray.length);
 			}
-			//System.out.println();
-		}
-
-		return stringBuilder.toString();
-	}
-
-
-
-	public List<String> preorder(TreeNode<String> root, boolean inBlock) {
-		if (root == null) return ans;
-		ans.add(root.getData());
-		//start
-		if (root.getData().equals("-1")) {
-			//System.out.println("The order of this class:");
-			forStringTest.append("The order of this class:\n");
-		}
-		//leaf
-		if ((symbols.contains(root.getData())|| root.getData().equals("1")) && root.getChildren().size() == 1) {
-			if (!inBlock) {
-			for (TreeNode<String> leaf : root.getChildren()) {
-				printSymbol(root.getData(),leaf.getData());
-				//System.out.println(root.getData() + " " + leaf.getData());
-				//forStringTest.append(root.getData() + " " + leaf.getData()+"\n");
-				}
-			} else {
-				for (TreeNode<String> leaf : root.getChildren()) {
-					forStringTest.append("\t");
-					printSymbol(root.getData(),leaf.getData());
-					//System.out.println("\t"+root.getData() + " " + leaf.getData());
-					//forStringTest.append("\t"+root.getData() + " " + leaf.getData() + "\n");
-				}
-			}
-		}
-		//aggr
-		if ((symbols.contains(root.getData()) && root.getChildren().size() > 1)) {
-			//System.out.println("The following block has to be called..." + root.getData());
-			forStringTest.append("The following block");
-			printSymbol(root.getData(),"");
-			for (TreeNode<String> child : root.getChildren())
-				preorder(child, true);
-			System.out.println("Block end");
-			forStringTest.append("Block end\n");
-			return ans;
-		} else {
-			for (TreeNode<String> child : root.getChildren())
-				preorder(child, false);
-			return ans;
-		}
-	}
-
-	private void printSymbol(String symbol, String data) {
-		switch (symbol) {
-			case "*":
-				forStringTest.append(data + " can be called as often as desired\n");
-				break;
-			case "+":
-				forStringTest.append(data + " has to be called atleast once \n");
-				break;
-			case "1":
-				forStringTest.append(data + " has to be called exactly once \n");
-				break;
-			case "?":
-				forStringTest.append(data + " can not be called but no more than once \n");
-				break;
-			case "|":
-				forStringTest.append(data + " or  \n");
-				break;
-
-		}
-	}
-
-
-	private TreeNode<String> orderToTree(List<String> test) {
-		TreeNode<String> root = new TreeNode<>("-1");
-		for (String aggr : test) {
-			stringToTree(root, aggr);
-
-		}
-		return root;
-	}
-
-	private void stringToTree(TreeNode<String> root, String aggr) {
-		if (!aggr.contains("(")) {
-			String symbol = aggr.substring(aggr.length() - 1);
-			if (symbols.contains(symbol)) {
-				TreeNode temp = new TreeNode(symbol);
-				root.addChild(temp);
-				temp.addChild(aggr.substring(0,aggr.length()-1));
-			} else {
-				TreeNode temp = new TreeNode("1");
-				root.addChild(temp);
-				temp.addChild(aggr);
-
-			}
-		} else {
-			String breakMeUp = aggr;
-			int bracketcounter = (int) breakMeUp.chars().filter(ch -> ch == '(').count();
-			if (!(bracketcounter > 1)) {
-				String symbol = aggr.substring(aggr.length() - 1);
-				if (!breakMeUp.contains("|")) {
-					if (symbols.contains(symbol)) {
-						TreeNode temp = new TreeNode(symbol);
-						root.addChild(temp);
-						String between = aggr.substring(aggr.indexOf("(")+1, aggr.lastIndexOf(")"));
-						String[] parts = between.trim().split(" ");
-						for (String part : parts) {
-							symbol = part.substring(part.length() - 1);
-							if (symbols.contains(symbol)) {
-								TreeNode temp2 = new TreeNode(symbol);
-								temp.addChild(temp2);
-								temp2.addChild(part.substring(0,part.length()-1));
-							} else {
-								TreeNode temp2 = new TreeNode("1");
-								temp.addChild(temp2);
-								temp2.addChild(part);
-
-							}
-
+			ArrayList<String> orderList = new ArrayList<>(Arrays.asList(orderArray));
+			int number = 0;
+			for (int i = 0; i < orderList.size(); i++) {
+				added = false;
+				String s = orderList.get(i);
+				for (Map.Entry<String, String> entry : symbolMap.entrySet()) {
+					if (entry.getKey().equals(s)) {
+						String symbolSearchStr = s.replace(s, entry.getValue());
+						if (symbolSearchStr.startsWith("The next")) {
+							symbolSearchStr += decideSymbolOfBracket(orderstr, number);
+							number++;
 						}
-					} else {
-						String[] parts = substringBetween(breakMeUp, "(", ")").trim().split(" ");
-						for (String part : parts) {
-							symbol = part.substring(part.length() - 1);
-							if (symbols.contains(symbol)) {
-								TreeNode temp = new TreeNode(symbol);
-								root.addChild(temp);
-								temp.addChild(part);
-							} else {
-								TreeNode temp = new TreeNode("1");
-								root.addChild(temp);
-								temp.addChild(part);
-
-							}
-
-						}
+						fl.add(symbolSearchStr);
+						added = true;
+						break;
 					}
+				}
+				if (added) continue;
+				fl.add(s);
+				String next = "";
+				int orderListSize = orderList.size();
+				if (i+1 < orderListSize) {
+					next = orderList.get(i+1);
+				}
+				if (!symbolMap.containsKey(next)) {
+					fl.add("has to be called once.");
+
+				}
+				if (next.equals(")") || next.equals("(") || next.equals("|") ) {
+					fl.add("has to be called once.");
+
+				}
+			}
+		}
+		return fl;
+	}
+
+	private String decideSymbolOfBracket(String decided, int toIgnore) {
+		int totalCounter = 0;
+		boolean breakof = false;
+		for (int i = 0; i < decided.length(); i++) {
+			if (decided.charAt(i)=='(') {
+				if (toIgnore > 0) {
+					toIgnore--;
+					continue;
+				}
+				totalCounter++;
+				if (totalCounter > 0) breakof = true;
+			}
+			if (decided.charAt(i)==')') {
+				if (totalCounter-1 <0) continue;
+				totalCounter--;
+			}
+			if (totalCounter == 0 && breakof) {
+				//check if i+1 is empty
+				if (i+1 == decided.length()) {
+					decided = "has to be called once.";
 				} else {
-					if (symbols.contains(symbol)) {
-						TreeNode temp = new TreeNode(symbol);
-						root.addChild(temp);
-						String between = aggr.substring(aggr.indexOf("(")+1, aggr.lastIndexOf(")"));
-						stringToTree(temp, between);
-						return;
-					} else {
-						//TreeNode temp = new TreeNode("1");
-						//root.addChild(temp);
-						String[] parts = aggr.split("\\|");
-						TreeNode temp = new TreeNode("|");
-						root.addChild(temp);
-						for (String part: parts) {
-
-							stringToTree(temp, part);
-						}
-						return;
-						//stringToTree(temp, breakMeUp);
+					switch (decided.charAt(i+1)) {
+						case '*':
+							decided = "can be called arbitary times.";
+							break;
+						case '+':
+							decided = "has to be called atleast once.";
+							break;
+						case '?':
+							decided = "is optional to call.";
+							break;
+						default:
+							decided = "has to be called once.";
 
 					}
-
+					break;
 				}
-			} else {
-				if (breakMeUp.contains("|")) {
-					//addChilds
-					String symbol = aggr.substring(aggr.length() - 1);
-					if (symbols.contains(symbol)) {
-						TreeNode temp = new TreeNode(symbol);
-						root.addChild(temp);
-						String between = aggr.substring(aggr.indexOf("(")+1, aggr.lastIndexOf(")"));
-						stringToTree(temp, between);
-						return;
-					} else {
-						//TreeNode temp = new TreeNode("1");
-						//root.addChild(temp);
-						String[] parts = aggr.split("\\|");
-						TreeNode temp = new TreeNode("|");
-						root.addChild(temp);
-						for (String part: parts) {
-
-							stringToTree(temp, part);
-						}
-						return;
-						//stringToTree(temp, breakMeUp);
-
-					}
-
-				} else {
-					String[] parts = substringsBetween(breakMeUp, "(", ")");
-				}
-
-				//String[] parts = substringsBetween(breakMeUp, "(", ")");
-				System.out.println("pa");
-
 			}
 
 		}
+		return decided;
 	}
 
-	private List<String> parseOrderBetter(List<String> fo) {
+	private List<String> connectBrackets(List<String> fo) {
 		StringBuilder sb = new StringBuilder();
-		List<String> betterOrder = new ArrayList<>();
+		List<String> connected = new ArrayList<>();
 		for (int i = 0; i < fo.size(); i++) {
 			if (fo.get(i).contains("(")) {
 
@@ -750,17 +665,17 @@ public class Order {
 						break;
 					}
 					bracketcounter -= fo.get(j).chars().filter(ch -> ch == ')').count();
-					sb.append(fo.get(j));
+					sb.append(fo.get(j) +" ");
 				}
-				betterOrder.add(sb.toString());
+				connected.add(sb.toString());
 				i = j;
 
 
 			} else {
-				betterOrder.add(fo.get(i));
+				connected.add(fo.get(i));
 			}
 		}
-		return betterOrder;
+		return connected;
 	}
 }
 

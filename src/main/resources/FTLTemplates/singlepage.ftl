@@ -172,7 +172,7 @@
                 This section describes the order, in which the methods of this class can be called.
                 And the order represented as a state machine graph.
             </div>
-            <pre>
+            <pre style="overflow-x:auto;margin-left: -63px">
     <#list rule.order as order>
         ${order}
     </#list>
