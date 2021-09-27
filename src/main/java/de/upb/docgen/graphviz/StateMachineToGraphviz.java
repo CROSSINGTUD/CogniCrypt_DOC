@@ -56,7 +56,8 @@ public class StateMachineToGraphviz {
         stringBuilderToFile.append(States);
 
         for (TransitionEdge edge : edges) {
-            stringBuilderToFile.append(edge.getLeft().getName()).append(" -> ").append(edge.getRight().getName());
+            if (edge.getLeft().getName().equals("-1")) stringBuilderToFile.append("Start").append(" -> ").append(edge.getRight().getName());
+            else stringBuilderToFile.append(edge.getLeft().getName()).append(" -> ").append(edge.getRight().getName());
             stringBuilderToFile.append(" [label = ");
             stringBuilderToFile.append("\"");
             for (CrySLMethod label : edge.getLabel()) {
