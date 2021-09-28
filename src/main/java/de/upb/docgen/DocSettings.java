@@ -11,6 +11,8 @@ public class DocSettings {
     private boolean booleanA = true;
     private boolean booleanB = true;
     private boolean booleanC = true;
+    private boolean booleanD = true;
+    private boolean booleanE = true;
 
     private DocSettings() {
 
@@ -19,7 +21,6 @@ public class DocSettings {
     public static DocSettings getInstance() {
         return singletonSettings;
     }
-
 
     public String getFtlTemplatesPath() {
         return ftlTemplatesPath;
@@ -68,6 +69,22 @@ public class DocSettings {
         this.booleanC = booleanC;
     }
 
+    public boolean isBooleanD() {
+        return booleanD;
+    }
+
+    public void setBooleanD(boolean booleanD) {
+        this.booleanD = booleanD;
+    }
+
+    public boolean isBooleanE() {
+        return booleanE;
+    }
+
+    public void setBooleanE(boolean booleanE) {
+        this.booleanE = booleanE;
+    }
+
 
     public void parseSettingsFromCLI(String[] settings)  {
         int mandatorySettings = 0;
@@ -106,6 +123,12 @@ public class DocSettings {
                 case "--booleanc":
                     setBooleanC(false);
                     break;
+                case "--booleand":
+                    setBooleanD(false);
+                    break;
+                case "--booleane":
+                    setBooleanE(false);
+                    break;
                 default:
                     showErrorMessage(settings[i]);
                     System.exit(255);
@@ -139,7 +162,9 @@ public class DocSettings {
                 + "\nAdditional arguments that can be used are:\n"
                 + "--booleanA <To hide state machine graph>\n"
                 + "--booleanB <To hide help>\n"
-                + "--booleanC <not used atm>\n";
+                + "--booleanC <To turn of graphviz generation\n"
+                + "--booleanD <To hide dependecy trees>\n"
+                + "--booleanE <To hide CrySL rule\n";
         System.out.println(errorMessage);
     }
 
@@ -151,4 +176,6 @@ public class DocSettings {
     public void setLangTemplatesPath(String langTemplatesPath) {
         this.langTemplatesPath = langTemplatesPath;
     }
+
+
 }
