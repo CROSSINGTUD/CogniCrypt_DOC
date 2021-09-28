@@ -175,19 +175,6 @@
 
 <button class="collapsible">Overview</button>
     <div class="content">
-        <div class="spoiler" id="spoiler" style="display:none">
-            <p class="help">Help:
-                This document page consists of the following sections:
-                Order: Describes how the class has to be used <#if booleanA> and a state machine graph</#if>
-                Constraints: Describes all constraints of the class
-                Predicates: Describes the predicates the class provides
-                <#if booleanD>Requires Tree: Shows the required predicates tree
-                Ensures Tree: Shows the ensures predicates tree</#if>
-                <#if booleanE>CrySL Rule: Provides a link to the CrySL Github and the CrySL rule itself</#if>
-                On the top right is a button that collapses/expands all sections.
-                On the bottom right is a button to show descriptions for each section.
-            </p>
-        </div>
         <p class="pre" style="white-space: pre-line;">This document page for <b>${rule.composedClassName}</b> consists of the following sections:
             <b>Order</b>: Describes how the class has to be used <#if booleanA> and a state machine graph</#if>
             <b>Constraints</b>: Describes all constraints of the class
@@ -196,7 +183,7 @@
             <b>Ensures Tree</b>: Shows the ensures predicates tree</#if>
             <#if booleanE><b>CrySL Rule</b>: Provides a link to the CrySL Github and the CrySL rule itself</#if>
             On the top right is a <b>button</b> that collapses/expands all sections.
-            On the bottom right is a <b>button</b> to show descriptions for each section.
+            On the bottom right is a <b>button</b> to show descriptions for each section excluding this.
 
             ${rule.composedLink}
         </p>
