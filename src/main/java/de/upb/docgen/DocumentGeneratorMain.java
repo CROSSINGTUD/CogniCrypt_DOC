@@ -89,6 +89,15 @@ public class DocumentGeneratorMain {
 			composedRule.setInstanceOfConstraints(instance.getInstanceof(rule));
 			composedRule.setConstraintAndEncConstraints(enc.getConCryslandenc(rule));
 			composedRule.setForbiddenMethods(cef.getForbiddenMethods(rule));
+			//
+			List<String> allConstraints = new ArrayList<>(composedRule.getComparsionConstraints());
+			allConstraints.addAll(composedRule.getConstrainedValueConstraints());
+			allConstraints.addAll(composedRule.getNoCallToConstraints());
+			allConstraints.addAll(composedRule.getInstanceOfConstraints());
+			allConstraints.addAll(composedRule.getConstraintAndEncConstraints());
+			allConstraints.addAll(composedRule.getForbiddenMethods());
+			composedRule.setAllConstraints(allConstraints);
+
 			//Predicates Section
 			composedRule.setEnsuresThisPredicates(en.getEnsuresThis(rule));
 			composedRule.setEnsuresPredicates(entwo.getEnsures(rule));
@@ -112,7 +121,7 @@ public class DocumentGeneratorMain {
 		FreeMarkerWriter.setupFreeMarker(cfg);
 		FreeMarkerWriter.createCogniCryptLayout(cfg);
 		FreeMarkerWriter.createSidebar(composedRuleList, cfg);
-		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC());
+		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE());
 
 
 

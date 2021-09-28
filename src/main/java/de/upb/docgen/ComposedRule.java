@@ -23,11 +23,19 @@ public class ComposedRule {
     private List<String> EnsuresThisPredicates;
     private List<String> EnsuresPredicates;
     private List<String> NegatesPredicates;
+    private List<String> allConstraints;
     private String onlyRuleName;
     private String composedFullClass;
     private String composedLink;
 
 
+    public List<String> getAllConstraints() {
+        return allConstraints;
+    }
+
+    public void setAllConstraints(List<String> allConstraints) {
+        this.allConstraints = allConstraints;
+    }
 
     public String getOnlyRuleName() { return onlyRuleName;}
 
