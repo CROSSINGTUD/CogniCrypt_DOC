@@ -286,11 +286,13 @@
     <#macro reqTree treenode>
         <li>
             <span> <a href="${treenode.data}.html">${treenode.data}</a></span>
+            <#if treenode.children?has_content>
             <ul>
             <#list treenode.children as child>
             <@reqTree child />
             </#list>
             </ul>
+            </#if>
         </li>
     </#macro>
     <@reqTree requires />
@@ -313,11 +315,13 @@
     <#macro ensTree treenode>
         <li>
             <span> <a href="${treenode.data}.html">${treenode.data}</a> </span>
+            <#if treenode.children?has_content>
             <ul>
                 <#list treenode.children as child>
                     <@ensTree child />
                 </#list>
             </ul>
+            </#if>
         </li>
     </#macro>
     <@ensTree ensures />
