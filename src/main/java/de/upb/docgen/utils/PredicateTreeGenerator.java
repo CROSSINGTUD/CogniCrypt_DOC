@@ -12,6 +12,7 @@ public class PredicateTreeGenerator {
         for (String classname : mappedClassnamePredicates.keySet()) {
             TreeNode<String> root = new TreeNode<>(classname);
             for (String nextInChain : mappedClassnamePredicates.get(classname)) {
+                if (root.getData().equals(nextInChain)) continue;
                 TreeNode<String> child = new TreeNode<>(nextInChain);
                 //recursive to populate chain for child
                 populatePredicateTree(child, nextInChain, mappedClassnamePredicates);
@@ -31,17 +32,17 @@ public class PredicateTreeGenerator {
             if (firstChild.getData().equals(child)) {
                 return firstChild;
             }
-
             for (TreeNode children : firstChild.getChildren()) {
                 if (children.getData().equals(child)) {
                     return firstChild;
                 }
             }
-            firstChild.addChild(child);
-            populatePredicateTree(firstChild, child , mappedClassNamePredicates);
-            return firstChild;
+            TreeNode<String> childnode = new TreeNode<>(child);
+            firstChild.addChild(childnode);
+            populatePredicateTree(childnode, child , mappedClassNamePredicates);
+
         }
-        return null;
+        return firstChild;
 
     }
 }
