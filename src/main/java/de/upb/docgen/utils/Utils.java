@@ -69,7 +69,6 @@ public class Utils {
 	}
 
 	public static Map<String, Set<String>> getConstraintPredicateAndVarnameMap(List<ComposedRule> composedRuleList, Map<String, List<CrySLPredicate>> mapEnsures) {
-		//TODO:Refactor this
 		Map<String, Set<String>> RuleMappedToEnsures = new HashMap<>();
 		for (ComposedRule rule : composedRuleList) {
 			List<String> requiredPredicates = rule.getConstrainedPredicates();

@@ -127,7 +127,6 @@ public class Order {
 
 	// function to map labels with their corresponding method names
 	private static List<Event> processEvents(List<String> lines) {
-		//todo: under construction
 		List<Event> eventList = new ArrayList<>();
 		Map<String, String> methodIdentifiersmap = new LinkedHashMap<>();
 		Map<String, List<String>> labelIdentifiersmap = new LinkedHashMap<>();
