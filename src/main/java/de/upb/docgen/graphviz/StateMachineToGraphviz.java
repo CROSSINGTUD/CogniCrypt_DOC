@@ -65,7 +65,8 @@ public class StateMachineToGraphviz {
     public static String toGraphviz(StateMachineGraph smg) {
         StringBuilder stringBuilderToFile = new StringBuilder();
         stringBuilderToFile.append("digraph fsm {\n" +
-                "rankdir=LR;\n");
+                "rankdir=LR;\n"+
+                "graph[bgcolor=transparent]");
         List<TransitionEdge> edges = smg.getEdges();
         StringBuilder acceptingStates = new StringBuilder("node [shape = doublecircle];");
         String States = "node [shape = circle];\n";

@@ -150,13 +150,19 @@
             margin: 0 3px 0 5px;
         }
 
+        .help {
+            white-space: pre-line;
+            font-family: Montserrat,Helvetica Neue,Helvetica,Arial,sans-serif;
+            font-size: 12px;
+            border: 2px solid #555;
+            display: inline-block;
+
+        }
+
         .spoiler {
             font-family: Montserrat,Helvetica Neue,Helvetica,Arial,sans-serif;
             font-size: 14px;
         }
-
-
-
     </style>
 </head>
 
@@ -170,90 +176,89 @@
 <button class="collapsible">Overview</button>
     <div class="content">
         <div class="spoiler" id="spoiler" style="display:none">
-            This section explains the components of this documentation page.
+            <p class="help">Help:
+                This section explains the components of this documentation page.
+            </p>
         </div>
-        <p class="pre" style="white-space: pre-line;">
-        ${rule.composedFullClass}
+        <p class="pre" style="white-space: pre-line;">${rule.composedFullClass}
             ${rule.composedLink}
         </p>
     </div>
         <button class="collapsible">Order</button>
         <div class="content">
             <div class="spoiler" id="spoiler" style="display:none">
-                This section describes the order, in which the methods of this class can be called.
-                And the order represented as a state machine graph.
+                <p class="help">Help:
+                    This section describes the order, in which the methods of this class can be called.
+                    And the order represented as a state machine graph.
+                </p>
             </div>
-            <p class="pre">
-                ${rule.numberOfMethods}
+            <p class="pre">${rule.numberOfMethods}
             </p>
-            <pre style="overflow-x:auto;margin-left: -35px">
-
-    <#list rule.order as order>
-        ${order}
-    </#list>
+            <pre style="overflow-x:auto"><#list rule.order as order>${order}
+                </#list>
             </pre>
             <#if booleanA>
             <div class="fortree">
-            <img src="../dotFSMs/${rule.composedClassName}.svg">
+                <img src="../dotFSMs/${rule.composedClassName}.svg" style="background-color: #f1f1f1">
             </div>
             </#if>
-
         </div>
             <button class="collapsible">Constraints</button>
             <div class="content">
                 <div class="spoiler" id="spoiler" style="display:none">
-                    This section describes the parameters, which have constraints.
+                    <p class="help">Help:
+                        This section describes the parameters, which have constraints.
+                    </p>
                 </div>
-                <p class="pre" style="white-space: pre-line;">
-    <#list rule.valueConstraints as vc>
-        ${vc}
-    </#list>
-    <#list rule.constrainedPredicates as cp>
-        ${cp}
-    </#list>
-    <#list rule.comparsionConstraints as cc>
-        ${cc}
-    </#list>
-    <#list rule.constrainedValueConstraints as cvc>
-        ${cvc}
-    </#list>
-    <#list rule.noCallToConstraints as nctc>
-        ${nctc}
-    </#list>
-    <#list rule.instanceOfConstraints as ioc>
-        ${ioc}
-    </#list>
-    <#list rule.constraintAndEncConstraints as caec>
-        ${caec}
-    </#list>
+                <p class="pre" style="white-space: pre-line;"><#if rule.allConstraints?has_content>
+                        <#list rule.valueConstraints as vc>${vc}
+                        </#list>
+                        <#list rule.constrainedPredicates as cp>${cp}
+                        </#list>
+                        <#list rule.comparsionConstraints as cc>${cc}
+                        </#list>
+                        <#list rule.constrainedValueConstraints as cvc>${cvc}
+                        </#list>
+                        <#list rule.noCallToConstraints as nctc>${nctc}
+                        </#list>
+                        <#list rule.instanceOfConstraints as ioc>${ioc}
+                        </#list>
+                        <#list rule.constraintAndEncConstraints as caec>${caec}
+                        </#list>
+                        <#else>
+                        There are no Constraints for this class.
+                    </#if>
                     </p>
             </div>
         <button class="collapsible">Predicates</button>
         <div class="content">
             <div class="spoiler" id="spoiler" style="display:none">
-                This section describes what Predicates the class provides.
-            </div>
-            <p class="pre" style="white-space: pre-line;">
-    <#list rule.ensuresThisPredicates as etp>
-        ${etp}
-    </#list>
-    <#list rule.ensuresPredicates as ep>
-        ${ep}
-    </#list>
-    <#list rule.negatesPredicates as np>
-        ${np}
-    </#list>
+                <p class="help">Help:
+                    This section describes what Predicates the class provides.
                 </p>
-
+            </div>
+            <p class="pre" style="white-space: pre-line;"><#list rule.ensuresThisPredicates as etp>
+                    ${etp}
+                </#list>
+                <#list rule.ensuresPredicates as ep>
+                    ${ep}
+                </#list>
+                <#list rule.negatesPredicates as np>
+                    ${np}
+                </#list>
+            </p>
+<#if booleanD>
         </div>
         <button class="collapsible">Requires Tree</button>
         <div class="content">
             <div class="spoiler" id="spoiler" style="display:none">
-                This section displays the Requires Tree.
-                The root of the tree is always...
-                The direction to read is from top to bottom.
-                For e.g. ${rule.composedClassName} requires something from ...
-                Furthermore, it shows for the next depending classes aswell.
+                <p class="help">Help:
+                    This section displays the Requires Tree.
+                    The root of the tree is always the currently viewed class.
+                    The read direction is from top to bottom.
+                    For e.g. ${rule.composedClassName} requires something from ...
+                    Furthermore, it shows for the next depending classes aswell.
+                </p>
             </div>
             <div class="fortree">
         <ul class="tree">
@@ -271,19 +276,18 @@
     </ul>
             </div>
         </div>
-
-
         <button class="collapsible">Ensures Tree</button>
         <div class="content">
             <div class="spoiler" id="spoiler" style="display:none">
-                This section displays the Ensures Tree.
-                The root of the tree is always...
-                The direction to read is from top to bottom.
-                For e.g. ${rule.composedClassName} ensures something for ...
-                Furthermore, it shows for the next depending classes aswell.
+                <p class="help">Help:
+                    This section displays the Ensures Tree.
+                    The root of the tree is always...
+                    The direction to read is from top to bottom.
+                    For e.g. ${rule.composedClassName} ensures something for ...
+                    Furthermore, it shows for the next depending classes aswell.
+                </p>
             </div>
             <div class="fortree">
-
     <ul class="tree">
     <#macro ensTree treenode>
         <li>
@@ -295,30 +299,28 @@
             </ul>
         </li>
     </#macro>
-
     <@ensTree ensures />
     </ul>
             </div>
         </div>
-
-
+</#if>
+<#if booleanE>
 <button class="collapsible">CrySL Rule</button>
 <div class="content">
-    <p class="pre" style="white-space: pre-line;">
-        The CrySL rule on <a target="_blank" rel="noopener noreferrer" href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
+    <div class="spoiler" id="spoiler" style="display:none">
+        <p class="help">Help:
+            CrySLrule
+        </p>
+    </div>
+    <p class="pre" style="white-space: pre-line;">The CrySL rule on <a target="_blank" rel="noopener noreferrer" href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
     </p>
     <iframe src="${pathToRules}/${rule.onlyRuleName}.crysl" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:100%;width:100%;border:none;overflow:hidden;"></iframe>
-
-
 </div>
-
-
-
+</#if>
         <script>
             var coll = document.getElementsByClassName("collapsible");
             var i;
             window.toggleAll = 1;
-
 
             for (i = 0; i < coll.length; i++) {
                 coll[i].addEventListener("click", function() {
@@ -381,10 +383,6 @@
                     }
                 }
             }
-
-
-
         </script>
-
 </body>
 </html>
