@@ -105,6 +105,7 @@ public class Utils {
 		for (String className : keyMap.keySet()) {
 			List<Map<String,List<String>>> predicateList = new ArrayList<>();
 			for (CrySLPredicate predicate : keyMap.get(className)) {
+				if (predicate.isNegated()) continue;
 				String predicateName = predicate.getPredName();
 				List<ICrySLPredicateParameter> predicateParameters = predicate.getParameters();
 				Map<String,List<String>> keyToDependingMap = new HashMap<>();
@@ -112,7 +113,7 @@ public class Utils {
 					List<String> dependingClasses = new ArrayList<>();
 
 					for (CrySLPredicate dependingPredicates :  dependingMap.get(dependingClassName)) {
-						if (dependingPredicates.getPredName().equals(predicateName)) {
+						if (dependingPredicates.getPredName().equals(predicateName) && !dependingPredicates.isNegated()) {
 							if (dependingPredicates.getParameters().size() == predicateParameters.size()) {
 								dependingClasses.add(dependingClassName);
 
