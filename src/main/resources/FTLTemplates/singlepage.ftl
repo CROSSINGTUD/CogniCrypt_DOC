@@ -180,12 +180,12 @@
 <button class="collapsible">Overview</button>
 <div class="content">
     <p class="pre" style="white-space: pre-line;">This document page for <b>${rule.composedClassName}</b> consists of the following sections:
-        <b>Order</b>: Describes how the class has to be used <#if booleanA> and a state machine graph</#if>
-        <b>Constraints</b>: Describes all constraints of the class
-        <b>Predicates</b>: Describes the predicates the class provides
-        <#if booleanD><b>Requires Tree</b>: Shows the required predicates tree
-            <b>Ensures Tree</b>: Shows the ensures predicates tree</#if>
-        <#if booleanE><b>CrySL Rule</b>: Provides a link to the CrySL Github and the CrySL rule itself</#if>
+        <b>Order</b>: Describes how the class has to be used<#if booleanA> and a state machine graph</#if>.
+        <b>Constraints</b>: Describes all constraints of the class.
+        <b>Predicates</b>: Describes the predicates the class provides.
+        <#if booleanD><b>Requires Tree</b>: Shows the required predicates tree.
+            <b>Ensures Tree</b>: Shows the ensures predicates tree.</#if>
+        <#if booleanE><b>CrySL Rule</b>: Provides a link to the CrySL Github and the CrySL rule itself.</#if>
         On the top right is a <b>button</b> that collapses/expands all sections.
         On the bottom right is a <b>button</b> to show descriptions for each section excluding this.
 
@@ -270,7 +270,7 @@
                 The root of the tree is always the currently viewed class.
                 The read direction is from top to bottom.
                 For e.g. ${rule.composedClassName} requires something from ...
-                Furthermore, it shows for the next depending classes aswell.
+                Furthermore, it shows for the next depending classes as well.
             </p>
         </div>
         <div class="fortree">
@@ -296,10 +296,10 @@
         <div class="spoiler" id="spoiler" style="display:none">
             <p class="help">Help:
                 This section displays the Ensures Tree.
-                The root of the tree is always...
+                The root of the tree is always currently viewed class.
                 The direction to read is from top to bottom.
                 For e.g. ${rule.composedClassName} ensures something for ...
-                Furthermore, it shows for the next depending classes aswell.
+                Furthermore, it shows for the next depending classes as well.
             </p>
         </div>
         <div class="fortree">
