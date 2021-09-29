@@ -47,7 +47,7 @@ public class ConstraintCrySLInstanceof {
 		br.close();
 
 		 */
-		return strD + "\n\r";
+		return strD;
 	}
 
 	private static String getTemplateinstanceofRHS() throws IOException {
@@ -65,7 +65,7 @@ public class ConstraintCrySLInstanceof {
 		br.close();
 
 		 */
-		return strD + "\n\r";
+		return strD;
 	}
 
 	public ArrayList<String> getInstanceof(CrySLRule rule) throws IOException {

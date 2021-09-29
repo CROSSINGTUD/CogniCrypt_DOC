@@ -44,7 +44,7 @@ public class ConstraintCrySLandencmode {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	private static String getTemplateEncCallLHS2() throws IOException {
@@ -62,7 +62,7 @@ public class ConstraintCrySLandencmode {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	private static String getTemplateEncCallRHS() throws IOException {
@@ -80,7 +80,7 @@ public class ConstraintCrySLandencmode {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	private static String getTemplateEncNoCallLHS2() throws IOException {
@@ -98,7 +98,7 @@ public class ConstraintCrySLandencmode {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	private static String getTemplateEncNoCallRHS() throws IOException {
@@ -116,7 +116,7 @@ public class ConstraintCrySLandencmode {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	private static Map<String, String> getwordMap(CrySLRule rule) {

@@ -46,7 +46,7 @@ public class ConstraintCrySLVC {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	private static String getTemplateVCRHS() throws IOException {
@@ -64,7 +64,7 @@ public class ConstraintCrySLVC {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	public ArrayList<String> getConCryslVC(CrySLRule rule) throws IOException {
