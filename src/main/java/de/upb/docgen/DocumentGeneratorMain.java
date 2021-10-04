@@ -91,6 +91,8 @@ public class DocumentGeneratorMain {
 			composedRule.setForbiddenMethods(cef.getForbiddenMethods(rule));
 			//
 			List<String> allConstraints = new ArrayList<>(composedRule.getComparsionConstraints());
+			allConstraints.addAll(composedRule.getValueConstraints());
+			allConstraints.addAll(composedRule.getConstrainedPredicates());
 			allConstraints.addAll(composedRule.getConstrainedValueConstraints());
 			allConstraints.addAll(composedRule.getNoCallToConstraints());
 			allConstraints.addAll(composedRule.getInstanceOfConstraints());
