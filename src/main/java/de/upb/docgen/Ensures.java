@@ -128,7 +128,7 @@ public class Ensures {
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
 
-		List<CrySLPredicate> predsThisList = rule.getPredicates().stream().filter(e -> e.toString().contains("this"))
+		List<CrySLPredicate> predsThisList = rule.getPredicates().stream().filter(e -> e.toString().contains("this") && !e.toString().contains("!"))
 				.collect(Collectors.toList()); 
 
 		if (predsThisList.size() > 0) {
