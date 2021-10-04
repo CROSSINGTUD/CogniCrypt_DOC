@@ -34,7 +34,7 @@ public class Negates {
 	static PrintWriter out;
 
 	private static String getTemplateNegated() throws IOException {
-		String strD = Utils.getTemplatesTextString("Ensures-thisNA-verbnoun");
+		String strD = Utils.getTemplatesTextString("Negation");
 		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\Negation");
 		BufferedReader br = new BufferedReader(new FileReader(file));
@@ -48,7 +48,7 @@ public class Negates {
 		br.close();
 
 		 */
-		return strD + "\n";
+		return strD;
 	}
 
 	public ArrayList<String> getNegates(CrySLRule rule) throws IOException {
@@ -74,7 +74,7 @@ public class Negates {
 		String negjoined = "";
 
 		List<CrySLPredicate> predNegatesList = rule.getPredicates().stream()
-				.filter(e -> !e.toString().contains("this") && e.toString().contains("!")).collect(Collectors.toList());
+				.filter(e -> e.toString().contains("this") && e.toString().contains("!")).collect(Collectors.toList());
 
 		if (predNegatesList.size() > 0) {
 
