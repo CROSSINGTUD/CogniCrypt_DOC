@@ -1,6 +1,7 @@
 package de.upb.docgen.utils;
 
 import crypto.interfaces.ICrySLPredicateParameter;
+import crypto.rules.CrySLCondPredicate;
 import crypto.rules.CrySLPredicate;
 import crypto.rules.StateNode;
 import crypto.rules.TransitionEdge;
@@ -109,18 +110,24 @@ public class Utils {
 				List<ICrySLPredicateParameter> predicateParameters = predicate.getParameters();
 				Map<String,List<String>> keyToDependingMap = new HashMap<>();
 				for (String dependingClassName: dependingMap.keySet() ) {
-					List<String> dependingClasses = new ArrayList<>();
+					Set<String> dependingClasses = new LinkedHashSet<>();
 
 					for (CrySLPredicate dependingPredicates :  dependingMap.get(dependingClassName)) {
-						if (dependingPredicates.getPredName().equals(predicateName) && !dependingPredicates.isNegated()) {
+						if (dependingPredicates.getPredName().equals(predicateName) && !(dependingPredicates.isNegated() && !(dependingPredicates instanceof CrySLCondPredicate))) {
 							if (dependingPredicates.getParameters().size() == predicateParameters.size()) {
 								dependingClasses.add(dependingClassName);
 
 							}
 						}
 					}
+
 					if (dependingClasses.size() != 0 ) {
-						keyToDependingMap.put(predicateName, dependingClasses);
+						if (keyToDependingMap.containsKey(predicateName)) {
+							keyToDependingMap.get(predicateName).addAll(dependingClasses);
+						} else {
+							List<String> dc = new ArrayList<>(dependingClasses);
+							keyToDependingMap.put(predicateName, dc);
+						}
 					}
 				}
 				predicateList.add(keyToDependingMap);
