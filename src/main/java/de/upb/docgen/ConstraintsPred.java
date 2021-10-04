@@ -326,7 +326,7 @@ public class ConstraintsPred {
 								valuesMap.put("nouns", nouns);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sOne);
-								composedConstraintsPredicates.add(resolvedString.trim());
+								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
 							
 							} else {
@@ -339,7 +339,7 @@ public class ConstraintsPred {
 								valuesMap.put("nouns", nouns);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sOne);
-								composedConstraintsPredicates.add(resolvedString.trim());
+								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
 							}
 
@@ -354,7 +354,7 @@ public class ConstraintsPred {
 								valuesMap.put("var3", var3);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sTwo);
-								composedConstraintsPredicates.add(resolvedString.trim());
+								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
 
 							} else {
@@ -367,7 +367,7 @@ public class ConstraintsPred {
 								valuesMap.put("var3", var3);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sTwo);
-								composedConstraintsPredicates.add(resolvedString.trim());
+								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
 							}
 
@@ -381,7 +381,7 @@ public class ConstraintsPred {
 								valuesMap.put("methodName", mname);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sThree);
-								composedConstraintsPredicates.add(resolvedString.trim());
+								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
 
 							} else {
@@ -393,7 +393,7 @@ public class ConstraintsPred {
 								valuesMap.put("methodName", mname);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sThree);
-								composedConstraintsPredicates.add(resolvedString.trim());
+								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
 							}
 
@@ -418,7 +418,7 @@ public class ConstraintsPred {
 							valuesMap.put("var1", var1);
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(sFour);
-							composedConstraintsPredicates.add(resolvedString.trim());
+							composedConstraintsPredicates.add(resolvedString);
 							//out.println(resolvedString);
 
 						} else {
@@ -430,7 +430,7 @@ public class ConstraintsPred {
 							valuesMap.put("var1", var1);
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(sFour);
-							composedConstraintsPredicates.add(resolvedString.trim());
+							composedConstraintsPredicates.add(resolvedString);
 							//out.println(resolvedString);
 						}
 					}
