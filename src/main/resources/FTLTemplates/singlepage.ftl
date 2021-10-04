@@ -224,6 +224,8 @@
         </p>
     </div>
     <p class="pre" style="white-space: pre-line;"><#if rule.allConstraints?has_content>
+            <#list rule.forbiddenMethods as fm>${fm}
+            </#list>
             <#list rule.valueConstraints as vc>${vc}
             </#list>
             <#list rule.constrainedPredicates as cp>${cp}
