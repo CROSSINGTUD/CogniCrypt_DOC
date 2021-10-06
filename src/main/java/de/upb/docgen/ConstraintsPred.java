@@ -310,8 +310,17 @@ public class ConstraintsPred {
 							}
 						}
 						//this links the right class which ensures something for the current rule
-						nouns = "<a href=\"" + ensures +".html\">" + nouns + "</a>";
+						//nouns = "<a href=\"" + ensures +".html\">" + nouns + "</a>";
+						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+							if (maps.containsKey(var1)) {
+								nouns = "<span class=\"tooltip\">" + nouns;
+								String tooltiptext = "<span class=\"tooltiptext\">The following classes provide this predicate:\n";
+								String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), var1);
+								String end = "</span></span>";
 
+								nouns += tooltiptext + classesLinks + end;
+							}
+						}
 
 
 						if (verb.endsWith("ed")) {
@@ -400,7 +409,8 @@ public class ConstraintsPred {
 						}
 
 					} else {
-						List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
+						/*
+
 						String ensures = "";
 						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
 							if (maps.containsKey(var1)) {
@@ -408,7 +418,21 @@ public class ConstraintsPred {
 							}
 						}
 
-						var1 = "<a href=\"" + ensures +".html\">" + var1 + "</a>";
+						 */
+						List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
+						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+							if (maps.containsKey(var1)) {
+								String classToLink = var1;
+								var1 = "<span class=\"tooltip\">" + var1;
+								String tooltiptext = "<span class=\"tooltiptext\">The following classes provide this predicate:\n";
+								String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), classToLink);
+								String end = "</span></span>";
+
+								var1 += tooltiptext + classesLinks + end;
+							}
+						}
+
+						//var1 = "<a href=\"" + ensures +".html\">" + var1 + "</a>";
 						if (msplit.get(0).equals(classnamecheck)) {
 
 							char[] sFour = getTemplatePred4Con();
@@ -439,5 +463,17 @@ public class ConstraintsPred {
 		}
 		//out.close();
 		return composedConstraintsPredicates;
+	}
+
+	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
+		StringBuilder sb = new StringBuilder();
+		for (Map<String, List <String>> map : maps) {
+			if (map.containsKey(var1)) {
+				for (String className : map.get(var1)) {
+					sb.append("<a href=\"").append(className).append(".html\">").append(className).append("</a>\n");
+				}
+			}
+		}
+		return sb.toString();
 	}
 }

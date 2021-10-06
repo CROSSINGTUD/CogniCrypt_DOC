@@ -163,6 +163,28 @@
             font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 14px;
         }
+
+        .tooltip {
+            color: #0000EE;
+        }
+
+        .tooltip .tooltiptext {
+            display: inline-block;
+            visibility: hidden;
+            color: black;
+            border-radius: 2px;
+            position: absolute;
+            border:2px solid black;
+            background-color:#f1f1f1;
+            white-space: pre-line
+
+        }
+
+        .tooltip:hover .tooltiptext {
+            white-space: pre-line;
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -223,7 +245,7 @@
             And the parameters that require a predicate from another class.
         </p>
     </div>
-    <p class="pre" style="white-space: pre-line;overflow-wrap: break-word;"><#if rule.allConstraints?has_content>
+    <p class="pre" style="white-space: pre-line;overflow-wrap: break-word"><#if rule.allConstraints?has_content>
             <#list rule.forbiddenMethods as fm>${fm}
             </#list>
             <#list rule.valueConstraints as vc>${vc}
