@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>CogniCryptDOC</title>
 </head>
 <frameset rows="80px,*">
     <frame src="header.html">

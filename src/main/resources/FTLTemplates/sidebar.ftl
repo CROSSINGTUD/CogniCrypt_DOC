@@ -3,45 +3,43 @@
     <title>${title}</title>
     <base target="content">
     <style>
-    ul {
-    list-style-type: none;
-    padding: 0;
-    border: 1px hidden #ddd;
-    }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            border: 1px hidden #ddd;
+            margin-top: 0;
+        }
 
-    ul li {
-    padding: 8px 0px;
-    border-bottom: 1px hidden #ddd;
-    }
+        ul li {
+            padding: 8px 0px;
+            border-bottom: 1px hidden #ddd;
+        }
 
-    ul li:last-child {
-    border-bottom: none
-    }
+        ul li:last-child {
+            border-bottom: none
+        }
 
-    input {
-        width: 100%;
-        padding: 0;
-    }
-    a {
-        padding: 0;
-        font-family: Montserrat,Helvetica Neue,Helvetica,Arial,sans-serif;
-        font-size: 14px;
-    }
+        input {
+            width: 100%;
+            padding: 0;
+        }
+
+        a {
+            padding: 0;
+            font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+        }
     </style>
-
-
-
-
 </head>
 
 <body style="background-color: #f1f1f1">
-<input type="text" id="search" onkeyup="myFunction()" placeholder="Search Classes" title="Type in a class">
+<input type="text" id="search" onkeyup="myFunction()" placeholder="Search Classes" title="Type in a class"
+       style="font-size: 16px">
 <ul id="classes">
     <#list rules as rule>
         <li><a href="composedRules/${rule.composedClassName}.html">${rule.composedClassName}</a></li>
     </#list>
 </ul>
-
 
 
 <script>
