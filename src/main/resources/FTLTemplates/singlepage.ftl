@@ -199,7 +199,7 @@
             This section describes the order, in which the methods of this class can be called.
             And the order represented as a state machine graph.
             The first node is always the Start node.
-            The edge labels are the neccessary methods to transition from one node to the next.
+            The edge labels are the necessary methods to transition from one node to the next.
             Double circled nodes are accepting states. That means if this node is reached the class was called in a
             secure order.
         </p>
@@ -223,7 +223,7 @@
             And the parameters that require a predicate from another class.
         </p>
     </div>
-    <p class="pre" style="white-space: pre-line;"><#if rule.allConstraints?has_content>
+    <p class="pre" style="white-space: pre-line;overflow-wrap: break-word;"><#if rule.allConstraints?has_content>
             <#list rule.forbiddenMethods as fm>${fm}
             </#list>
             <#list rule.valueConstraints as vc>${vc}
