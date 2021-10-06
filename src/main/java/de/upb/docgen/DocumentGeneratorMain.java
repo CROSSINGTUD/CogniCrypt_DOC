@@ -101,8 +101,8 @@ public class DocumentGeneratorMain {
 			composedRule.setAllConstraints(allConstraints);
 
 			//Predicates Section
-			composedRule.setEnsuresThisPredicates(en.getEnsuresThis(rule));
-			composedRule.setEnsuresPredicates(entwo.getEnsures(rule));
+			composedRule.setEnsuresThisPredicates(en.getEnsuresThis(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
+			composedRule.setEnsuresPredicates(entwo.getEnsures(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
 			composedRule.setNegatesPredicates(neg.getNegates(rule));
 			composedRuleList.add(composedRule);
 		}

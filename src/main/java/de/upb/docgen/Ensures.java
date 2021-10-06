@@ -107,7 +107,7 @@ public class Ensures {
 		return strDCon;
 	}
 
-	public ArrayList<String> getEnsuresThis(CrySLRule rule) throws IOException {
+	public ArrayList<String> getEnsuresThis(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
@@ -193,6 +193,7 @@ public class Ensures {
 								verb = verbOrNounList.get(0);
 								String verbedge = getTemplateverbedge();
 								Map<String, String> valuesMap = new HashMap<String, String>();
+								verb = toHoverLink(rule, stringListMap, verb);
 								valuesMap.put("verb", verb);
 								valuesMap.put("edgeName", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
@@ -205,6 +206,8 @@ public class Ensures {
 								verb = verbOrNounList.get(0);
 								noun = verbOrNounList.subList(1, verbOrNounList.size());
 								String nouns = String.join(" ", noun);
+
+								nouns = toHoverLink(rule, stringListMap, nouns, predTNameStr);
 
 								if (msplit.get(0).contains(classnamecheck)) {
 
@@ -249,7 +252,7 @@ public class Ensures {
 						String verbnoun = getTemplateverbnoun();
 						Map<String, String> valuesMap = new HashMap<String, String>();
 						valuesMap.put("verb", verb);
-						valuesMap.put("noun", nouns);
+						valuesMap.put("noun", toHoverLink(rule, stringListMap, nouns, predTNameStr));
 
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(verbnoun);
@@ -262,5 +265,49 @@ public class Ensures {
 		}
 		//out.close();
 		return composedEnsures;
+	}
+
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word, String predicate) {
+		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
+		for (Map<String, List<String>> maps : requiresOfClasses) {
+			if (maps.containsKey(predicate)) {
+				String classToLink = word;
+				word = "<span class=\"tooltip\">" + word;
+				String tooltiptext = "<span class=\"tooltiptext\">The following classes can require this predicate:\n";
+				String classesLinks = htmlLinksClass(stringListMap.get(rule.getClassName()), predicate);
+				String end = "</span></span>";
+
+				word += tooltiptext + classesLinks + end;
+			}
+		}
+		return word;
+	}
+
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word) {
+		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
+		for (Map<String, List<String>> maps : requiresOfClasses) {
+			if (maps.containsKey(word)) {
+				String classToLink = word;
+				word = "<span class=\"tooltip\">" + word;
+				String tooltiptext = "<span class=\"tooltiptext\">The following classes can require this predicate:\n";
+				String classesLinks = htmlLinksClass(stringListMap.get(rule.getClassName()), classToLink);
+				String end = "</span></span>";
+
+				word += tooltiptext + classesLinks + end;
+			}
+		}
+		return word;
+	}
+
+	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
+		StringBuilder sb = new StringBuilder();
+		for (Map<String, List <String>> map : maps) {
+			if (map.containsKey(var1)) {
+				for (String className : map.get(var1)) {
+					sb.append("<a href=\"").append(className).append(".html\">").append(className).append("</a>\n");
+				}
+			}
+		}
+		return sb.toString();
 	}
 }
