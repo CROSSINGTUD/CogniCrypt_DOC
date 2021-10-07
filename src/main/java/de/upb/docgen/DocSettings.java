@@ -13,6 +13,7 @@ public class DocSettings {
     private boolean booleanC = true;
     private boolean booleanD = true;
     private boolean booleanE = true;
+    private boolean booleanF = true;
 
     private DocSettings() {
 
@@ -129,6 +130,9 @@ public class DocSettings {
                 case "--booleane":
                     setBooleanE(false);
                     break;
+                case "--booleanf":
+                    setBooleanF(false);
+                    break;
                 default:
                     showErrorMessage(settings[i]);
                     System.exit(255);
@@ -147,7 +151,7 @@ public class DocSettings {
                 " 		--rulesDir <absolute_path_to_crysl_rules> \\\r\n" +
                 " 		--FTLtemplatesPath <absolute_path_to_ftl_templates> \\\r\n" +
                 " 		--LANGtemplatesPath <absolute_path_to_lang_templates> \\\r\n" +
-                "       --reportPath <absolute_application_path>\n";
+                "       --reportPath <absolute_path_to_generate_documentation>\n";
         System.out.println(errorMessage);
     }
 
@@ -158,13 +162,14 @@ public class DocSettings {
                 " 		--rulesDir <absolute_path_to_crysl_rules> \\\r\n" +
                 " 		--templatesPath <absolute_path_to_ftl_templates> \\\r\n" +
                 " 		--LANGtemplatesPath <absolute_path_to_lang_templates> \\\r\n" +
-                "       --reportPath <absolute_application_path>\n"
+                "       --reportPath <absolute_path_to_generate_documentation>\n"
                 + "\nAdditional arguments that can be used are:\n"
                 + "--booleanA <To hide state machine graph>\n"
                 + "--booleanB <To hide help>\n"
                 + "--booleanC <To turn of graphviz generation\n"
                 + "--booleanD <To hide dependecy trees>\n"
-                + "--booleanE <To hide CrySL rule\n";
+                + "--booleanE <To hide CrySL rule\n"
+                + "--booleanF <To copy crysl rules into documentation folder>\n";
         System.out.println(errorMessage);
     }
 
@@ -178,4 +183,11 @@ public class DocSettings {
     }
 
 
+    public boolean isBooleanF() {
+        return booleanF;
+    }
+
+    public void setBooleanF(boolean booleanF) {
+        this.booleanF = booleanF;
+    }
 }

@@ -41,10 +41,11 @@ public class FreeMarkerWriter {
      * @param a
      * @param b
      * @param c
+     * @param f
      * @throws IOException
      * @throws TemplateException
      */
-    public static void createSinglePage(List<ComposedRule> composedRuleList, Configuration cfg , Map<String, TreeNode<String>> reqToEns, Map<String, TreeNode<String>> ensToReq, boolean a, boolean b, boolean c , boolean d , boolean e) throws IOException, TemplateException {
+    public static void createSinglePage(List<ComposedRule> composedRuleList, Configuration cfg, Map<String, TreeNode<String>> reqToEns, Map<String, TreeNode<String>> ensToReq, boolean a, boolean b, boolean c, boolean d, boolean e, boolean f) throws IOException, TemplateException {
         for (ComposedRule rule : composedRuleList) {
             Map<String, Object> input = new HashMap<String, Object>();
             input.put("title", "class");
@@ -62,6 +63,7 @@ public class FreeMarkerWriter {
             input.put("booleanC", c);
             input.put("booleanD", d);
             input.put("booleanE", e);
+            input.put("booleanF", f);
 
             // 2.2. Get the template
             Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+"singlepage.ftl"));

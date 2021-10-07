@@ -13,6 +13,7 @@ import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
 import de.upb.docgen.writer.FreeMarkerWriter;
 import freemarker.template.*;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.plaf.nimbus.State;
 
@@ -123,7 +124,17 @@ public class DocumentGeneratorMain {
 		FreeMarkerWriter.setupFreeMarker(cfg);
 		FreeMarkerWriter.createCogniCryptLayout(cfg);
 		FreeMarkerWriter.createSidebar(composedRuleList, cfg);
-		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE());
+		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE() , docSettings.isBooleanF());
+		//copy CryslRulesFolder into generated Cognicrypt folder
+		if (!docSettings.isBooleanF()) {
+			File source = new File(docSettings.getRulesetPathDir());
+			File dest = new File(docSettings.getReportDirectory() + File.separator + "cryslRules");
+			try {
+				FileUtils.copyDirectory(source, dest);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
 
 
