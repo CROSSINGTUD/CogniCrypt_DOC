@@ -33,8 +33,9 @@
 </head>
 
 <body style="background-color: #f1f1f1">
+<div><a href="frontpage.html" style="font-size:20px">CogniCrypt<sub>DOC</sub></a></div>
 <input type="text" id="search" onkeyup="myFunction()" placeholder="Search Classes" title="Type in a class"
-       style="font-size: 16px">
+       style="font-size: 16px; margin-top: 10px">
 <ul id="classes">
     <#list rules as rule>
         <li><a href="composedRules/${rule.composedClassName}.html">${rule.composedClassName}</a></li>

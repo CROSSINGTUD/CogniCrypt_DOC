@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <title>CogniCryptDOC</title>
 </head>
-<frameset rows="80px,*">
-    <frame src="header.html">
-    <frameset cols="20%,*">
+    <frameset cols="300px,*">
         <frame src="navbar.html">
         <frame name="content" src="frontpage.html">
     </frameset>
-</frameset>
 <body>
 
 </body>

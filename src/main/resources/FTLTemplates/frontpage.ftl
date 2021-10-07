@@ -11,7 +11,7 @@
     }
 </style>
 <body style="background-color: #f1f1f1">
-<p>This documentation was created by CogniCryptDOC</p>
+<p>This documentation was created by CogniCrypt<sub>DOC</sub> based on CrySL rules</p>
 <p>The documentation complements the official <a target="_blank" rel="noopener noreferrer" href="https://docs.oracle.com/javase/8/docs/api/java/security/package-summary.html">JavaDoc</a></p>
 <p>Other Use Cases of CogniCrypt</p>
 <li>
