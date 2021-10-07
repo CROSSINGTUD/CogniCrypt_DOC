@@ -3,6 +3,10 @@
     <title>${title}</title>
     <base target="content">
     <style>
+        * {
+            font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+        }
+
         ul {
             list-style-type: none;
             padding: 0;
@@ -26,7 +30,6 @@
 
         a {
             padding: 0;
-            font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 14px;
         }
     </style>

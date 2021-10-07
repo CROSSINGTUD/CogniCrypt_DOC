@@ -2,6 +2,11 @@
 <head>
     <title>${title}</title>
     <style>
+
+        * {
+            font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+        }
+
         .tree,
         .tree ul,
         .tree li {
@@ -126,12 +131,10 @@
 
         .pre {
             width: 100%;
-            font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 14px;
         }
 
         pre {
-            font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 14px;
         }
 
@@ -152,7 +155,6 @@
 
         .help {
             white-space: pre-line;
-            font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 12px;
             border: 2px solid #555;
             display: inline-block;
@@ -160,7 +162,6 @@
         }
 
         .spoiler {
-            font-family: Montserrat, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 14px;
         }
 

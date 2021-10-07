@@ -5,6 +5,11 @@
     <title>Title</title>
 </head>
 <style>
+
+    * {
+        font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+    }
+
     .section {
         border-bottom-width: 1px;
         border-bottom-style: solid;
