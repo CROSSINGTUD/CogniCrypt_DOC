@@ -60,7 +60,7 @@
         <p>Want to check, test or generate secure code automatically? Find other use cases based on CrySL rules!</p>
         <ul>
             <li><a target="_blank" rel="noopener noreferrer" href="https://github.com/eclipse-cognicrypt/CogniCrypt">CogniCrypt<sub>GEN</sub></a>:
-                Generate Secure Code based.
+                Generate Secure Code.
             </li>
             <li><a target="_blank" rel="noopener noreferrer" href="https://github.com/CROSSINGTUD/CryptoAnalysis">CogniCrypt<sub>SAST</sub></a>:
                 Analyse Java code for cryptographic misuses.
