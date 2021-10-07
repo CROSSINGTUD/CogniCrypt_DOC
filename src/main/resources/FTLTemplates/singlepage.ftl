@@ -324,6 +324,9 @@
                 The read direction is from top to bottom.
                 For e.g. ${rule.composedClassName} can require something from ...
                 Furthermore, it shows for the next depending classes as well.
+                There are two special cases:
+                1. The class does not require a predicate. Therefore, there is only the classname itself.
+                2. The class provides a predicate for itself. This is not displayed due to the tree nature.
             </p>
         </div>
         <div class="fortree">
@@ -353,6 +356,8 @@
                 The direction to read is from top to bottom.
                 For e.g. ${rule.composedClassName} can ensure something for ...
                 Furthermore, it shows for the next depending classes as well.
+                There is one special case:
+                1. The class ensures a predicate for itself. This is not displayed due to the tree nature.
             </p>
         </div>
         <div class="fortree">
