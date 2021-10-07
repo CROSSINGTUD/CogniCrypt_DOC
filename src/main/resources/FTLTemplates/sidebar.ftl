@@ -16,7 +16,7 @@
 
         ul li {
             padding: 8px 0px;
-            border-bottom: 1px hidden #ddd;
+            border-bottom: 1px solid #ddd;
         }
 
         ul li:last-child {
