@@ -174,8 +174,8 @@
             color: black;
             border-radius: 2px;
             position: absolute;
-            border:2px solid black;
-            background-color:#f1f1f1;
+            border: 2px solid black;
+            background-color: #f1f1f1;
             white-space: pre-line
 
         }
@@ -201,16 +201,11 @@
 
 <button class="collapsible">Overview</button>
 <div class="content">
-    <p class="pre" style="white-space: pre-line;">This document page for <b>${rule.composedClassName}</b> consists of the following sections:
-        <b>Order</b>: Describes how the class has to be used<#if booleanA> and a state machine graph</#if>.
-        <b>Constraints</b>: Describes all constraints of the class.
-        <b>Predicates</b>: Describes the predicates the class provides.
-        <#if booleanD><b>Requires Tree</b>: Shows the required predicates tree.
-            <b>Ensures Tree</b>: Shows the ensures predicates tree.</#if>
-        <#if booleanE><b>CrySL Rule</b>: Provides a link to the CrySL Github and the CrySL rule itself.</#if>
-        On the top right is a <b>button</b> that collapses/expands all sections.
-        On the bottom right is a <b>button</b> to show descriptions for each section excluding this.
-
+    <div class="spoiler" id="spoiler" style="display:none">
+        <p class="help"> Help is now displayed for the other sections!
+        </p>
+    </div>
+    <p class="pre" style="white-space: pre-line;">This page documents <b>${rule.composedClassName}</b>:
         ${rule.composedLink}
     </p>
 </div>
@@ -218,12 +213,7 @@
 <div class="content">
     <div class="spoiler" id="spoiler" style="display:none">
         <p class="help">Help:
-            This section describes the order, in which the methods of this class can be called.
-            And the order represented as a state machine graph.
-            The first node is always the Start node.
-            The edge labels are the necessary methods to transition from one node to the next.
-            Double circled nodes are accepting states. That means if this node is reached the class was called in a
-            secure order.
+            This section describes the secure order call sequences of ${rule.composedClassName}.
         </p>
     </div>
     <p class="pre">${rule.numberOfMethods}
@@ -232,6 +222,16 @@
         </#list>
             </pre>
     <#if booleanA>
+        <div class="spoiler" id="spoiler" style="display:none">
+            <p class="help">Help:
+                This section represents the order of the class as a state machine graph.
+                The most left node is always the Start node.
+                Double circled nodes are accepting states.
+                The edge labels are the necessary methods to transition from one node to the next.
+                The graph only shows the secure paths.
+                A class is not securely used if method calls deviate from the displayed order.
+            </p>
+        </div>
         <div class="fortree">
             <img src="../dotFSMs/${rule.composedClassName}.svg" style="background-color: #f1f1f1">
         </div>
@@ -241,8 +241,11 @@
 <div class="content">
     <div class="spoiler" id="spoiler" style="display:none">
         <p class="help">Help:
-            This section describes the parameters, which have constraints.
-            And the parameters that require a predicate from another class.
+            This section describes the parameters, which have constraints or that require a predicate from another
+            class.
+            Predicates are a construct from CrySL rules, and a class can provide and require predicates from other classes.
+            A class can provide predicates after specific method calls or those seen in the Order section.
+            If ${rule.composedClassName} requires a predicate from another class and the predicate is not provided, ${rule.composedClassName} is not used securely.
         </p>
     </div>
     <p class="pre" style="white-space: pre-line;overflow-wrap: break-word"><#if rule.allConstraints?has_content>
@@ -271,17 +274,16 @@
 <div class="content">
     <div class="spoiler" id="spoiler" style="display:none">
         <p class="help">Help:
-            This section describes what Predicates the class provides.
+            This section describes which Predicates the class provides.
+            Predicates are a construct from CrySL rules, and a class can provide and require predicates from other classes.
+            A class provides predicates after specific method calls or after the method calls seen in the Order section.
         </p>
     </div>
-    <p class="pre" style="white-space: pre-line;"><#list rule.ensuresThisPredicates as etp>
-            ${etp}
+    <p class="pre" style="white-space: pre-line;"><#list rule.ensuresThisPredicates as etp>${etp}
         </#list>
-        <#list rule.ensuresPredicates as ep>
-            ${ep}
+        <#list rule.ensuresPredicates as ep>${ep}
         </#list>
-        <#list rule.negatesPredicates as np>
-            ${np}
+        <#list rule.negatesPredicates as np>${np}
         </#list>
     </p>
     <#if booleanD>
@@ -291,9 +293,9 @@
         <div class="spoiler" id="spoiler" style="display:none">
             <p class="help">Help:
                 This section displays the Requires Tree.
-                The root of the tree is always the currently viewed class.
+                It displays the required predicate dependencies starting from ${rule.composedClassName}
                 The read direction is from top to bottom.
-                For e.g. ${rule.composedClassName} requires something from ...
+                For e.g. ${rule.composedClassName} can require something from ...
                 Furthermore, it shows for the next depending classes as well.
             </p>
         </div>
@@ -320,9 +322,9 @@
         <div class="spoiler" id="spoiler" style="display:none">
             <p class="help">Help:
                 This section displays the Ensures Tree.
-                The root of the tree is always currently viewed class.
+                It displays the ensured predicate dependencies starting from ${rule.composedClassName}
                 The direction to read is from top to bottom.
-                For e.g. ${rule.composedClassName} ensures something for ...
+                For e.g. ${rule.composedClassName} can ensure something for ...
                 Furthermore, it shows for the next depending classes as well.
             </p>
         </div>
@@ -350,15 +352,32 @@
     <div class="content">
         <div class="spoiler" id="spoiler" style="display:none">
             <p class="help">Help:
-                CrySLrule
+                A CrySL rule consists always of the following sections:
+                <b>SPEC</b> defines the fully qualified name.
+                <b>OBJECTS</b> defines variable names and their type.
+                <b>EVENTS</b> defines all methods that contribute to call the class secure.
+                <b>ENSURES</b> defines what predicates the class provides.
+                The following sections are optional:
+                <b>FORBIDDEN</b> defines which methods are not to be called and what method instead.
+                <b>REQUIRES</b> defines what predicates are necessary for the class.
+                <b>NEGATES</b> defines predicates that are no longer ensured after using the class.
+                There are several functions to allow easier specification:
+                The first three are used to extract algorithm/mode/padding from transformation String.
+                <b>alg(transformation)</b> extract algorithm from .getInstance call.
+                <b>mode(transformation)</b> extract mode from .getInstance call.
+                <b>padding(transformation)</b> extract mode from .getInstance call.
+                <b>length(object)</b> retrieve length of object.
+                <b>nevertypeof(object, type)</b> forbid object to be type.
+                <b>callTo(method)</b> require call to method.
+                <b>noCallTo(method)</b> forbid call to method.
             </p>
         </div>
         <p class="pre" style="white-space: pre-line;">The CrySL rule on <a target="_blank" rel="noopener noreferrer"
                                                                            href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
         </p>
         <iframe src=<#if booleanF>"${pathToRules}/${rule.onlyRuleName}.crysl"<#else>"../cryslRules/${rule.onlyRuleName}.crysl"</#if>
-                onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));'
-                style="height:100%;width:100%;border:none;overflow:hidden;"></iframe>
+        onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));'
+        style="height:100%;width:100%;border:none;overflow:hidden;"></iframe>
     </div>
 </#if>
 <script>
