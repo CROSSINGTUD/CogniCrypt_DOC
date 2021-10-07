@@ -45,7 +45,7 @@
             <li><b>Predicates</b> displays what predicates the class provides.</li>
             <li><b>Requires Tree</b> displays the possible required predicate dependencies starting from the class.</li>
             <li><b>Ensures Tree</b> displays the possible ensuring predicate dependencies starting from the class.</li>
-            <li><b>CrySL Rule</b> displays the possible ensuring predicate dependencies starting from the class.</li>
+            <li><b>CrySL Rule</b> displays the CrySL rule itself.</li>
         </ul>
     </div>
     <div class="section">
