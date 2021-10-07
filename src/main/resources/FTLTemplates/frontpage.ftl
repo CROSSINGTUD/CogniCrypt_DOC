@@ -50,19 +50,24 @@
     </div>
     <div class="section">
         <h2>Other Helpful Resources</h2>
-        <p>Not finding the information you're looking for? Have a look at these!</p>
+        <p>Not finding the information you're looking for? Have a look here!</p>
         <ul>
             <li>The official <a target="_blank" rel="noopener noreferrer"
                                    href="https://docs.oracle.com/javase/8/docs/api/java/security/package-summary.html">JavaDoc</a></li>
+            <li>The official <a target="_blank" rel="noopener noreferrer"
+                                    href="https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html">JCA Reference Guide</a> </li>
+            </ul>
+        <p>Want to check, test or generate secure code automatically? Find other use cases based on CrySL rules!</p>
+        <ul>
             <li><a target="_blank" rel="noopener noreferrer" href="https://github.com/eclipse-cognicrypt/CogniCrypt">CogniCrypt<sub>GEN</sub></a>:
-                Generate Secure Code based on CrySL rules.
+                Generate Secure Code based.
             </li>
             <li><a target="_blank" rel="noopener noreferrer" href="https://github.com/CROSSINGTUD/CryptoAnalysis">CogniCrypt<sub>SAST</sub></a>:
                 Analyse Java code for cryptographic misuses.
             </li>
             <li><a target="_blank" rel="noopener noreferrer"
                    href="https://github.com/CROSSINGTUD/CogniCrypt_TESTGEN/tree/develop">CogniCrypt<sub>TESTGEN</sub></a>: Generate
-                test cases based on CrySL rules.
+                test cases.
             </li>
         </ul>
     </div>
