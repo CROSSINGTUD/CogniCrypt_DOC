@@ -128,7 +128,7 @@ public class DocumentGeneratorMain {
 		//copy CryslRulesFolder into generated Cognicrypt folder
 		if (!docSettings.isBooleanF()) {
 			File source = new File(docSettings.getRulesetPathDir());
-			File dest = new File(docSettings.getReportDirectory() + File.separator + "cryslRules");
+			File dest = new File(docSettings.getReportDirectory() + File.separator + "rules");
 			try {
 				FileUtils.copyDirectory(source, dest);
 			} catch (IOException e) {

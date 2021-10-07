@@ -148,7 +148,7 @@ public class DocSettings {
         String errorMessage = "An error occurred while trying to parse the CLI arguments.\n"
                 +"The default command for running CogniCryptDOC is: \n"+
                 "java -jar <jar_location_of_CogniCryptDOC> \\\r\n"+
-                " 		--rulesDir <absolute_path_to_crysl_rules> \\\r\n" +
+                " 		--rulesDir <absolute_path_to_CrySL_rules> \\\r\n" +
                 " 		--FTLtemplatesPath <absolute_path_to_ftl_templates> \\\r\n" +
                 " 		--LANGtemplatesPath <absolute_path_to_lang_templates> \\\r\n" +
                 "       --reportPath <absolute_path_to_generate_documentation>\n";
@@ -159,7 +159,7 @@ public class DocSettings {
         String errorMessage = "An error occured while trying to parse the CLI argument: "+arg+".\n"
                 +"The default command for running CogniCryptDOC is: \n"+
                 "java -jar <jar_location_of_CogniCryptDOC> \\\r\n"+
-                " 		--rulesDir <absolute_path_to_crysl_rules> \\\r\n" +
+                " 		--rulesDir <absolute_path_to_CrySL_rules> \\\r\n" +
                 " 		--templatesPath <absolute_path_to_ftl_templates> \\\r\n" +
                 " 		--LANGtemplatesPath <absolute_path_to_lang_templates> \\\r\n" +
                 "       --reportPath <absolute_path_to_generate_documentation>\n"
@@ -169,7 +169,7 @@ public class DocSettings {
                 + "--booleanC <To turn of graphviz generation\n"
                 + "--booleanD <To hide dependecy trees>\n"
                 + "--booleanE <To hide CrySL rule\n"
-                + "--booleanF <To copy crysl rules into documentation folder>\n";
+                + "--booleanF <To copy CrySL rules into documentation folder>\n";
         System.out.println(errorMessage);
     }
 
