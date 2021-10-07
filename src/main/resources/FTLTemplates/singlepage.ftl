@@ -166,7 +166,12 @@
         }
 
         .tooltip {
-            color: #0000EE;
+            color: #555;
+            text-decoration: underline;
+        }
+
+        .tooltip:hover {
+            color: #222;
         }
 
         .tooltip .tooltiptext {
@@ -185,6 +190,27 @@
             white-space: pre-line;
             visibility: visible;
             opacity: 1;
+        }
+
+
+        a:link {
+            color: #555;
+            text-decoration: underline;
+        }
+
+        a:visited {
+            color: #555;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: #222;
+            text-decoration: underline;
+        }
+
+        a:active {
+            color: #222;
+            text-decoration: underline;
         }
     </style>
 </head>

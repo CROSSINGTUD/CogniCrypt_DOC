@@ -32,6 +32,25 @@
             padding: 0;
             font-size: 14px;
         }
+        a:link {
+            color: #555;
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: #555;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #222;
+            text-decoration: none;
+        }
+
+        a:active {
+            color: #222;
+            text-decoration: none;
+        }
     </style>
 </head>
 
