@@ -154,7 +154,7 @@
         }
 
         .help {
-            white-space: pre-line;
+            overflow-wrap: break-word;
             font-size: 12px;
             border: 2px solid #555;
             display: inline-block;
@@ -234,6 +234,7 @@
     </div>
     <p class="pre" style="white-space: pre-line;">This page documents <b>${rule.composedClassName}</b>:
         ${rule.composedLink}
+        An overview of all sections can be found on the <a href="../frontpage.html">frontpage</a>.
     </p>
 </div>
 <button class="collapsible">Order</button>
@@ -241,6 +242,10 @@
     <div class="spoiler" id="spoiler" style="display:none">
         <p class="help">Help:
             This section describes the secure order call sequences of ${rule.composedClassName}.
+            Methods may contain an underscore(_) as a parameter.
+            The underscore is a feature of CrySl to help writing CrySL rules for overloaded methods and not specify all overloaded methods in a CrySL rule.
+            Conduct the <a target="_blank" rel="noopener noreferrer"
+                           href="https://docs.oracle.com/javase/8/docs/api/${rule.onlyLink}.html">JavaDoc</a> to see all parameters in detail.
         </p>
     </div>
     <p class="pre">${rule.numberOfMethods}
@@ -270,9 +275,9 @@
         <p class="help">Help:
             This section describes the parameters, which have constraints or that require a predicate from another
             class.
-            Predicates are a construct from CrySL rules, and a class can provide and require predicates from other classes.
-            A class can provide predicates after specific method calls or those seen in the Order section.
-            If ${rule.composedClassName} requires a predicate from another class and the predicate is not provided, ${rule.composedClassName} is not used securely.
+            Predicates are a construct from CrySL and allow to securely compose several classes depending on use cases.
+            A class can ensure predicates for other classes and require predicates from other classes.
+            E.g., ${rule.composedClassName} requires a predicate from another class and the predicate is not ensured, ${rule.composedClassName} is not used securely.
         </p>
     </div>
     <p class="pre" style="white-space: pre-line;overflow-wrap: break-word"><#if rule.allConstraints?has_content>
@@ -301,9 +306,10 @@
 <div class="content">
     <div class="spoiler" id="spoiler" style="display:none">
         <p class="help">Help:
-            This section describes which Predicates the class provides.
-            Predicates are a construct from CrySL rules, and a class can provide and require predicates from other classes.
-            A class provides predicates after specific method calls or after the method calls seen in the Order section.
+            This section describes which Predicates the class ensures.
+            Predicates are a construct from CrySL and allow to securely compose several classes depending on use cases.
+            A class can ensure predicates for other classes and require predicates from other classes.
+            Predicates are ensured after specific method calls or after the method calls seen in the Order section.
         </p>
     </div>
     <p class="pre" style="white-space: pre-line;"><#list rule.ensuresThisPredicates as etp>${etp}
@@ -325,7 +331,7 @@
                 For e.g. ${rule.composedClassName} can require something from ...
                 Furthermore, it shows for the next depending classes as well.
                 There are two special cases:
-                1. The class does not require a predicate. Therefore, there is only the classname itself.
+                1. The class does not require a predicate. Therefore, only the classname itself is displayed.
                 2. The class provides a predicate for itself. This is not displayed due to the tree nature.
             </p>
         </div>
@@ -397,7 +403,7 @@
                 The first three are used to extract algorithm/mode/padding from transformation String.
                 <b>alg(transformation)</b> extract algorithm from .getInstance call.
                 <b>mode(transformation)</b> extract mode from .getInstance call.
-                <b>padding(transformation)</b> extract mode from .getInstance call.
+                <b>padding(transformation)</b> extract padding from .getInstance call.
                 <b>length(object)</b> retrieve length of object.
                 <b>nevertypeof(object, type)</b> forbid object to be type.
                 <b>callTo(method)</b> require call to method.

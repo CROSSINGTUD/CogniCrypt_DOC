@@ -27,6 +27,7 @@ public class ComposedRule {
     private String onlyRuleName;
     private String composedFullClass;
     private String composedLink;
+    private String onlyLink;
 
 
     public List<String> getAllConstraints() {
@@ -169,5 +170,13 @@ public class ComposedRule {
 
     public void setNegatesPredicates(List<String> negatesPredicates) {
         NegatesPredicates = negatesPredicates;
+    }
+
+    public String getOnlyLink() {
+        return onlyLink;
+    }
+
+    public void setOnlyLink(String onlyLink) {
+        this.onlyLink = onlyLink;
     }
 }

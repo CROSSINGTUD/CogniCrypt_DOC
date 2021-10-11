@@ -69,6 +69,11 @@ public class ClassEventForb {
 
 	}
 
+
+	public String getLinkOnly(CrySLRule rule) throws IOException {
+		return rule.getClassName().replaceAll("\\.","/");
+	}
+
 	public String getLink(CrySLRule rule) throws IOException {
 
 		File file = new File(".\\src\\main\\resources\\Templates\\LinkToJavaDoc");

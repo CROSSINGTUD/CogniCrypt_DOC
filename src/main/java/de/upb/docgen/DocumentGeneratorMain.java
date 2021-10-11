@@ -70,6 +70,7 @@ public class DocumentGeneratorMain {
 			composedRule.setComposedFullClass(cef.getFullClassName(rule));
 			//Link to corresponding JavaDoc
 			composedRule.setComposedLink(cef.getLink(rule));
+			composedRule.setOnlyLink(cef.getLinkOnly(rule));
 			composedRule.setNumberOfMethods(cef.getEventNumbers(rule));
 
 
