@@ -69,7 +69,7 @@
             <li><b>Overview</b> provides the name and a link to the JavaDoc of the class.</li>
             <li><b>Order</b> provides a description how to securely call the methods of the class.</li>
             <li><b>Constraints</b> explains different constraints for the class.</li>
-            <li><b>Predicates</b> displays what predicates the class provides.</li>
+            <li><b>Predicates</b> displays what predicates the class ensures.</li>
             <li><b>Requires Tree</b> displays the possible required predicate dependencies starting from the class.</li>
             <li><b>Ensures Tree</b> displays the possible ensuring predicate dependencies starting from the class.</li>
             <li><b>CrySL Rule</b> displays the CrySL rule itself.</li>
