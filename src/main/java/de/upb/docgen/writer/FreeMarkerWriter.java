@@ -98,10 +98,13 @@ public class FreeMarkerWriter {
      */
     public static void createCogniCryptLayout(Configuration cfg) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
+        /* Not used anymore
         Template headerTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "header.ftl"));
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"header.html"))) {
             headerTemplate.process(input, fileWriter);
         }
+
+         */
         Template frontpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "frontpage.ftl"));
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
             frontpageTemplate.process(input, fileWriter);
