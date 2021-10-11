@@ -314,7 +314,7 @@ public class ConstraintsPred {
 						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
 							if (maps.containsKey(var1)) {
 								nouns = "<span class=\"tooltip\">" + nouns;
-								String tooltiptext = "<span class=\"tooltiptext\">The following classes provide this predicate:\n";
+								String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
 								String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), var1);
 								String end = "</span></span>";
 
@@ -424,7 +424,7 @@ public class ConstraintsPred {
 							if (maps.containsKey(var1)) {
 								String classToLink = var1;
 								var1 = "<span class=\"tooltip\">" + var1;
-								String tooltiptext = "<span class=\"tooltiptext\">The following classes provide this predicate:\n";
+								String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
 								String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), classToLink);
 								String end = "</span></span>";
 
