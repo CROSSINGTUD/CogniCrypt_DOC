@@ -1,5 +1,10 @@
 package de.upb.docgen;
 
+
+/**
+ * @author Sven Feldmann
+ */
+
 public class DocSettings {
 
     private static final DocSettings singletonSettings = new DocSettings();

@@ -25,6 +25,7 @@ import crypto.rules.CrySLRule;
 
 /**
  * @author Ritika Singh
+ * @author Sven Feldmann
  */
 
 public class Order {

@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * @author Ritika Singh
+ * @author Sven Feldmann
  */
 
 public class DocumentGeneratorMain {
@@ -90,7 +91,7 @@ public class DocumentGeneratorMain {
 			composedRule.setNoCallToConstraints(nocall.getnoCalltoConstraint(rule));
 			composedRule.setInstanceOfConstraints(instance.getInstanceof(rule));
 			composedRule.setConstraintAndEncConstraints(enc.getConCryslandenc(rule));
-			composedRule.setForbiddenMethods(cef.getForbiddenMethods(rule));
+			composedRule.setForbiddenMethods(cef.getForb(rule));
 			//
 			List<String> allConstraints = new ArrayList<>(composedRule.getComparsionConstraints());
 			allConstraints.addAll(composedRule.getValueConstraints());

@@ -12,6 +12,11 @@ import java.net.URI;
 import java.util.*;
 import java.util.List;
 
+/**
+ * @author Sven Feldmann
+ */
+
+
 public class FreeMarkerWriter {
 
     /**

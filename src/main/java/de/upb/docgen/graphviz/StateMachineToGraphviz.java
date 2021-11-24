@@ -16,6 +16,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Sven Feldmann
+ */
+
 public class StateMachineToGraphviz {
 
 

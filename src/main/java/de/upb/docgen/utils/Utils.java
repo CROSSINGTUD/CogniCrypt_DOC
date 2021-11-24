@@ -13,6 +13,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * @author Sven Feldmann
+ */
+
 public class Utils {
 	public static File getFileFromResources(String fileName) {
 		URL resource = Utils.class.getResource(fileName);
