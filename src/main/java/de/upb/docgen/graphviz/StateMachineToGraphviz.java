@@ -19,7 +19,7 @@ import java.util.Map;
 public class StateMachineToGraphviz {
 
 
-
+    //To run this process on his own not used in the actual generation process
     public static void main(String[] args) throws IOException {
         Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(Constant.rulePath);
         for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
@@ -27,7 +27,7 @@ public class StateMachineToGraphviz {
             toPNG(ruleEntry.getValue().getClassName());
         }
     }
-
+    //Runs the translation and generation of PNG for every rule
     public static void generateGraphvizStateMachines(String pathToCryslRules, String pathToRootpage) throws IOException {
         Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(pathToCryslRules);
         new File(pathToRootpage+"/"+"dotFSMs/").mkdir();
@@ -37,6 +37,7 @@ public class StateMachineToGraphviz {
         }
     }
 
+    //creates DOT files that are used to create the PNGs
     private static void rulesOrderSectionToDot(CrySLRule rule, String pathToRootpage) throws IOException {
         StateMachineGraph smg = rule.getUsagePattern();
         String fsm = toGraphviz(smg);
@@ -61,7 +62,7 @@ public class StateMachineToGraphviz {
 
     }
 
-
+    //Translates the state machine provided by a CrySL rule into DOT syntax of Graphviz
     public static String toGraphviz(StateMachineGraph smg) {
         StringBuilder stringBuilderToFile = new StringBuilder();
         stringBuilderToFile.append("digraph fsm {\n" +
@@ -109,7 +110,7 @@ public class StateMachineToGraphviz {
             e.printStackTrace();
         }
     }
-
+    //reads the dot translation and creates a png file that is later used by the FTL template
     public static void toPNG(String name, String pathToRootpage) {
         try {    MutableGraph g = new Parser().read(new File(pathToRootpage+"\\"+"dotFSMs\\" + name +".dot"));
             Graphviz.fromGraph(g).render(Format.SVG).toFile(new File(pathToRootpage+"/"+"dotFSMs/" +name +".svg"));

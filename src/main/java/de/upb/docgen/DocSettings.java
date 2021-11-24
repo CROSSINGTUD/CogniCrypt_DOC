@@ -8,6 +8,7 @@ public class DocSettings {
     private String rulesetPathDir = null;
     private String ftlTemplatesPath = null;
     private String langTemplatesPath = null;
+    //booleans to modify FTL templates
     private boolean booleanA = true;
     private boolean booleanB = true;
     private boolean booleanC = true;
@@ -86,7 +87,10 @@ public class DocSettings {
         this.booleanE = booleanE;
     }
 
-
+    /**
+     * Basic parsing functions see showErrorMessage method for flag explanations. Sets paths and booleans for templates.
+     * @param settings flags provided developer on the CLI
+     */
     public void parseSettingsFromCLI(String[] settings)  {
         int mandatorySettings = 0;
         if(settings == null) {
@@ -156,7 +160,7 @@ public class DocSettings {
     }
 
     private static void showErrorMessage(String arg) {
-        String errorMessage = "An error occured while trying to parse the CLI argument: "+arg+".\n"
+        String errorMessage = "An error occurred while trying to parse the CLI argument: "+arg+".\n"
                 +"The default command for running CogniCryptDOC is: \n"+
                 "java -jar <jar_location_of_CogniCryptDOC> \\\r\n"+
                 " 		--rulesDir <absolute_path_to_CrySL_rules> \\\r\n" +
@@ -167,9 +171,9 @@ public class DocSettings {
                 + "--booleanA <To hide state machine graph>\n"
                 + "--booleanB <To hide help>\n"
                 + "--booleanC <To turn of graphviz generation\n"
-                + "--booleanD <To hide dependecy trees>\n"
+                + "--booleanD <To hide dependency trees>\n"
                 + "--booleanE <To hide CrySL rule\n"
-                + "--booleanF <To copy CrySL rules into documentation folder>\n";
+                + "--booleanF <To copy CrySL rules into documentation folder>\n"; //Relative Paths for FTL templates if distributed
         System.out.println(errorMessage);
     }
 
