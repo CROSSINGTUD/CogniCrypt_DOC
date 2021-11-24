@@ -15,8 +15,6 @@ import de.upb.docgen.writer.FreeMarkerWriter;
 import freemarker.template.*;
 import org.apache.commons.io.FileUtils;
 
-import javax.swing.plaf.nimbus.State;
-
 /**
  * @author Ritika Singh
  */

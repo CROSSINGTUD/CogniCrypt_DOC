@@ -40,7 +40,7 @@ public class ClassEventForb {
 	public static PrintWriter out;
 
 	public String getClassName(CrySLRule rule) throws IOException {
-
+/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ClassNameClause");
 
 		StringBuilder stringBuffer = new StringBuilder();
@@ -57,16 +57,21 @@ public class ClassEventForb {
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
 
+
+		char[] buff = Utils.getTemplatesText("ClassNameClause");
+
 		String cName = rule.getClassName();
+
 		Map<String, String> valuesMap = new HashMap<String, String>();
 		valuesMap.put("ClassName", cName);
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
 		String resolvedString = sub.replace(buff);
-		out.close();
+		//out.close();
 		return cName;
 		//out.println(resolvedString);
-
+*/
+		return rule.getClassName();
 	}
 
 
@@ -75,7 +80,7 @@ public class ClassEventForb {
 	}
 
 	public String getLink(CrySLRule rule) throws IOException {
-
+/*
 		File file = new File(".\\src\\main\\resources\\Templates\\LinkToJavaDoc");
 
 		StringBuilder stringBuffer = new StringBuilder();
@@ -85,7 +90,8 @@ public class ClassEventForb {
 			stringBuffer.append(buff, 0, charsRead);
 		}
 		reader.close();
-
+*/
+		char[] buff = Utils.getTemplatesText("LinkToJavaDoc");
 		String link = rule.getClassName().replace(".", "/");
 		String cName = rule.getClassName();
 		Map<String, String> valuesMap = new HashMap<String, String>();
@@ -93,8 +99,7 @@ public class ClassEventForb {
 		valuesMap.put("ClassLink", link);
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
-		String resolvedString = sub.replace(buff);
-		return resolvedString;
+		return sub.replace(buff);
 		//out.println(resolvedString);
 
 	}
@@ -156,8 +161,8 @@ public class ClassEventForb {
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
+		//String path = "./Output/" + classnamecheck + "_doc.txt";
+		//out = new PrintWriter(new FileWriter(path, true));
 
 		ArrayList<CrySLMethod> methodNames = new ArrayList<CrySLMethod>();
 		ArrayList<CrySLMethod> listWithoutDuplicates = new ArrayList<CrySLMethod>();
@@ -180,7 +185,7 @@ public class ClassEventForb {
 		String resolvedString = "";
 		if (methodNumber.equals("1")) resolvedString = sub.replace(buff1);
 		else resolvedString = sub.replace(buff2);
-		out.close();
+		//out.close();
 		//return methodNumber;
 		//out.println(resolvedString);
 		return resolvedString;
@@ -285,7 +290,7 @@ public class ClassEventForb {
 				}
 			}
 		}
-		out.close();
+		//out.close();
 		return arrayList;
 	}
 

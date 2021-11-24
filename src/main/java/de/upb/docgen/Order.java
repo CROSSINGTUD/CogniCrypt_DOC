@@ -23,15 +23,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import crypto.rules.CrySLRule;
 
-import static org.apache.commons.lang3.StringUtils.substringBetween;
-
 /**
  * @author Ritika Singh
  */
 
 public class Order {
 
-	private static final String FOLDER_PATH = ".\\src\\main\\resources\\CrySLRules";
+	private static final String FOLDER_PATH = DocSettings.getInstance().getRulesetPathDir();
 	private static final List<String> clauseNames = Arrays.asList("EVENTS", "ORDER", "OBJECTS", "FORBIDDEN");
 	static Map<String, String> processedresultMap = new LinkedHashMap<>();
 	static Map<String, String> symbolMap = new LinkedHashMap<>();
