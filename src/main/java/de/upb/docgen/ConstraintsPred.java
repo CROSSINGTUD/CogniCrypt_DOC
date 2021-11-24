@@ -8,18 +8,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -28,7 +23,6 @@ import com.google.common.collect.Multimap;
 
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -39,6 +33,8 @@ public class ConstraintsPred {
 	static PrintWriter out;
 
 	private static char[] getTemplatePredOne() throws IOException {
+		char[] buffOne = Utils.getTemplatesText("ConstraintPredTypeOne");
+		/*
 		File fileOne = new File(".\\src\\main\\resources\\Templates\\ConstraintPredTypeOne");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileOne), StandardCharsets.UTF_8);
@@ -47,10 +43,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffOne, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffOne;
 	}
 
 	private static char[] getTemplatePredTwo() throws IOException {
+		char[] buffTwo = Utils.getTemplatesText("ConstraintPredTypeTwo");
+		/*
 		File fileTwo = new File(".\\src\\main\\resources\\Templates\\ConstraintPredTypeTwo");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileTwo), StandardCharsets.UTF_8);
@@ -59,10 +59,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffTwo, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffTwo;
 	}
 
 	private static char[] getTemplatePredThree() throws IOException {
+		char[] buffThree = Utils.getTemplatesText("ConstraintPredTypeThree");
+		/*
 		File fileThree = new File(".\\src\\main\\resources\\Templates\\ConstraintPredTypeThree");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileThree), StandardCharsets.UTF_8);
@@ -71,10 +75,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffThree, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffThree;
 	}
 
 	private static char[] getTemplatePredFour() throws IOException {
+		char[] buffFour = Utils.getTemplatesText("ConstraintPredTypeFour");
+		/*
 		File fileFour = new File(".\\src\\main\\resources\\Templates\\ConstraintPredTypeFour");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileFour), StandardCharsets.UTF_8);
@@ -83,10 +91,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffFour, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffFour;
 	}
 
 	private static char[] getTemplatePred1Con() throws IOException {
+		char[] buffOneCon = Utils.getTemplatesText("ConstraintPredType1Con");
+		/*
 		File fileOneCon = new File(".\\src\\main\\resources\\Templates\\ConstraintPredType1Con");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileOneCon), StandardCharsets.UTF_8);
@@ -95,10 +107,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffOneCon, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffOneCon;
 	}
 
 	private static char[] getTemplatePred2Con() throws IOException {
+		char[] buffOneCon = Utils.getTemplatesText("ConstraintPredType2Con");
+		/*
 		File fileTwoCon = new File(".\\src\\main\\resources\\Templates\\ConstraintPredType2Con");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileTwoCon), StandardCharsets.UTF_8);
@@ -107,10 +123,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffTwoCon, 0, charsRead);
 		}
 		reader.close();
-		return buffTwoCon;
+
+		 */
+		return buffOneCon;
 	}
 
 	private static char[] getTemplatePred3Con() throws IOException {
+		char[] buffThreeCon = Utils.getTemplatesText("ConstraintPredType3Con");
+		/*
 		File fileThreeCon = new File(".\\src\\main\\resources\\Templates\\ConstraintPredType3Con");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileThreeCon), StandardCharsets.UTF_8);
@@ -119,10 +139,14 @@ public class ConstraintsPred {
 			stringBuffer.append(buffThreeCon, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffThreeCon;
 	}
 
 	private static char[] getTemplatePred4Con() throws IOException {
+		char[] buffFourCon = Utils.getTemplatesText("ConstraintPredType4Con");
+		/*
 		File fileFourCon = new File(".\\src\\main\\resources\\Templates\\ConstraintPredType4Con");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileFourCon), StandardCharsets.UTF_8);
@@ -131,11 +155,13 @@ public class ConstraintsPred {
 			stringBuffer.append(buffFourCon, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffFourCon;
 	}
 
-	public void getConstraintsPred(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getConstraintsPred(CrySLRule rule, Set<String> ensuresForThis, Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap) throws IOException {
+		ArrayList<String> composedConstraintsPredicates = new ArrayList<>();
 		List<String> methodsList = FunctionUtils.getEventNames(rule);
 		Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 		List<Entry<String, String>> dataTypes = rule.getObjects();
@@ -147,10 +173,12 @@ public class ConstraintsPred {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
-
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
 
+
+		 */
 		List<ISLConstraint> constraintPredList = rule.getConstraints().stream().filter(
 				e -> e.getClass().getSimpleName().toString().contains("CrySLPredicate") && !e.toString().contains("!"))
 				.collect(Collectors.toList());
@@ -274,6 +302,26 @@ public class ConstraintsPred {
 						String verb = verbOrNounList.get(0);
 						List<String> noun = verbOrNounList.subList(1, verbOrNounList.size());
 						String nouns = String.join(" ", noun);
+						List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
+						String ensures = "";
+						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+							if (maps.containsKey(var1)) {
+								ensures = maps.get(var1).get(0);
+							}
+						}
+						//this links the right class which ensures something for the current rule
+						//nouns = "<a href=\"" + ensures +".html\">" + nouns + "</a>";
+						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+							if (maps.containsKey(var1)) {
+								nouns = "<span class=\"tooltip\">" + nouns;
+								String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
+								String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), var1);
+								String end = "</span></span>";
+
+								nouns += tooltiptext + classesLinks + end;
+							}
+						}
+
 
 						if (verb.endsWith("ed")) {
 
@@ -287,7 +335,8 @@ public class ConstraintsPred {
 								valuesMap.put("nouns", nouns);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sOne);
-								out.println(resolvedString);
+								composedConstraintsPredicates.add(resolvedString);
+								//out.println(resolvedString);
 							
 							} else {
 
@@ -299,7 +348,8 @@ public class ConstraintsPred {
 								valuesMap.put("nouns", nouns);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sOne);
-								out.println(resolvedString);
+								composedConstraintsPredicates.add(resolvedString);
+								//out.println(resolvedString);
 							}
 
 						} else if (var3 != null && var3.equals("java.lang.String")) {
@@ -313,7 +363,8 @@ public class ConstraintsPred {
 								valuesMap.put("var3", var3);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sTwo);
-								out.println(resolvedString);
+								composedConstraintsPredicates.add(resolvedString);
+								//out.println(resolvedString);
 
 							} else {
 
@@ -325,7 +376,8 @@ public class ConstraintsPred {
 								valuesMap.put("var3", var3);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sTwo);
-								out.println(resolvedString);
+								composedConstraintsPredicates.add(resolvedString);
+								//out.println(resolvedString);
 							}
 
 						} else if (var3 == null) {
@@ -338,7 +390,8 @@ public class ConstraintsPred {
 								valuesMap.put("methodName", mname);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sThree);
-								out.println(resolvedString);
+								composedConstraintsPredicates.add(resolvedString);
+								//out.println(resolvedString);
 
 							} else {
 
@@ -349,13 +402,37 @@ public class ConstraintsPred {
 								valuesMap.put("methodName", mname);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(sThree);
-								out.println(resolvedString);
+								composedConstraintsPredicates.add(resolvedString);
+								//out.println(resolvedString);
 							}
 
 						}
 
 					} else {
+						/*
 
+						String ensures = "";
+						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+							if (maps.containsKey(var1)) {
+								ensures = maps.get(var1).get(0);
+							}
+						}
+
+						 */
+						List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
+						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+							if (maps.containsKey(var1)) {
+								String classToLink = var1;
+								var1 = "<span class=\"tooltip\">" + var1;
+								String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
+								String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), classToLink);
+								String end = "</span></span>";
+
+								var1 += tooltiptext + classesLinks + end;
+							}
+						}
+
+						//var1 = "<a href=\"" + ensures +".html\">" + var1 + "</a>";
 						if (msplit.get(0).equals(classnamecheck)) {
 
 							char[] sFour = getTemplatePred4Con();
@@ -365,7 +442,8 @@ public class ConstraintsPred {
 							valuesMap.put("var1", var1);
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(sFour);
-							out.println(resolvedString);
+							composedConstraintsPredicates.add(resolvedString);
+							//out.println(resolvedString);
 
 						} else {
 
@@ -376,12 +454,26 @@ public class ConstraintsPred {
 							valuesMap.put("var1", var1);
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(sFour);
-							out.println(resolvedString);
+							composedConstraintsPredicates.add(resolvedString);
+							//out.println(resolvedString);
 						}
 					}
 				}
 			}
 		}
-		out.close();
+		//out.close();
+		return composedConstraintsPredicates;
+	}
+
+	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
+		StringBuilder sb = new StringBuilder();
+		for (Map<String, List <String>> map : maps) {
+			if (map.containsKey(var1)) {
+				for (String className : map.get(var1)) {
+					sb.append("<a href=\"").append(className).append(".html\">").append(className).append("</a>\n");
+				}
+			}
+		}
+		return sb.toString();
 	}
 }

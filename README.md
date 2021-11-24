@@ -1,4 +1,9 @@
 # CogniCrypt_DOC
+
+ This repo is used to further develop CogniCrypt_DOC as part of the bachelor thesis:
+ Improving Documentation Generation for Cryptographic APIs - A reinterpretation of CogniCryptDOC
+
+
     
  Master Thesis Topic : 
  
