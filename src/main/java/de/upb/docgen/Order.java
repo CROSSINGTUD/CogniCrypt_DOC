@@ -35,14 +35,6 @@ public class Order {
 	static Map<String, String> symbolMap = new LinkedHashMap<>();
 	static Map<String, String> objectMap = new LinkedHashMap<>();
 	public static PrintWriter out;
-	static ArrayList<String> symbols = new ArrayList<>(Arrays.asList("+", "*", "?", "|"));
-	List<String> ans = new ArrayList<String>();
-	StringBuilder forStringTest = new StringBuilder();
-	int identLevel = 0;
-	String[] orderArr;
-	ArrayList<String> orderList;
-	Iterator<String> iter;
-	int bracketCounter;
 
 
 	// retrieve a list of the crysl rule files in the Cryslrules folder
@@ -508,37 +500,37 @@ public class Order {
 		int identlevel = 0;
 		if (n.size() > 2) {
 			for (int i = 0; i <= n.size() - 2; i += 2) {
-				if (n.get(i).startsWith("The next") ) {
+				if (n.get(i).startsWith(symbolMap.get("(")) ) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
 					identlevel++;
 					n.remove(i);
 					i -= 2;
-				} else if  (n.get(i).startsWith("or") && (n.get(i+1).startsWith("The next"))){
+				} else if  (n.get(i).startsWith(symbolMap.get("|")) && (n.get(i+1).startsWith(symbolMap.get("(")))){
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1));
 					identlevel++;
 					n.remove(i);
 					n.remove(i);
 					i -= 2;
-				} else if  (n.get(i).startsWith("or")){
+				} else if  (n.get(i).startsWith(symbolMap.get("|"))){
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1) + n.get(i+2));
 					n.remove(i);
 					n.remove(i);
 					n.remove(i);
 					i -=2;
-				} else if (n.get(i).startsWith("]")) {
-					//removing closing brackets and lowering the le
-					while (n.get(i).startsWith("]")) {
+				} else if (n.get(i).startsWith(symbolMap.get(")"))) {
+					//removing closing brackets and lowering the level
+					while (n.get(i).startsWith(symbolMap.get(")"))) {
 						identlevel--;
 						n.remove(i);
 					}
-					//remove already processes sentence
-					if (!n.get(i).startsWith("or")) {
+					//remove already processed sentences
+					if (!n.get(i).startsWith(symbolMap.get("|"))) {
 						n.remove(i);
 					}
 					i -= 2;
-				} else if (n.get(i+1).startsWith("or")) {
+				} else if (n.get(i+1).startsWith(symbolMap.get("|"))) {
 					a = StringUtils.repeat("\t", identlevel) + n.get(i);
 					fo.add(a);
 					n.remove(i);
@@ -571,7 +563,7 @@ public class Order {
 				for (Map.Entry<String, String> entry : symbolMap.entrySet()) {
 					if (entry.getKey().equals(s)) {
 						String symbolSearchStr = s.replace(s, entry.getValue());
-						if (symbolSearchStr.startsWith("The next")) {
+						if (symbolSearchStr.startsWith(symbolMap.get("("))) {
 							symbolSearchStr += decideSymbolOfBracket(orderstr, number);
 							number++;
 						}
