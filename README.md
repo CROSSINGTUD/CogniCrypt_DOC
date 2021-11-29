@@ -1,9 +1,9 @@
 # CogniCrypt_DOC
 
  Bachelor Thesis Topic:
-
+ ```
  Improving Documentation Generation for Cryptographic APIs - A reinterpretation of CogniCryptDOC
-
+ ```
 
     
  Master Thesis Topic : 
