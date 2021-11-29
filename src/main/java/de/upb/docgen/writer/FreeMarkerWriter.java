@@ -12,6 +12,11 @@ import java.net.URI;
 import java.util.*;
 import java.util.List;
 
+/**
+ * @author Sven Feldmann
+ */
+
+
 public class FreeMarkerWriter {
 
     /**
@@ -66,7 +71,7 @@ public class FreeMarkerWriter {
             input.put("booleanF", f);
 
             // 2.2. Get the template
-            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+"singlepage.ftl"));
+            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+"singleclass.ftl"));
 
             //create composedRules directory where single pages are stored
             new File(DocSettings.getInstance().getReportDirectory()+"/"+"composedRules/").mkdir();

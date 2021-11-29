@@ -3,6 +3,7 @@ package de.upb.docgen;
 import java.util.List;
 
 /**
+ * @author Sven Feldmann
  * Data class which stores all generated natural language sentences
  */
 

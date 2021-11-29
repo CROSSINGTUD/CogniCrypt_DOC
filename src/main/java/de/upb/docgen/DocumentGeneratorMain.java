@@ -15,16 +15,16 @@ import de.upb.docgen.writer.FreeMarkerWriter;
 import freemarker.template.*;
 import org.apache.commons.io.FileUtils;
 
-import javax.swing.plaf.nimbus.State;
-
 /**
  * @author Ritika Singh
+ * @author Sven Feldmann
  */
 
 public class DocumentGeneratorMain {
 
 
 	public static void main(String[] args) throws IOException, TemplateException {
+		//create singleton to access parsed flags from other classes
 		DocSettings docSettings = DocSettings.getInstance();
 		docSettings.parseSettingsFromCLI(args);
 		//generate Graphviz dot and pngs set --booleanC to turnOff generation
@@ -81,6 +81,7 @@ public class DocumentGeneratorMain {
 			composedRule.setValueConstraints(valueconstraint.getConstraintsVc(rule));
 			//create necessary Data structure to link required predicates of current crysl rule
 			Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap = Utils.mapPredicates(mapEnsures, mapRequires);
+			//Pairing Dependency only by class name
 			Map<String, Set<String>> singleReqToEns = Utils.toOnlyClassNames(singleRuleEnsuresMap);
 			Set<String> ensuresForThisRule = singleReqToEns.get(composedRule.getComposedClassName());
 			composedRule.setConstrainedPredicates(predicateconstraint.getConstraintsPred(rule, ensuresForThisRule, singleRuleEnsuresMap));
@@ -90,7 +91,7 @@ public class DocumentGeneratorMain {
 			composedRule.setNoCallToConstraints(nocall.getnoCalltoConstraint(rule));
 			composedRule.setInstanceOfConstraints(instance.getInstanceof(rule));
 			composedRule.setConstraintAndEncConstraints(enc.getConCryslandenc(rule));
-			composedRule.setForbiddenMethods(cef.getForbiddenMethods(rule));
+			composedRule.setForbiddenMethods(cef.getForb(rule));
 			//
 			List<String> allConstraints = new ArrayList<>(composedRule.getComparsionConstraints());
 			allConstraints.addAll(composedRule.getValueConstraints());
@@ -127,6 +128,7 @@ public class DocumentGeneratorMain {
 		FreeMarkerWriter.createSidebar(composedRuleList, cfg);
 		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE() , docSettings.isBooleanF());
 		//copy CryslRulesFolder into generated Cognicrypt folder
+		//specifify this flag to distribute the documentation
 		if (!docSettings.isBooleanF()) {
 			File source = new File(docSettings.getRulesetPathDir());
 			File dest = new File(docSettings.getReportDirectory() + File.separator + "rules");

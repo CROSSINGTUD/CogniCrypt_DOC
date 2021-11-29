@@ -10,3 +10,4 @@ Output/
 shippable/
 *.class
 *.temp
+dotFSMs/

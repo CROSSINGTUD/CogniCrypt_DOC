@@ -56,7 +56,7 @@
 
 <body style="background-color: #f1f1f1">
 <div><a href="frontpage.html" style="font-size:20px">CogniCrypt<sub>DOC</sub></a></div>
-<input type="text" id="search" onkeyup="myFunction()" placeholder="Search Classes" title="Type in a class"
+<input type="text" id="search" onkeyup="filterFunction()" placeholder="Search Classes" title="Type in a class"
        style="font-size: 16px; margin-top: 10px">
 <ul id="classes">
     <#list rules as rule>
@@ -66,7 +66,7 @@
 
 
 <script>
-    function myFunction() {
+    function filterFunction() {
         var input, filter, ul, li, a, i;
         input = document.getElementById("search");
         filter = input.value.toUpperCase();

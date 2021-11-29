@@ -13,6 +13,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * @author Sven Feldmann
+ */
+
 public class Utils {
 	public static File getFileFromResources(String fileName) {
 		URL resource = Utils.class.getResource(fileName);
@@ -95,7 +99,7 @@ public class Utils {
 
 
 	/**
-	 * This methods constructs a Map, out of the given 2 CryslPredicate Maps. The keys of mapRight are the keys of this Map.
+	 * This methods constructs a Map, out of the given 2 CryslPredicate Maps.
 	 * @param keyMap
 	 * @param dependingMap
 	 * @return Map(String, Map(List(String, List(String))))

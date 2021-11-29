@@ -11,12 +11,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -40,7 +35,7 @@ public class ClassEventForb {
 	public static PrintWriter out;
 
 	public String getClassName(CrySLRule rule) throws IOException {
-
+/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ClassNameClause");
 
 		StringBuilder stringBuffer = new StringBuilder();
@@ -57,16 +52,21 @@ public class ClassEventForb {
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
 
+
+		char[] buff = Utils.getTemplatesText("ClassNameClause");
+
 		String cName = rule.getClassName();
+
 		Map<String, String> valuesMap = new HashMap<String, String>();
 		valuesMap.put("ClassName", cName);
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
 		String resolvedString = sub.replace(buff);
-		out.close();
+		//out.close();
 		return cName;
 		//out.println(resolvedString);
-
+*/
+		return rule.getClassName();
 	}
 
 
@@ -75,7 +75,7 @@ public class ClassEventForb {
 	}
 
 	public String getLink(CrySLRule rule) throws IOException {
-
+/*
 		File file = new File(".\\src\\main\\resources\\Templates\\LinkToJavaDoc");
 
 		StringBuilder stringBuffer = new StringBuilder();
@@ -85,7 +85,8 @@ public class ClassEventForb {
 			stringBuffer.append(buff, 0, charsRead);
 		}
 		reader.close();
-
+*/
+		char[] buff = Utils.getTemplatesText("LinkToJavaDoc");
 		String link = rule.getClassName().replace(".", "/");
 		String cName = rule.getClassName();
 		Map<String, String> valuesMap = new HashMap<String, String>();
@@ -93,8 +94,7 @@ public class ClassEventForb {
 		valuesMap.put("ClassLink", link);
 
 		StringSubstitutor sub = new StringSubstitutor(valuesMap);
-		String resolvedString = sub.replace(buff);
-		return resolvedString;
+		return sub.replace(buff);
 		//out.println(resolvedString);
 
 	}
@@ -141,6 +141,7 @@ public class ClassEventForb {
 
 		char[] buff1 = Utils.getTemplatesText("EventNumClause");
 		char[] buff2 = Utils.getTemplatesText("EventNumClause2");
+
 		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\EventNumClause");
 
@@ -156,8 +157,8 @@ public class ClassEventForb {
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
+		//String path = "./Output/" + classnamecheck + "_doc.txt";
+		//out = new PrintWriter(new FileWriter(path, true));
 
 		ArrayList<CrySLMethod> methodNames = new ArrayList<CrySLMethod>();
 		ArrayList<CrySLMethod> listWithoutDuplicates = new ArrayList<CrySLMethod>();
@@ -180,11 +181,101 @@ public class ClassEventForb {
 		String resolvedString = "";
 		if (methodNumber.equals("1")) resolvedString = sub.replace(buff1);
 		else resolvedString = sub.replace(buff2);
-		out.close();
+		//out.close();
 		//return methodNumber;
 		//out.println(resolvedString);
 		return resolvedString;
 
+	}
+
+	public List<String> getForb(CrySLRule rule) throws IOException {
+		char[] buff1 = Utils.getTemplatesText("ForbiddenMethodClause");
+		char[] buff2 = Utils.getTemplatesText("ForbiddenMethodClauseCon");
+		char[] buff3 = Utils.getTemplatesText("ForbiddenMethodClauseAlt");
+		char[] buff4 = Utils.getTemplatesText("ForbiddenMethodClauseConAlt");
+		StringBuilder sb = new StringBuilder();
+		ArrayList<String> composedForbs = new ArrayList<>();
+		ArrayList<String> alternatives = new ArrayList<>();
+		if (rule.getForbiddenMethods().size() > 0) {
+			List<CrySLForbiddenMethod> forbMethods = rule.getForbiddenMethods();
+			for (CrySLForbiddenMethod forMethod: forbMethods) {
+				sb.setLength(0);
+				sb.append(resolveMethod(forMethod.getMethod()));
+				if (forMethod.getAlternatives().size() > 0) {
+					for (CrySLMethod altMethod : forMethod.getAlternatives()) {
+						alternatives.add(resolveMethod(altMethod));
+					}
+				}
+				if (alternatives.size() > 0) {
+
+
+					if (!checkForConstructor(forMethod.getMethod().getMethodName())) {
+						Map<String, String> valuesMap = new HashMap<String, String>();
+						valuesMap.put("ForbMethodName", sb.toString());
+						String resolvedAlternates = String.join(" or ", alternatives);
+						valuesMap.put("Alternate", resolvedAlternates);
+						StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						String resolvedString = sub.replace(buff3);
+						composedForbs.add(resolvedString);
+					} else { //constructor
+						Map<String, String> valuesMap = new HashMap<String, String>();
+						valuesMap.put("ForbMethodName", sb.toString());
+						String resolvedAlternates = String.join(" or ", alternatives);
+						valuesMap.put("Alternate", resolvedAlternates);
+						StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						String resolvedString = sub.replace(buff4);
+						composedForbs.add(resolvedString);
+					}
+				} else {
+					if (!checkForConstructor(forMethod.getMethod().getMethodName())) {
+						Map<String, String> valuesMap = new HashMap<String, String>();
+						valuesMap.put("ForbMethodName", sb.toString());
+						StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						String resolvedString = sub.replace(buff1);
+						composedForbs.add(resolvedString);
+					} else {
+						Map<String, String> valuesMap = new HashMap<String, String>();
+						valuesMap.put("ForbMethodName", sb.toString());
+						StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						String resolvedString = sub.replace(buff2);
+						composedForbs.add(resolvedString);
+					}
+				}
+
+
+
+
+			}
+
+
+		}
+		return composedForbs;
+	}
+
+	private boolean checkForConstructor(String fullname) {
+		String shortname = fullname.substring(fullname.lastIndexOf('.') + 1);
+		int index = fullname.indexOf(shortname);
+		int otherIndex = fullname.lastIndexOf(shortname);
+		return index != otherIndex;
+	}
+
+	private String resolveMethod(CrySLMethod forMethod) {
+		StringBuilder sb = new StringBuilder();
+		String withoutPackageName = forMethod.getShortMethodName();
+		sb.append(withoutPackageName);
+		sb.append("(");
+		Iterator entryIterator = forMethod.getParameters().iterator();
+		while(entryIterator.hasNext()) {
+			Entry<String, String> par = (Entry)entryIterator.next();
+
+			sb.append((String)par.getValue());
+			if (entryIterator.hasNext()) {
+				sb.append(", ");
+			}
+		}
+		sb.append(")");
+
+		return sb.toString();
 	}
 
 	public List<String> getForbiddenMethods(CrySLRule rule) throws IOException {
@@ -285,7 +376,7 @@ public class ClassEventForb {
 				}
 			}
 		}
-		out.close();
+		//out.close();
 		return arrayList;
 	}
 

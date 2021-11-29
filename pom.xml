@@ -98,11 +98,7 @@
 			<artifactId>de.darmstadt.tu.crossing.CrySL</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>28.2-jre</version>
-		</dependency>
+
 		<dependency>
    			<groupId>org.apache.commons</groupId>
    			<artifactId>commons-text</artifactId>
@@ -115,11 +111,6 @@
   			<version>4.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.github.xmlet</groupId>
-			<artifactId>htmlflow</artifactId>
-			<version>3.7</version>
-		</dependency>
 		
 	</dependencies>
 
