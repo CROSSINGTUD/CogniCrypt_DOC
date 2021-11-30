@@ -45,4 +45,5 @@ Other additional arguments:
 --booleanF <To copy CrySL rules into documentation folder>
 ```
 
+Sets of natural language templates, FTL templates and CrySL rules can be found in `src/main/resources/`
 The generated documentation can be viewed by a browser. <absolute_path_to_generate_documentation>/`rootpage.html` is the entry point of the documentation.
