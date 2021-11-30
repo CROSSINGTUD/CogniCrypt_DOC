@@ -1,3 +1,13 @@
-/target/
-/ClassDiagram.png/
-/ClassDiagram.ucls/
+target/
+ClassDiagram.png
+ClassDiagram.ucls
+Output/
+.classpath
+.project
+.settings/
+*.iml
+.idea/
+shippable/
+*.class
+*.temp
+dotFSMs/

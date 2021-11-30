@@ -16,11 +16,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -31,7 +31,8 @@ public class ConstraintCrySLVC {
 	static PrintWriter out;
 
 	private static String getTemplateVCLHS() throws IOException {
-
+		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCClauseLHS");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCClauseLHS");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
@@ -43,11 +44,14 @@ public class ConstraintCrySLVC {
 		}
 
 		br.close();
-		return strD + "\n";
+
+		 */
+		return strD;
 	}
 
 	private static String getTemplateVCRHS() throws IOException {
-
+		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCClauseRHS");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCClauseRHS");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
@@ -58,16 +62,21 @@ public class ConstraintCrySLVC {
 			strLine = br.readLine();
 		}
 		br.close();
-		return strD + "\n";
+
+		 */
+		return strD;
 	}
 
-	public void getConCryslVC(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getConCryslVC(CrySLRule rule) throws IOException {
+		ArrayList<String> composedConsraintsValueConstraints = new ArrayList<>();
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")
 						&& !e.toString().contains("enc"))
@@ -333,10 +342,12 @@ public class ConstraintCrySLVC {
 						resultmainstringRHS = sub.replace(b);
 					}
 					printout = resultmainstringLHS + resultmainstringRHS;
-					out.println("" + printout);
+					composedConsraintsValueConstraints.add(printout);
+					//out.println("" + printout);
 				}
 			}
 		}
-		out.close();
+		//out.close();
+		return composedConsraintsValueConstraints;
 	}
 }

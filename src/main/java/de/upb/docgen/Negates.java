@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.rules.CrySLCondPredicate;
@@ -23,7 +24,6 @@ import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
 import crypto.rules.StateMachineGraph;
 import crypto.rules.TransitionEdge;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -34,7 +34,8 @@ public class Negates {
 	static PrintWriter out;
 
 	private static String getTemplateNegated() throws IOException {
-
+		String strD = Utils.getTemplatesTextString("Negation");
+		/*
 		File file = new File(".\\src\\main\\resources\\Templates\\Negation");
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
@@ -45,17 +46,23 @@ public class Negates {
 			strLine = br.readLine();
 		}
 		br.close();
-		return strD + "\n";
+
+		 */
+		return strD;
 	}
 
-	public void getNegates(CrySLRule rule) throws IOException {
+	public ArrayList<String> getNegates(CrySLRule rule) throws IOException {
+		ArrayList<String> composedNegates = new ArrayList<>();
 
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
@@ -67,7 +74,7 @@ public class Negates {
 		String negjoined = "";
 
 		List<CrySLPredicate> predNegatesList = rule.getPredicates().stream()
-				.filter(e -> !e.toString().contains("this") && e.toString().contains("!")).collect(Collectors.toList());
+				.filter(e -> e.toString().contains("this") && e.toString().contains("!")).collect(Collectors.toList());
 
 		if (predNegatesList.size() > 0) {
 
@@ -121,7 +128,8 @@ public class Negates {
 
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(strRetOne);
-							out.println(resolvedString);
+							//out.println(resolvedString);
+							composedNegates.add(resolvedString);
 							break;
 
 						}
@@ -133,7 +141,10 @@ public class Negates {
 			}
 
 		}
-		out.close();
+		//out.close();
+		return composedNegates;
+
+
 	}
 
 }

@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -28,9 +29,6 @@ import com.google.common.collect.Multimap;
 
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.crysl.CrySLReader;
-import de.upb.docgen.utils.Constant;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -41,7 +39,8 @@ public class ConstraintsComparison {
 	static PrintWriter out;
 
 	private static char[] getTemplateCompOne() throws IOException {
-
+		char[] buffOne = Utils.getTemplatesText("CompConstraint_lengthgreaterequal");
+		/*
 		File fileOne = new File(".\\src\\main\\resources\\Templates\\CompConstraint_lengthgreaterequal");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileOne), StandardCharsets.UTF_8);
@@ -50,11 +49,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffOne, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffOne;
 	}
 
 	private static char[] getTemplateComptwo() throws IOException {
-
+		char[] buffTwo = Utils.getTemplatesText("CompConstraint_lengthlesssum");
+		/*
 		File fileTwo = new File(".\\src\\main\\resources\\Templates\\CompConstraint_lengthlesssum");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileTwo), StandardCharsets.UTF_8);
@@ -63,11 +65,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffTwo, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffTwo;
 	}
 
 	private static char[] getTemplateCompThree() throws IOException {
-
+		char[] buffThree = Utils.getTemplatesText("CompConstraint_lengthless");
+		/*
 		File fileThree = new File(".\\src\\main\\resources\\Templates\\CompConstraint_lengthless");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileThree), StandardCharsets.UTF_8);
@@ -76,11 +81,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffThree, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffThree;
 	}
 
 	private static char[] getTemplateCompFour() throws IOException {
-
+		char[] buffFour = Utils.getTemplatesText("CompConstraint_greaterequal");
+		/*
 		File fileFour = new File(".\\src\\main\\resources\\Templates\\CompConstraint_greaterequal");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileFour), StandardCharsets.UTF_8);
@@ -89,11 +97,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffFour, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffFour;
 	}
 
 	private static char[] getTemplateCompFive() throws IOException {
-
+		char[] buffFive = Utils.getTemplatesText("CompConstraint_greater");
+		/*
 		File fileFive = new File(".\\src\\main\\resources\\Templates\\CompConstraint_greater");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileFive), StandardCharsets.UTF_8);
@@ -102,11 +113,13 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffFive, 0, charsRead);
 		}
 		reader.close();
+		 */
 		return buffFive;
 	}
 
 	private static char[] getTemplateCompSix() throws IOException {
-
+		char[] buffSix = Utils.getTemplatesText("CompConstraint_less");
+		/*
 		File fileSix = new File(".\\src\\main\\resources\\Templates\\CompConstraint_less");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileSix), StandardCharsets.UTF_8);
@@ -115,11 +128,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffSix, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffSix;
 	}
 
 	private static char[] getTemplateCompSeven() throws IOException {
-
+		char[] buffseven = Utils.getTemplatesText("CompConstraint_lengthgreater");
+		/*
 		File fileseven = new File(".\\src\\main\\resources\\Templates\\CompConstraint_lengthgreater");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileseven), StandardCharsets.UTF_8);
@@ -128,11 +144,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffseven, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffseven;
 	}
 
 	private static char[] getTemplateCompCons1() throws IOException {
-
+		char[] buffSeven = Utils.getTemplatesText("CompConstraint_lengthgreaterequalCon");
+		/*
 		File fileSeven = new File(".\\src\\main\\resources\\Templates\\CompConstraint_lengthgreaterequalCon");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileSeven), StandardCharsets.UTF_8);
@@ -141,11 +160,14 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffSeven, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffSeven;
 	}
 
 	private static char[] getTemplateCompCons2() throws IOException {
-
+		char[] buffEight = Utils.getTemplatesText("CompConstraint_greaterequalCon");
+		/*
 		File fileEight = new File(".\\src\\main\\resources\\Templates\\CompConstraint_greaterequalCon");
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(fileEight), StandardCharsets.UTF_8);
@@ -154,11 +176,13 @@ public class ConstraintsComparison {
 			stringBuffer.append(buffEight, 0, charsRead);
 		}
 		reader.close();
+
+		 */
 		return buffEight;
 	}
 
-	public void getConstriantsComp(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getConstriantsComp(CrySLRule rule) throws IOException {
+		ArrayList<String> composedComparsionConstraint =  new ArrayList<>();
 		List<ISLConstraint> constraintCompConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLComparisonConstraint"))
 				.collect(Collectors.toList());
@@ -172,8 +196,11 @@ public class ConstraintsComparison {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
+		/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+		 */
 		if (constraintCompConList.size() > 0) {
 
 			List<String> subListLHS = new ArrayList<>();
@@ -402,7 +429,8 @@ public class ConstraintsComparison {
 										valuesMap.put("RHSTwomethodName", methRHSTwo);
 										StringSubstitutor sub = new StringSubstitutor(valuesMap);
 										String resolvedString = sub.replace(strOne);
-										out.println(resolvedString);
+										composedComparsionConstraint.add(resolvedString);
+										//out.println(resolvedString);
 
 									} else {
 
@@ -416,7 +444,9 @@ public class ConstraintsComparison {
 										valuesMap.put("RHSTwomethodName", methRHSTwo);
 										StringSubstitutor sub = new StringSubstitutor(valuesMap);
 										String resolvedString = sub.replace(strOne);
-										out.println(resolvedString);
+										composedComparsionConstraint.add(resolvedString);
+
+										//out.println(resolvedString);
 
 									}
 
@@ -432,7 +462,9 @@ public class ConstraintsComparison {
 									valuesMap.put("RHSTwomethodName", methRHSTwo);
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strTwo);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 								}
 							}
 						}
@@ -463,7 +495,9 @@ public class ConstraintsComparison {
 									valuesMap.put("RHSOnemethodName", methRHS);
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strThree);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 
 								} else if (symbolStr.equals(">")) {
 
@@ -475,7 +509,9 @@ public class ConstraintsComparison {
 									valuesMap.put("RHSOnemethodName", methRHS);
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strThree);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 								}
 							}
 						}
@@ -673,7 +709,9 @@ public class ConstraintsComparison {
 									valuesMap.put("paramRhsAphaMethStr", Rhsmethalpha);
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strFive);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 
 								} else if (symbolStr.equals("<")) {
 
@@ -686,7 +724,9 @@ public class ConstraintsComparison {
 
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strSix);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 								}
 							}
 						}
@@ -710,7 +750,9 @@ public class ConstraintsComparison {
 									valuesMap.put("paramRhsNumStr", paramRhsNumStr);
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strFour);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 
 								} else {
 
@@ -721,7 +763,9 @@ public class ConstraintsComparison {
 									valuesMap.put("paramRhsNumStr", paramRhsNumStr);
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(strFour);
-									out.println(resolvedString);
+									composedComparsionConstraint.add(resolvedString);
+
+									//out.println(resolvedString);
 
 								}
 							}
@@ -731,6 +775,7 @@ public class ConstraintsComparison {
 			}
 		}
 
-		out.close();
+		//out.close();
+		return composedComparsionConstraint;
 	}
 }

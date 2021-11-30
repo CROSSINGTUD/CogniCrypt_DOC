@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -25,7 +26,6 @@ import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
 import crypto.rules.StateMachineGraph;
 import crypto.rules.TransitionEdge;
-import de.upb.docgen.utils.Utils;
 
 /**
  * @author Ritika Singh
@@ -36,6 +36,8 @@ public class Ensures {
 	static PrintWriter out;
 
 	private static String getTemplateverbedge() throws IOException {
+		String strDOne = Utils.getTemplatesTextString("EnsuresClauseVerb-edge");
+		/*
 		File fileOne = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-edge");
 		BufferedReader brOne = new BufferedReader(new FileReader(fileOne));
 		String strLineOne = "";
@@ -46,10 +48,14 @@ public class Ensures {
 			strLineOne = brOne.readLine();
 		}
 		brOne.close();
+
+		 */
 		return strDOne;
 	}
 
 	private static String getTemplateverbnounedge() throws IOException {
+		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edge");
+		/*
 		File fileTwo = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun-edge");
 		BufferedReader brTwo = new BufferedReader(new FileReader(fileTwo));
 		String strLineTwo = "";
@@ -60,10 +66,14 @@ public class Ensures {
 			strLineTwo = brTwo.readLine();
 		}
 		brTwo.close();
+
+		 */
 		return strDTwo;
 	}
 
 	private static String getTemplateverbnoun() throws IOException {
+		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseVerb-noun");
+		/*
 		File fileThree = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun");
 		BufferedReader brThree = new BufferedReader(new FileReader(fileThree));
 		String strLineThree = "";
@@ -74,10 +84,14 @@ public class Ensures {
 			strLineThree = brThree.readLine();
 		}
 		brThree.close();
-		return strDThree;
+
+		 */
+		return strDTwo;
 	}
 
 	private static String getTemplateverbnounedgeCon() throws IOException {
+		String strDCon = Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edgeCons");
+		/*
 		File fileCon = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun-edgeCons");
 		BufferedReader brCon = new BufferedReader(new FileReader(fileCon));
 		String strLineCon = "";
@@ -88,11 +102,13 @@ public class Ensures {
 			strLineCon = brCon.readLine();
 		}
 		brCon.close();
+
+		 */
 		return strDCon;
 	}
 
-	public void getEnsuresThis(CrySLRule rule) throws IOException {
-
+	public ArrayList<String> getEnsuresThis(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
+		ArrayList<String> composedEnsures = new ArrayList<>();
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
 
@@ -103,14 +119,16 @@ public class Ensures {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
-
+/*
 		String path = "./Output/" + classnamecheck + "_doc.txt";
 		out = new PrintWriter(new FileWriter(path, true));
+
+ */
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
 
-		List<CrySLPredicate> predsThisList = rule.getPredicates().stream().filter(e -> e.toString().contains("this"))
+		List<CrySLPredicate> predsThisList = rule.getPredicates().stream().filter(e -> e.toString().contains("this") && !e.toString().contains("!"))
 				.collect(Collectors.toList()); 
 
 		if (predsThisList.size() > 0) {
@@ -175,17 +193,21 @@ public class Ensures {
 								verb = verbOrNounList.get(0);
 								String verbedge = getTemplateverbedge();
 								Map<String, String> valuesMap = new HashMap<String, String>();
+								verb = toHoverLink(rule, stringListMap, verb);
 								valuesMap.put("verb", verb);
 								valuesMap.put("edgeName", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbedge);
-								out.println(resolvedString);
+								composedEnsures.add(resolvedString);
+								//out.println(resolvedString);
 							}
 
 							else {
 								verb = verbOrNounList.get(0);
 								noun = verbOrNounList.subList(1, verbOrNounList.size());
 								String nouns = String.join(" ", noun);
+
+								nouns = toHoverLink(rule, stringListMap, nouns, predTNameStr);
 
 								if (msplit.get(0).contains(classnamecheck)) {
 
@@ -197,7 +219,9 @@ public class Ensures {
 
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(verbedge);
-									out.println(resolvedString);
+									//out.println(resolvedString);
+									composedEnsures.add(resolvedString);
+
 									break;
 								}
 								String verbnounedge = getTemplateverbnounedge();
@@ -208,7 +232,9 @@ public class Ensures {
 
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbnounedge);
-								out.println(resolvedString);
+								//out.println(resolvedString);
+								composedEnsures.add(resolvedString);
+
 							}
 							break;
 						}
@@ -226,15 +252,62 @@ public class Ensures {
 						String verbnoun = getTemplateverbnoun();
 						Map<String, String> valuesMap = new HashMap<String, String>();
 						valuesMap.put("verb", verb);
-						valuesMap.put("noun", nouns);
+						valuesMap.put("noun", toHoverLink(rule, stringListMap, nouns, predTNameStr));
 
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(verbnoun);
-						out.println(resolvedString);
+						//out.println(resolvedString);
+						composedEnsures.add(resolvedString);
+
 					}
 				}
 			}
 		}
-		out.close();
+		//out.close();
+		return composedEnsures;
+	}
+
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word, String predicate) {
+		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
+		for (Map<String, List<String>> maps : requiresOfClasses) {
+			if (maps.containsKey(predicate)) {
+				String classToLink = word;
+				word = "<span class=\"tooltip\">" + word;
+				String tooltiptext = "<span class=\"tooltiptext\">The following classes can require this predicate:\n";
+				String classesLinks = htmlLinksClass(stringListMap.get(rule.getClassName()), predicate);
+				String end = "</span></span>";
+
+				word += tooltiptext + classesLinks + end;
+			}
+		}
+		return word;
+	}
+
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word) {
+		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
+		for (Map<String, List<String>> maps : requiresOfClasses) {
+			if (maps.containsKey(word)) {
+				String classToLink = word;
+				word = "<span class=\"tooltip\">" + word;
+				String tooltiptext = "<span class=\"tooltiptext\">The following classes can require this predicate:\n";
+				String classesLinks = htmlLinksClass(stringListMap.get(rule.getClassName()), classToLink);
+				String end = "</span></span>";
+
+				word += tooltiptext + classesLinks + end;
+			}
+		}
+		return word;
+	}
+
+	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
+		StringBuilder sb = new StringBuilder();
+		for (Map<String, List <String>> map : maps) {
+			if (map.containsKey(var1)) {
+				for (String className : map.get(var1)) {
+					sb.append("<a href=\"").append(className).append(".html\">").append(className).append("</a>\n");
+				}
+			}
+		}
+		return sb.toString();
 	}
 }
