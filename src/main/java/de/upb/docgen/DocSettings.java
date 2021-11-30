@@ -175,9 +175,9 @@ public class DocSettings {
                 + "\nAdditional arguments that can be used are:\n"
                 + "--booleanA <To hide state machine graph>\n"
                 + "--booleanB <To hide help>\n"
-                + "--booleanC <To turn of graphviz generation\n"
-                + "--booleanD <To hide dependency trees>\n"
-                + "--booleanE <To hide CrySL rule\n"
+                + "--booleanC <To hide dependency trees>\n"
+                + "--booleanD <To hide CrySL rule\n"
+                + "--booleanE <To turn of graphviz generation\n"
                 + "--booleanF <To copy CrySL rules into documentation folder>\n"; //Relative Paths for FTL templates if distributed
         System.out.println(errorMessage);
     }

@@ -319,8 +319,9 @@
         <#list rule.negatesPredicates as np>${np}
         </#list>
     </p>
-    <#if booleanD>
+
 </div>
+<#if booleanC>
     <button class="collapsible">Requires Tree</button>
     <div class="content">
         <div class="spoiler" id="spoiler" style="display:none">
@@ -385,7 +386,7 @@
         </div>
     </div>
 </#if>
-<#if booleanE>
+<#if booleanD>
     <button class="collapsible">CrySL Rule</button>
     <div class="content">
         <div class="spoiler" id="spoiler" style="display:none">
