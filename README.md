@@ -1,4 +1,7 @@
 # CogniCrypt_DOC
+This repo contains the implementation of CogniCrypt_DOC. The project generates html-based documentation utilising a domain specific language called CrySL. The master thesis developed a prototype that generates natural language documentation based on CrySL rules and templates. The Bachelor thesis built on top of that prototype to improve the tool and the generated documentation by utilising FTL templates.
+
+The html-based documentation can be found in the zip file `generated_doc_and_code_example`. The entrypoint of the documentation is the `rootpage.html` file.
 
  Bachelor Thesis Topic:
  ```
@@ -12,7 +15,6 @@
     Transforming API Usage
     Specification to API Documentation
 
-This project generates html-based documentation utilsing a domain specific language called CrySL.
 The "Output" folder contains the generated documentation of the master thesis implementation for each class.
 
 ## Build
@@ -34,14 +36,14 @@ java -jar <path-to-docgen-jar>
       --reportPath <absolute_path_to_generate_documentation>
 ```
 
-Other additional arguments:
+By default are all features of the html-based documentation enabled. To turn off features speficy the following additional arguments:
 
 ```
 --booleanA <To hide state machine graph>
---booleanB <To hide help>
---booleanC <To turn of graphviz generation
---booleanD <To hide dependency trees>
---booleanE <To hide CrySL rule>
+--booleanB <To hide help button>
+--booleanC <To hide dependency trees sections>
+--booleanD <To hide CrySL rule section>
+--booleanE <To turn of graphviz generation>
 --booleanF <To copy CrySL rules into documentation folder>
 ```
 
