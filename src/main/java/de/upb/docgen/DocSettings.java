@@ -20,6 +20,7 @@ public class DocSettings {
     private boolean booleanD = true;
     private boolean booleanE = true;
     private boolean booleanF = true;
+    private boolean booleanG = true;
 
     private DocSettings() {
 
@@ -92,6 +93,14 @@ public class DocSettings {
         this.booleanE = booleanE;
     }
 
+    public boolean isBooleanG() {
+        return booleanG;
+    }
+
+    public void setBooleanG(boolean booleanG) {
+        this.booleanG = booleanG;
+    }
+
     /**
      * Basic parsing functions see showErrorMessage method for flag explanations. Sets paths and booleans for templates.
      * @param settings flags provided developer on the CLI
@@ -142,6 +151,9 @@ public class DocSettings {
                 case "--booleanf":
                     setBooleanF(false);
                     break;
+                case "--booleang":
+                    setBooleanG(false);
+                    break;
                 default:
                     showErrorMessage(settings[i]);
                     System.exit(255);
@@ -178,7 +190,8 @@ public class DocSettings {
                 + "--booleanC <To hide dependency trees>\n"
                 + "--booleanD <To hide CrySL rule\n"
                 + "--booleanE <To turn of graphviz generation\n"
-                + "--booleanF <To copy CrySL rules into documentation folder>\n"; //Relative Paths for FTL templates if distributed
+                + "--booleanF <To copy CrySL rules into documentation folder>\n" //Relative Paths for FTL templates if distributed
+                + "--booleanG <To turn on fully qualified name in state machine graph>\n";
         System.out.println(errorMessage);
     }
 

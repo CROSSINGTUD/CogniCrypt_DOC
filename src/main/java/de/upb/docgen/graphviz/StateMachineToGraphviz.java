@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +91,8 @@ public class StateMachineToGraphviz {
             stringBuilderToFile.append(" [label = ");
             stringBuilderToFile.append("\"");
             for (CrySLMethod label : edge.getLabel()) {
-                String labelName = label.getName();
+                //if booleanG flag is parsed use fully qualified name as edge label
+                String labelName = !DocSettings.getInstance().isBooleanG() ? label.getName() : getShortName(label);
                 for (Map.Entry<String,String> method: label.getParameters()) {
                     if (!method.getValue().equals("AnyType")) labelName = labelName.replace(method.getKey(), method.getValue());
                 }
@@ -104,6 +106,28 @@ public class StateMachineToGraphviz {
         return stringBuilderToFile.toString();
 
 
+    }
+
+    private static String getShortName(CrySLMethod label) {
+        StringBuilder stmntBuilder = new StringBuilder();
+        String returnValue = (String)label.getRetObject().getKey();
+        if (!"_".equals(returnValue)) {
+            stmntBuilder.append(returnValue);
+            stmntBuilder.append(" = ");
+        }
+
+        stmntBuilder.append(label.getShortMethodName());
+        stmntBuilder.append("(");
+        Iterator paramIter = label.getParameters().iterator();
+
+        while(paramIter.hasNext()) {
+            Map.Entry<String, String> par = (Map.Entry)paramIter.next();
+            stmntBuilder.append((String)par.getKey());
+            if (paramIter.hasNext()) stmntBuilder.append(", ");
+        }
+
+        stmntBuilder.append("); ");
+        return stmntBuilder.toString();
     }
 
     public static void toPNG(String name) {
