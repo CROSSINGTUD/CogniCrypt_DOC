@@ -11,6 +11,8 @@ import de.upb.docgen.DocSettings;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -143,7 +145,8 @@ public class Utils {
 
 
 	public static char[] getTemplatesText(String templateName) throws IOException {
-		File file = new File(DocSettings.getInstance().getLangTemplatesPath()+"\\"+templateName);
+		Path template = Paths.get(DocSettings.getInstance().getLangTemplatesPath(), templateName);
+		File file = template.toFile();
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
 		char[] buff = new char[500];
@@ -156,7 +159,8 @@ public class Utils {
 	}
 
 	public static String getTemplatesTextString(String templateName) throws IOException {
-		File file = new File(DocSettings.getInstance().getLangTemplatesPath()+"\\"+templateName);
+		Path template = Paths.get(DocSettings.getInstance().getLangTemplatesPath(), templateName);
+		File file = template.toFile();
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
 		String strD = "";
