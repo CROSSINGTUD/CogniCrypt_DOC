@@ -9,6 +9,8 @@ import freemarker.template.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -30,7 +32,8 @@ public class FreeMarkerWriter {
         Map<String, Object> input = new HashMap<String, Object>();
         input.put("title", "Sidebar");
         input.put("rules", composedRuleList);
-        Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "sidebar.ftl"));
+        Path sidebarFilePath = Paths.get(DocSettings.getInstance().getFtlTemplatesPath(),"sidebar.ftl");
+        Template template = cfg.getTemplate(sidebarFilePath.toFile().getName());
         // 2.3. Generate the output
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"navbar.html"))) {
             template.process(input, fileWriter);
@@ -71,7 +74,8 @@ public class FreeMarkerWriter {
             input.put("booleanF", f);
 
             // 2.2. Get the template
-            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+"singleclass.ftl"));
+            File templateFile = new File(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "singleclass.ftl");
+            Template template = cfg.getTemplate(templateFile.getName());
 
             //create composedRules directory where single pages are stored
             new File(DocSettings.getInstance().getReportDirectory()+"/"+"composedRules/").mkdir();
@@ -88,7 +92,7 @@ public class FreeMarkerWriter {
      */
     public static void setupFreeMarker(Configuration cfg) {
         // setup freemarker to load absolute paths
-        cfg.setTemplateLoader(new TemplateAbsolutePathLoader());
+        //cfg.setTemplateLoader(new TemplateAbsolutePathLoader());
         // Some other recommended settings:
         cfg.setDefaultEncoding("UTF-8");
         cfg.setLocale(Locale.ENGLISH);
@@ -103,18 +107,21 @@ public class FreeMarkerWriter {
      */
     public static void createCogniCryptLayout(Configuration cfg) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
-        /* Not used anymore
-        Template headerTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "header.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"header.html"))) {
-            headerTemplate.process(input, fileWriter);
-        }
 
-         */
-        Template frontpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "frontpage.ftl"));
+        Path frontpageFilePath = Paths.get(DocSettings.getInstance().getFtlTemplatesPath(),"frontpage.ftl");
+        File frontpageFile = frontpageFilePath.toFile();
+        File templateDir = frontpageFile.getParentFile();
+        if ( null == templateDir ){
+            templateDir = new File("./");
+        }
+        cfg.setDirectoryForTemplateLoading(templateDir);
+        Template frontpageTemplate = cfg.getTemplate(frontpageFile.getName());
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
             frontpageTemplate.process(input, fileWriter);
         }
-        Template rootpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "rootpage.ftl"));
+
+        Path rootpageFilePath = Paths.get(DocSettings.getInstance().getFtlTemplatesPath(),"rootpage.ftl");
+        Template rootpageTemplate = cfg.getTemplate(rootpageFilePath.toFile().getName());
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"rootpage.html"))) {
             rootpageTemplate.process(input, fileWriter);
         }

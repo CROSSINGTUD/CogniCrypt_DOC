@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -131,8 +133,11 @@ public class StateMachineToGraphviz {
     }
 
     public static void toPNG(String name) {
-        try {    MutableGraph g = new Parser().read(new File("dotFSMs\\" + name +".dot"));
-            Graphviz.fromGraph(g).render(Format.SVG).toFile(new File("dotFSMs/" +name +".svg"));
+        try {    
+            Path dot = Paths.get("dotFSMs", name + ".dot");
+            MutableGraph g = new Parser().read(dot.toFile());
+            Path svg = Paths.get("dotFSMs", name + ".svg");
+            Graphviz.fromGraph(g).render(Format.SVG).toFile(svg.toFile());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -140,8 +145,11 @@ public class StateMachineToGraphviz {
     }
     //reads the dot translation and creates a png file that is later used by the FTL template
     public static void toPNG(String name, String pathToRootpage) {
-        try {    MutableGraph g = new Parser().read(new File(pathToRootpage+"\\"+"dotFSMs\\" + name +".dot"));
-            Graphviz.fromGraph(g).render(Format.SVG).toFile(new File(pathToRootpage+"/"+"dotFSMs/" +name +".svg"));
+        try {    
+            Path dotPath = Paths.get(pathToRootpage, "dotFSMs", name + ".dot");
+            MutableGraph g = new Parser().read(dotPath.toFile());
+            Path svgPath = Paths.get(pathToRootpage, "dotFSMs", name + ".svg");
+            Graphviz.fromGraph(g).render(Format.SVG).toFile(svgPath.toFile());
 
         } catch (IOException e) {
             e.printStackTrace();
