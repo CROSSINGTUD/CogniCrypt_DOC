@@ -1,6 +1,9 @@
 package de.upb.docgen;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import crypto.rules.CrySLPredicate;
@@ -25,12 +28,28 @@ public class DocumentGeneratorMain {
 
 	public static void main(String[] args) throws IOException, TemplateException {
 		//create singleton to access parsed flags from other classes
+		System.out.println("Starting the documentation generation.");
+		Map<File, CrySLRule> rules;
 		DocSettings docSettings = DocSettings.getInstance();
 		docSettings.parseSettingsFromCLI(args);
-		//generate Graphviz dot and pngs set --booleanC to turnOff generation
-		if(docSettings.isBooleanE()) StateMachineToGraphviz.generateGraphvizStateMachines(docSettings.getRulesetPathDir(),docSettings.getReportDirectory());
 		//read CryslRules from absolutePath provided by the user
-		Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+		if (docSettings.getRulesetPathDir() != null) {
+			rules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+			//Generate dot files from given ruleset
+			if(docSettings.isBooleanE()) {
+				System.out.println("Generating the statemachine files from " + docSettings.getRulesetPathDir() + ".");
+				StateMachineToGraphviz.generateGraphvizStateMachines(docSettings.getRulesetPathDir(),docSettings.getReportDirectory());
+			}
+		} else {
+			//read rules from jar resources
+			rules = CrySLReader.readRulesFromJar();
+			//generate dot files from jar resources
+			if(docSettings.isBooleanE()) {
+				System.out.println("Generating the statemachine files from default resources.");
+				StateMachineToGraphviz.generateGraphvizStateMachines(docSettings.getReportDirectory());
+			}
+		}
+		//read CryslRules from absolutePath provided by the user
 
 		ClassEventForb cef = new ClassEventForb();
 		ConstraintsVc valueconstraint = new ConstraintsVc();
@@ -122,22 +141,23 @@ public class DocumentGeneratorMain {
 
 
 		//Freemarker Setup and create cognicryptdoc html pages
+		System.out.println("Using FreeMarker to generate the html files of the documentation.");
 		Configuration cfg = new Configuration(new Version(2, 3, 20));
 		FreeMarkerWriter.setupFreeMarker(cfg);
 		FreeMarkerWriter.createCogniCryptLayout(cfg);
 		FreeMarkerWriter.createSidebar(composedRuleList, cfg);
 		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE() , docSettings.isBooleanF());
-		//copy CryslRulesFolder into generated Cognicrypt folder
-		//specifify this flag to distribute the documentation
-		if (!docSettings.isBooleanF()) {
-			File source = new File(docSettings.getRulesetPathDir());
-			File dest = new File(docSettings.getReportDirectory() + File.separator + "rules");
-			try {
-				FileUtils.copyDirectory(source, dest);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		new File(docSettings.getReportDirectory() + File.separator + "rules").mkdir();
+		Map<File, CrySLRule> rulesDist;
+		if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
+			rulesDist = CrySLReader.readRulesFromJar();
+		} else {
+			rulesDist = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
 		}
+		for (File f : rulesDist.keySet()) {
+			Files.copy(f.toPath(), Paths.get(docSettings.getReportDirectory() , "rules", f.getName()), StandardCopyOption.REPLACE_EXISTING);
+		}
+		System.out.println("Generated the documentation to " + docSettings.getReportDirectory());
 
 
 

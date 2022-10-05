@@ -19,6 +19,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.upb.docgen.crysl.CrySLReader;
+import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 
 import crypto.rules.CrySLRule;
@@ -50,6 +52,12 @@ public class Order {
 			ex.printStackTrace();
 		}
 		return fileNames;
+	}
+
+	private static List<File> getCryslFiles() throws IOException {
+		Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(DocSettings.getInstance().getRulesetPathDir());
+		return new ArrayList<>(rules.keySet());
+
 	}
 
 	// reading the file and adding it to map(k,v), k- event , v- content inside it
@@ -84,7 +92,16 @@ public class Order {
 		Properties properties = new Properties();
 
 		try {
-			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath()+"/symbol.properties");
+			File fileone;
+			String pathToSymbolPropertiesFolder;
+			if (DocSettings.getInstance().getLangTemplatesPath() == null) {
+				pathToSymbolPropertiesFolder = Order.class.getResource("/Templates").getPath();
+				String folderName = pathToSymbolPropertiesFolder.substring(pathToSymbolPropertiesFolder.lastIndexOf("/") + 1);
+				fileone = Utils.extract(folderName + "/symbol.properties");
+			} else {
+				pathToSymbolPropertiesFolder = DocSettings.getInstance().getLangTemplatesPath();
+				fileone = new File(pathToSymbolPropertiesFolder+"/symbol.properties");
+			}
 			FileInputStream fileInput = new FileInputStream(fileone);
 			properties.load(fileInput);
 			fileInput.close();
@@ -350,7 +367,7 @@ public class Order {
 	public List<String> runOrder(CrySLRule rule, File file) throws IOException {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
-		List<File> fileNames = getCryslFiles(FOLDER_PATH);
+		//List<File> fileNames = getCryslFiles(FOLDER_PATH);
 
 		// for (File file : fileNames)
 

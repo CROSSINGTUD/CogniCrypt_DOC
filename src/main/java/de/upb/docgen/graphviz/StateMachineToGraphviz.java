@@ -37,7 +37,16 @@ public class StateMachineToGraphviz {
     //Runs the translation and generation of PNG for every rule
     public static void generateGraphvizStateMachines(String pathToCryslRules, String pathToRootpage) throws IOException {
         Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(pathToCryslRules);
-        new File(pathToRootpage+"/"+"dotFSMs/").mkdir();
+        new File(pathToRootpage + "/" + "dotFSMs/").mkdir();
+        for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
+            rulesOrderSectionToDot(ruleEntry.getValue(), pathToRootpage);
+            toPNG(ruleEntry.getValue().getClassName(), pathToRootpage);
+        }
+    }
+
+    public static void generateGraphvizStateMachines(String pathToRootpage) throws IOException {
+        Map<File, CrySLRule> rules = CrySLReader.readRulesFromJar();
+        new File(pathToRootpage + "/" + "dotFSMs/").mkdir();
         for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
             rulesOrderSectionToDot(ruleEntry.getValue(), pathToRootpage);
             toPNG(ruleEntry.getValue().getClassName(), pathToRootpage);
