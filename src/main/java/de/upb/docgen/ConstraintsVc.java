@@ -81,7 +81,7 @@ public class ConstraintsVc {
 			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
 		}
 
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -94,7 +94,7 @@ public class ConstraintsVc {
 		String paraPosInWordValStr = null;
 
 		List<ISLConstraint> constraintVCList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLValueConstraint"))
+				.filter(e -> e.getClass().getSimpleName().contains("CrySLValueConstraint"))
 				.collect(Collectors.toList());
 
 		if (constraintVCList.size() > 0) {
@@ -147,7 +147,7 @@ public class ConstraintsVc {
 							for (String extractParamStr : extractParamList) {
 								if (!DTMap.containsKey(extractParamStr)) {
 								} else {
-									String value = DTMap.get(extractParamStr).toString();
+									String value = DTMap.get(extractParamStr);
 									m = m.replace(extractParamStr, value);
 								}
 							}

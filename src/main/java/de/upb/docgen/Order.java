@@ -55,7 +55,7 @@ public class Order {
 	}
 
 	private static List<File> getCryslFiles() throws IOException {
-		Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(DocSettings.getInstance().getRulesetPathDir());
+		Map<File, CrySLRule> rules = CrySLReader.readCrySLRuleFromSourceFiles(DocSettings.getInstance().getRulesetPathDir());
 		return new ArrayList<>(rules.keySet());
 
 	}
@@ -219,7 +219,7 @@ public class Order {
 							if (!objectMap.containsKey(extractParamList.get(y))) {
 							} else {
 
-								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+								dataTypevalue = objectMap.get(extractParamList.get(y));
 
 								Pattern word = Pattern.compile(extractParamList.get(y));
 								Matcher match = word.matcher(methodLabelStr);
@@ -240,7 +240,7 @@ public class Order {
 							if (!objectMap.containsKey(extractParamList.get(y))) {
 							} else {
 
-								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+								dataTypevalue = objectMap.get(extractParamList.get(y));
 
 								Pattern word = Pattern.compile(extractParamList.get(y));
 								Matcher match = word.matcher(methodLabelStr);
@@ -303,7 +303,7 @@ public class Order {
 							if (!objectMap.containsKey(extractParamList.get(y))) {
 							} else {
 
-								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+								dataTypevalue = objectMap.get(extractParamList.get(y));
 
 								Pattern word = Pattern.compile(extractParamList.get(y));
 								Matcher match = word.matcher(methodLabelStr);
@@ -324,7 +324,7 @@ public class Order {
 							if (!objectMap.containsKey(extractParamList.get(y))) {
 							} else {
 
-								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+								dataTypevalue = objectMap.get(extractParamList.get(y));
 
 								Pattern word = Pattern.compile(extractParamList.get(y));
 								Matcher match = word.matcher(methodLabelStr);
@@ -365,7 +365,7 @@ public class Order {
 	}
 
 	public List<String> runOrder(CrySLRule rule, File file) throws IOException {
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		//List<File> fileNames = getCryslFiles(FOLDER_PATH);
 

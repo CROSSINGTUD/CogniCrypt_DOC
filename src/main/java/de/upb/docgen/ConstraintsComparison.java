@@ -184,7 +184,7 @@ public class ConstraintsComparison {
 	public ArrayList<String> getConstriantsComp(CrySLRule rule) throws IOException {
 		ArrayList<String> composedComparsionConstraint =  new ArrayList<>();
 		List<ISLConstraint> constraintCompConList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLComparisonConstraint"))
+				.filter(e -> e.getClass().getSimpleName().contains("CrySLComparisonConstraint"))
 				.collect(Collectors.toList());
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
@@ -193,7 +193,7 @@ public class ConstraintsComparison {
 			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
 		}
 
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -228,7 +228,7 @@ public class ConstraintsComparison {
 						for (String methodStr : methods) {
 
 							String result = StringUtils.substringBetween(methodStr, "(", ")");
-							List<String> resList = Arrays.asList(result.split(","));
+							String[] resList = result.split(",");
 
 							for (String r : resList) {
 
@@ -253,7 +253,7 @@ public class ConstraintsComparison {
 									for (String extractParamStr : extractParamList) {
 										if (!DTMap.containsKey(extractParamStr)) {
 										} else {
-											String value = DTMap.get(extractParamStr).toString();
+											String value = DTMap.get(extractParamStr);
 											m = m.replaceFirst(extractParamStr, value);
 										}
 									}
@@ -529,7 +529,7 @@ public class ConstraintsComparison {
 						for (String methodStr : methods) {
 
 							String result = StringUtils.substringBetween(methodStr, "(", ")");
-							List<String> resList = Arrays.asList(result.split(",")); // params
+							String[] resList = result.split(","); // params
 
 							for (String r : resList) {
 
@@ -563,7 +563,7 @@ public class ConstraintsComparison {
 										} else {
 											int startInd = 0;
 											int endInd = 0;
-											String value = DTMap.get(extractParamStr).toString();
+											String value = DTMap.get(extractParamStr);
 
 											Pattern word = Pattern.compile(extractParamStr);
 											Matcher match = word.matcher(m);

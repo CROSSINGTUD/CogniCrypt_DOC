@@ -36,21 +36,12 @@ public class FreeMarkerWriter {
         File sidebarFile;
         String pathToFTLTemplatesFolder;
         if (DocSettings.getInstance().getLangTemplatesPath() == null) {
-            pathToFTLTemplatesFolder = Order.class.getResource("/FTLTemplates").getPath();
-            String folderName = pathToFTLTemplatesFolder.substring(pathToFTLTemplatesFolder.lastIndexOf("/") + 1);
-            //sidebarFile = Utils.extract(folderName + "/sidebar.ftl");
             sidebarFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar("sidebar.ftl");
         } else {
             pathToFTLTemplatesFolder = DocSettings.getInstance().getLangTemplatesPath();
             sidebarFile = new File(pathToFTLTemplatesFolder+"/sidebar.ftl");
         }
-        //Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "sidebar.ftl"));
-        System.out.println(sidebarFile.getAbsolutePath());
         Template template = cfg.getTemplate(sidebarFile.getName());
-
-        //Path sidebarFilePath = Paths.get(DocSettings.getInstance().getFtlTemplatesPath(),"sidebar.ftl");
-        //Template template = cfg.getTemplate(sidebarFilePath.toFile().getName());
-        // 2.3. Generate the output
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"navbar.html"))) {
             template.process(input, fileWriter);
         }
@@ -78,9 +69,6 @@ public class FreeMarkerWriter {
             input.put("requires", rootReq); //requires tree parsed by the template
             TreeNode<String> rootEns = ensToReq.get(rule.getComposedClassName());
             input.put("ensures", rootEns); //ensures tree parsed by the template
-
-            //necessary input for the template to load abslote path from crysl rule which can be displayed
-            input.put("pathToRules", Utils.pathForTemplates("file://"+DocSettings.getInstance().getReportDirectory()+"/rules"));
             //Set flags
             input.put("booleanA", a); //To show StateMachineGraph
             input.put("booleanB", b); //To show Help Button
@@ -89,13 +77,9 @@ public class FreeMarkerWriter {
             input.put("booleanE", e);
             input.put("booleanF", f);
 
-            // 2.2. Get the template
-            //File templateFile = new File(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "singleclass.ftl");
             File singleclassFile;
             String pathToFTLTemplatesFolder;
             if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
-                pathToFTLTemplatesFolder = Order.class.getResource("/FTLTemplates").getPath();
-                String folderName = pathToFTLTemplatesFolder.substring(pathToFTLTemplatesFolder.lastIndexOf("/") + 1);
                 singleclassFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar("singleclass.ftl");
             } else {
                 pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
@@ -117,9 +101,7 @@ public class FreeMarkerWriter {
      * @param cfg
      */
     public static void setupFreeMarker(Configuration cfg) {
-        // setup freemarker to load absolute paths
-        //cfg.setTemplateLoader(new TemplateAbsolutePathLoader());
-        // Some other recommended settings:
+        // Recommended settings:
         cfg.setDefaultEncoding("UTF-8");
         cfg.setLocale(Locale.ENGLISH);
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
@@ -137,17 +119,11 @@ public class FreeMarkerWriter {
         File frontpageFile;
         String pathToFTLTemplatesFolder;
         if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
-            pathToFTLTemplatesFolder = Order.class.getResource("/FTLTemplates").getPath();
-            String folderName = pathToFTLTemplatesFolder.substring(pathToFTLTemplatesFolder.lastIndexOf("/") + 1);
             frontpageFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar( "frontpage.ftl");
         } else {
             pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
             frontpageFile = new File(pathToFTLTemplatesFolder+"/frontpage.ftl");
         }
-
-        //Path frontpageFilePath = Paths.get(DocSettings.getInstance().getFtlTemplatesPath(),"frontpage.ftl");
-        //Path frontpageFilePath = frontpageFile.toPath();
-        //File frontpage = frontpageFilePath.toFile();
         File templateDir = frontpageFile.getParentFile();
         if ( null == templateDir ){
             templateDir = new File("./");
@@ -159,8 +135,6 @@ public class FreeMarkerWriter {
         }
         File rootpageFile;
         if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
-            pathToFTLTemplatesFolder = Order.class.getResource("/FTLTemplates").getPath();
-            String folderName = pathToFTLTemplatesFolder.substring(pathToFTLTemplatesFolder.lastIndexOf("/") + 1);
             rootpageFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar("rootpage.ftl");
         } else {
             pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();

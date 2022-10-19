@@ -22,14 +22,7 @@ import java.util.*;
  */
 
 public class Utils {
-	public static File getFileFromResources(String fileName) {
-		URL resource = Utils.class.getResource(fileName);
-		if (resource == null) {
-			throw new IllegalArgumentException("File could not be found!");
-		} else {
-			return new File(resource.getFile());
-		}
-	}
+
 
 	public static String replaceLast(String string, String toReplace, String replacement) {
 		int pos = string.lastIndexOf(toReplace);
@@ -189,10 +182,6 @@ public class Utils {
 		}
 		br.close();
 		return strD + "\n";
-	}
-
-	public static String pathForTemplates(String path) {
-		return path.replaceAll("\\\\","/");
 	}
 
 

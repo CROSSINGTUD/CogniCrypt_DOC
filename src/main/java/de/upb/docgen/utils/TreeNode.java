@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TreeNode<T>{
     private T data = null;
-    private List<TreeNode> children = new ArrayList<>();
+    private final List<TreeNode> children = new ArrayList<>();
     private TreeNode parent = null;
 
     public TreeNode(T data) {

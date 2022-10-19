@@ -131,7 +131,7 @@ public class ConstraintCrySLandencmode {
 
 	public ArrayList<String> getConCryslandenc(CrySLRule rule) throws IOException {
 		ArrayList<String> composedConAndEnc = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -141,7 +141,7 @@ public class ConstraintCrySLandencmode {
 		 */
 
 		List<ISLConstraint> constraintConencmodeList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")
+				.filter(e -> e.getClass().getSimpleName().contains("CrySLConstraint")
 						&& e.toString().contains("andencmode"))
 				.collect(Collectors.toList());
 
@@ -217,7 +217,7 @@ public class ConstraintCrySLandencmode {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -302,7 +302,7 @@ public class ConstraintCrySLandencmode {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -372,7 +372,7 @@ public class ConstraintCrySLandencmode {
 					for (String RHSStr : RHSList) {
 
 						if (RHSStr.startsWith("noCall")) {
-							List<String> NCList = Arrays.asList(RHSStr.split(","));
+							String[] NCList = RHSStr.split(",");
 							String nocall = "";
 							String finalnocallstring = "";
 
@@ -404,7 +404,7 @@ public class ConstraintCrySLandencmode {
 									}
 
 									for (String extractParamStr : extractParamList) {
-										String value = DTMap.get(extractParamStr).toString();
+										String value = DTMap.get(extractParamStr);
 										tempStr = tempStr.replace(extractParamStr, value);
 									}
 									fList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
@@ -423,7 +423,7 @@ public class ConstraintCrySLandencmode {
 
 						} else if (RHSStr.startsWith("call")) {
 
-							List<String> CList = Arrays.asList(RHSStr.split(","));
+							String[] CList = RHSStr.split(",");
 							String call = "";
 							String finalcallstring = "";
 
@@ -456,7 +456,7 @@ public class ConstraintCrySLandencmode {
 
 									for (String extractParamStr : extractParamList) {
 										if (!extractParamStr.isEmpty()) {
-											String value = DTMap.get(extractParamStr).toString();
+											String value = DTMap.get(extractParamStr);
 											tempStr = tempStr.replace(extractParamStr, value);
 										}
 									}

@@ -415,7 +415,7 @@
                                                                            href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
         </p>
         <iframe src="../rules/${rule.onlyRuleName}.crysl"
-        onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));'
+        onload='(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));'
         style="height:100%;width:100%;border:none;overflow:hidden;"></iframe>
     </div>
 </#if>

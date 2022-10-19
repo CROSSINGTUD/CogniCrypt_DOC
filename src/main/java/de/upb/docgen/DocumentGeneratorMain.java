@@ -11,12 +11,10 @@ import crypto.rules.CrySLRule;
 import de.upb.docgen.crysl.CrySLReader;
 import de.upb.docgen.graphviz.StateMachineToGraphviz;
 import de.upb.docgen.utils.PredicateTreeGenerator;
-import de.upb.docgen.utils.TemplateAbsolutePathLoader;
 import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
 import de.upb.docgen.writer.FreeMarkerWriter;
 import freemarker.template.*;
-import org.apache.commons.io.FileUtils;
 
 /**
  * @author Ritika Singh
@@ -34,7 +32,7 @@ public class DocumentGeneratorMain {
 		docSettings.parseSettingsFromCLI(args);
 		//read CryslRules from absolutePath provided by the user
 		if (docSettings.getRulesetPathDir() != null) {
-			rules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+			rules = CrySLReader.readCrySLRuleFromSourceFiles(docSettings.getRulesetPathDir());
 			//Generate dot files from given ruleset
 			if(docSettings.isBooleanE()) {
 				System.out.println("Generating the statemachine files from " + docSettings.getRulesetPathDir() + ".");
@@ -152,7 +150,7 @@ public class DocumentGeneratorMain {
 		if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
 			rulesDist = CrySLReader.readRulesFromJar();
 		} else {
-			rulesDist = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+			rulesDist = CrySLReader.readCrySLRuleFromSourceFiles(docSettings.getRulesetPathDir());
 		}
 		for (File f : rulesDist.keySet()) {
 			Files.copy(f.toPath(), Paths.get(docSettings.getReportDirectory() , "rules", f.getName()), StandardCopyOption.REPLACE_EXISTING);

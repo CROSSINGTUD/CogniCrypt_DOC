@@ -12,7 +12,6 @@ import guru.nidi.graphviz.parse.Parser;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
@@ -28,7 +27,7 @@ public class StateMachineToGraphviz {
 
     //To run this process on his own not used in the actual generation process
     public static void main(String[] args) throws IOException {
-        Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(Constant.rulePath);
+        Map<File, CrySLRule> rules = CrySLReader.readCrySLRuleFromSourceFiles(Constant.rulePath);
         for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
             rulesOrderSectionToDot(ruleEntry.getValue());
             toPNG(ruleEntry.getValue().getClassName());
@@ -36,7 +35,7 @@ public class StateMachineToGraphviz {
     }
     //Runs the translation and generation of PNG for every rule
     public static void generateGraphvizStateMachines(String pathToCryslRules, String pathToRootpage) throws IOException {
-        Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(pathToCryslRules);
+        Map<File, CrySLRule> rules = CrySLReader.readCrySLRuleFromSourceFiles(pathToCryslRules);
         new File(pathToRootpage + "/" + "dotFSMs/").mkdir();
         for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
             rulesOrderSectionToDot(ruleEntry.getValue(), pathToRootpage);
@@ -93,7 +92,7 @@ public class StateMachineToGraphviz {
                else acceptingStates.append(" ").append(node.getName());
             }
         }
-        stringBuilderToFile.append(acceptingStates.toString()).append(";\n");
+        stringBuilderToFile.append(acceptingStates).append(";\n");
         stringBuilderToFile.append(States);
 
         for (TransitionEdge edge : edges) {
@@ -121,7 +120,7 @@ public class StateMachineToGraphviz {
 
     private static String getShortName(CrySLMethod label) {
         StringBuilder stmntBuilder = new StringBuilder();
-        String returnValue = (String)label.getRetObject().getKey();
+        String returnValue = label.getRetObject().getKey();
         if (!"_".equals(returnValue)) {
             stmntBuilder.append(returnValue);
             stmntBuilder.append(" = ");
@@ -133,7 +132,7 @@ public class StateMachineToGraphviz {
 
         while(paramIter.hasNext()) {
             Map.Entry<String, String> par = (Map.Entry)paramIter.next();
-            stmntBuilder.append((String)par.getKey());
+            stmntBuilder.append(par.getKey());
             if (paramIter.hasNext()) stmntBuilder.append(", ");
         }
 
@@ -141,6 +140,7 @@ public class StateMachineToGraphviz {
         return stmntBuilder.toString();
     }
 
+    //For running this class alone. PNGs are created in the current directory.
     public static void toPNG(String name) {
         try {    
             Path dot = Paths.get("dotFSMs", name + ".dot");
