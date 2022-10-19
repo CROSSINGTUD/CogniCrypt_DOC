@@ -33,18 +33,9 @@ public class FreeMarkerWriter {
         Map<String, Object> input = new HashMap<String, Object>();
         input.put("title", "Sidebar");
         input.put("rules", composedRuleList);
-        File sidebarFile;
-        String pathToFTLTemplatesFolder;
-        if (DocSettings.getInstance().getLangTemplatesPath() == null) {
-            sidebarFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar("sidebar.ftl");
-        } else {
-            pathToFTLTemplatesFolder = DocSettings.getInstance().getLangTemplatesPath();
-            sidebarFile = new File(pathToFTLTemplatesFolder+"/sidebar.ftl");
-        }
+        File sidebarFile = getTemplateFile("sidebar.ftl");
         Template template = cfg.getTemplate(sidebarFile.getName());
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"navbar.html"))) {
-            template.process(input, fileWriter);
-        }
+        processTemplate(input, template, "navbar.html");
     }
 
     /**
@@ -77,14 +68,7 @@ public class FreeMarkerWriter {
             input.put("booleanE", e);
             input.put("booleanF", f);
 
-            File singleclassFile;
-            String pathToFTLTemplatesFolder;
-            if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
-                singleclassFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar("singleclass.ftl");
-            } else {
-                pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
-                singleclassFile = new File(pathToFTLTemplatesFolder+"/singleclass.ftl");
-            }
+            File singleclassFile = getTemplateFile("singleclass.ftl");
             Template template = cfg.getTemplate(singleclassFile.getName());
 
             //create composedRules directory where single pages are stored
@@ -117,33 +101,35 @@ public class FreeMarkerWriter {
         Map<String, Object> input = new HashMap<String, Object>();
 
         File frontpageFile;
-        String pathToFTLTemplatesFolder;
-        if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
-            frontpageFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar( "frontpage.ftl");
-        } else {
-            pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
-            frontpageFile = new File(pathToFTLTemplatesFolder+"/frontpage.ftl");
-        }
+        frontpageFile = getTemplateFile("frontpage.ftl");
         File templateDir = frontpageFile.getParentFile();
         if ( null == templateDir ){
             templateDir = new File("./");
         }
         cfg.setDirectoryForTemplateLoading(templateDir);
         Template frontpageTemplate = cfg.getTemplate(frontpageFile.getName());
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
-            frontpageTemplate.process(input, fileWriter);
-        }
-        File rootpageFile;
-        if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
-            rootpageFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar("rootpage.ftl");
-        } else {
-            pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
-            rootpageFile = new File(pathToFTLTemplatesFolder+"/rootpage.ftl");
-        }
+        processTemplate(input, frontpageTemplate, "frontpage.html");
+        File rootpageFile = getTemplateFile("rootpage.ftl");
         Template rootpageTemplate = cfg.getTemplate(rootpageFile.getName());
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"rootpage.html"))) {
+        processTemplate(input, rootpageTemplate, "rootpage.html");
+    }
+
+    private static void processTemplate(Map<String, Object> input, Template rootpageTemplate, String htmlName) throws IOException, TemplateException {
+        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+ htmlName))) {
             rootpageTemplate.process(input, fileWriter);
         }
+    }
+
+    private static File getTemplateFile(String templateName) throws IOException {
+        File frontpageFile;
+        String pathToFTLTemplatesFolder;
+        if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
+            frontpageFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar( templateName);
+        } else {
+            pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
+            frontpageFile = new File(pathToFTLTemplatesFolder + "/" + templateName);
+        }
+        return frontpageFile;
     }
 }
 
