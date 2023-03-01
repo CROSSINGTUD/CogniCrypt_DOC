@@ -94,7 +94,13 @@ public class StateMachineToGraphviz {
                 //if booleanG flag is parsed use fully qualified name as edge label
                 String labelName = !DocSettings.getInstance().isBooleanG() ? label.getName() : getShortName(label);
                 for (Map.Entry<String,String> method: label.getParameters()) {
-                    if (!method.getValue().equals("AnyType")) labelName = labelName.replace(method.getKey(), method.getValue());
+                    if (!method.getValue().equals("AnyType")) {
+                        if (DocSettings.getInstance().isBooleanG()) {
+                            labelName = labelName.replace(method.getKey(), method.getValue().substring(method.getValue().lastIndexOf(".") + 1));
+                        } else {
+                            labelName = labelName.replace(method.getKey(), method.getValue());
+                        }
+                    }
                 }
                 stringBuilderToFile.append(labelName);
             }
