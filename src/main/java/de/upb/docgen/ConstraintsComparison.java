@@ -601,9 +601,13 @@ public class ConstraintsComparison {
 							int indexOp = splitCompListTwo.indexOf("<");
 							subListLHS = splitCompListTwo.subList(0, indexOp);
 							subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
-						} else {
+						} else if (splitCompListTwo.contains(">=")) {
 
 							int indexOp = splitCompListTwo.indexOf(">=");
+							subListLHS = splitCompListTwo.subList(0, indexOp);
+							subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
+						} else {
+							int indexOp = splitCompListTwo.indexOf("!=");
 							subListLHS = splitCompListTwo.subList(0, indexOp);
 							subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
 						}
