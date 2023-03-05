@@ -327,6 +327,7 @@ public class ConstraintCrySLVC {
 								}
 							}
 						}
+						if (RHSStr.contains("noCallTo")) break; // mode() => noCallTo is not correctly handled temp fix to ensure doc generation
 						resRHSList.add(joinedRHS);
 
 						String varrhsone = resRHSList.get(1);
