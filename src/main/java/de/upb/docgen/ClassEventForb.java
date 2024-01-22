@@ -116,7 +116,7 @@ public class ClassEventForb {
 
 		 */
 
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -153,7 +153,7 @@ public class ClassEventForb {
 		}
 		reader.close();
 */
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 
@@ -268,7 +268,7 @@ public class ClassEventForb {
 		while(entryIterator.hasNext()) {
 			Entry<String, String> par = (Entry)entryIterator.next();
 
-			sb.append((String)par.getValue());
+			sb.append(par.getValue());
 			if (entryIterator.hasNext()) {
 				sb.append(", ");
 			}
@@ -302,7 +302,7 @@ public class ClassEventForb {
 		reader.close();
 		readerCon.close();
 */
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -347,7 +347,7 @@ public class ClassEventForb {
 					for (String extractParamStr : extractParamList) {
 						if (!forbMap.containsKey(extractParamStr)) {
 						} else {
-							String value = forbMap.get(extractParamStr).toString();
+							String value = forbMap.get(extractParamStr);
 							fStr = fStr.replace(extractParamStr, value);
 						}
 					}

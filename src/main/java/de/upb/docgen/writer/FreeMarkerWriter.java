@@ -1,6 +1,7 @@
 package de.upb.docgen.writer;
 
 import de.upb.docgen.*;
+import de.upb.docgen.utils.FTLTemplateLoaderFromJar;
 import de.upb.docgen.utils.TemplateAbsolutePathLoader;
 import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
@@ -9,6 +10,8 @@ import freemarker.template.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -30,11 +33,9 @@ public class FreeMarkerWriter {
         Map<String, Object> input = new HashMap<String, Object>();
         input.put("title", "Sidebar");
         input.put("rules", composedRuleList);
-        Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "sidebar.ftl"));
-        // 2.3. Generate the output
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"navbar.html"))) {
-            template.process(input, fileWriter);
-        }
+        File sidebarFile = getTemplateFile("sidebar.ftl");
+        Template template = cfg.getTemplate(sidebarFile.getName());
+        processTemplate(input, template, "navbar.html");
     }
 
     /**
@@ -59,9 +60,6 @@ public class FreeMarkerWriter {
             input.put("requires", rootReq); //requires tree parsed by the template
             TreeNode<String> rootEns = ensToReq.get(rule.getComposedClassName());
             input.put("ensures", rootEns); //ensures tree parsed by the template
-
-            //necessary input for the template to load abslote path from crysl rule which can be displayed
-            input.put("pathToRules", Utils.pathForTemplates("file://"+DocSettings.getInstance().getRulesetPathDir()));
             //Set flags
             input.put("booleanA", a); //To show StateMachineGraph
             input.put("booleanB", b); //To show Help Button
@@ -70,8 +68,8 @@ public class FreeMarkerWriter {
             input.put("booleanE", e);
             input.put("booleanF", f);
 
-            // 2.2. Get the template
-            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+"singleclass.ftl"));
+            File singleclassFile = getTemplateFile("singleclass.ftl");
+            Template template = cfg.getTemplate(singleclassFile.getName());
 
             //create composedRules directory where single pages are stored
             new File(DocSettings.getInstance().getReportDirectory()+"/"+"composedRules/").mkdir();
@@ -87,9 +85,7 @@ public class FreeMarkerWriter {
      * @param cfg
      */
     public static void setupFreeMarker(Configuration cfg) {
-        // setup freemarker to load absolute paths
-        cfg.setTemplateLoader(new TemplateAbsolutePathLoader());
-        // Some other recommended settings:
+        // Recommended settings:
         cfg.setDefaultEncoding("UTF-8");
         cfg.setLocale(Locale.ENGLISH);
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
@@ -103,21 +99,37 @@ public class FreeMarkerWriter {
      */
     public static void createCogniCryptLayout(Configuration cfg) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
-        /* Not used anymore
-        Template headerTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "header.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"header.html"))) {
-            headerTemplate.process(input, fileWriter);
-        }
 
-         */
-        Template frontpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "frontpage.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
-            frontpageTemplate.process(input, fileWriter);
+        File frontpageFile;
+        frontpageFile = getTemplateFile("frontpage.ftl");
+        File templateDir = frontpageFile.getParentFile();
+        if ( null == templateDir ){
+            templateDir = new File("./");
         }
-        Template rootpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "rootpage.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"rootpage.html"))) {
+        cfg.setDirectoryForTemplateLoading(templateDir);
+        Template frontpageTemplate = cfg.getTemplate(frontpageFile.getName());
+        processTemplate(input, frontpageTemplate, "frontpage.html");
+        File rootpageFile = getTemplateFile("rootpage.ftl");
+        Template rootpageTemplate = cfg.getTemplate(rootpageFile.getName());
+        processTemplate(input, rootpageTemplate, "rootpage.html");
+    }
+
+    private static void processTemplate(Map<String, Object> input, Template rootpageTemplate, String htmlName) throws IOException, TemplateException {
+        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+ htmlName))) {
             rootpageTemplate.process(input, fileWriter);
         }
+    }
+
+    private static File getTemplateFile(String templateName) throws IOException {
+        File frontpageFile;
+        String pathToFTLTemplatesFolder;
+        if (DocSettings.getInstance().getFtlTemplatesPath() == null) {
+            frontpageFile = FTLTemplateLoaderFromJar.readFtlTemplateFromJar( templateName);
+        } else {
+            pathToFTLTemplatesFolder = DocSettings.getInstance().getFtlTemplatesPath();
+            frontpageFile = new File(pathToFTLTemplatesFolder + "/" + templateName);
+        }
+        return frontpageFile;
     }
 }
 

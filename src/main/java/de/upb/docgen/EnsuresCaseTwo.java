@@ -212,7 +212,7 @@ public class EnsuresCaseTwo {
 
 	public ArrayList<String> getEnsures(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 /*
@@ -247,7 +247,7 @@ public class EnsuresCaseTwo {
 
 				String returnValMethod = retTypeMap.get(paramStr);
 
-				String predNameStr = elementN.getPredName().toString();
+				String predNameStr = elementN.getPredName();
 				String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(predNameStr), ' ');
 				List<String> verbOrNounList = Arrays.asList(str.split("\\s"));
 				String verb;
@@ -294,7 +294,7 @@ public class EnsuresCaseTwo {
 									} else {
 										int startInd = 0;
 										int endInd = 0;
-										String value = DTMap.get(extractParamStr).toString();
+										String value = DTMap.get(extractParamStr);
 
 										Pattern word = Pattern.compile(extractParamStr);
 										Matcher match = word.matcher(methodlistStr);
@@ -393,7 +393,7 @@ public class EnsuresCaseTwo {
 
 				for (String methodStr : methodsNameList) {
 					String result = StringUtils.substringBetween(methodStr, "(", ")");
-					List<String> resList = Arrays.asList(result.split(","));
+					String[] resList = result.split(",");
 
 					for (String rl : resList) {
 						if (rl.equals(paramStr)) {
@@ -425,7 +425,7 @@ public class EnsuresCaseTwo {
 								} else {
 									int startInd = 0;
 									int endInd = 0;
-									String value = DTMap.get(extractParamStr).toString();
+									String value = DTMap.get(extractParamStr);
 
 									Pattern word = Pattern.compile(extractParamStr);
 									Matcher match = word.matcher(m);
@@ -458,7 +458,7 @@ public class EnsuresCaseTwo {
 					paraPosInWordValStr = posInWordsMap.get(paraPosMapValStr);
 				}
 
-				String predNameStr = elementN.getPredName().toString();
+				String predNameStr = elementN.getPredName();
 				String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(predNameStr), ' ');
 				List<String> verbOrNounList = Arrays.asList(str.split("\\s"));
 				String verb;
@@ -506,7 +506,7 @@ public class EnsuresCaseTwo {
 
 										int startInd = 0;
 										int endInd = 0;
-										String value = DTMap.get(extractParamStr).toString();
+										String value = DTMap.get(extractParamStr);
 
 										Pattern word = Pattern.compile(extractParamStr);
 										Matcher match = word.matcher(methodlistStr);

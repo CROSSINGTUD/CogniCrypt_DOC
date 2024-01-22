@@ -70,7 +70,7 @@ public class ConstraintCrySLInstanceof {
 
 	public ArrayList<String> getInstanceof(CrySLRule rule) throws IOException {
 		ArrayList<String> composedInstaceOf = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		/*
 		String classnamecheck = strArray.get((strArray.size()) - 1);
@@ -79,7 +79,7 @@ public class ConstraintCrySLInstanceof {
 
 		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
+				.filter(e -> e.getClass().getSimpleName().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
 		if (constraintConList.size() > 0) {
 
@@ -153,7 +153,7 @@ public class ConstraintCrySLInstanceof {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -237,7 +237,7 @@ public class ConstraintCrySLInstanceof {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -311,7 +311,7 @@ public class ConstraintCrySLInstanceof {
 									for (String extractParamStr : extractParamList) {
 										if (!DTMap.containsKey(extractParamStr)) {
 										} else {
-											String value = DTMap.get(extractParamStr).toString();
+											String value = DTMap.get(extractParamStr);
 											m = m.replaceFirst(extractParamStr, value);
 										}
 									}

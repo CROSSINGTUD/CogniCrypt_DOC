@@ -116,7 +116,7 @@ public class Ensures {
 			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
 		}
 
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 /*
@@ -135,7 +135,7 @@ public class Ensures {
 
 			for (CrySLPredicate elementStr : predsThisList) {
 
-				String predTNameStr = elementStr.getPredName().toString();
+				String predTNameStr = elementStr.getPredName();
 				String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(predTNameStr), ' ');
 				List<String> verbOrNounList = Arrays.asList(str.split("\\s"));
 				String verb;
@@ -177,7 +177,7 @@ public class Ensures {
 								for (String extractParamStr : extractParamList) {
 									if (!DTMap.containsKey(extractParamStr)) {
 									} else {
-										String value = DTMap.get(extractParamStr).toString();
+										String value = DTMap.get(extractParamStr);
 										methodlistStr = methodlistStr.replace(extractParamStr, value);
 									}
 								}

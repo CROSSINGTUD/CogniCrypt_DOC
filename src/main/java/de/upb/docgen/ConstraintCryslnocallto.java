@@ -53,7 +53,7 @@ public class ConstraintCryslnocallto {
 
 	public ArrayList<String> getnoCalltoConstraint(CrySLRule rule) throws IOException {
 		ArrayList<String> composedNocallToConstraints = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -62,7 +62,7 @@ public class ConstraintCryslnocallto {
 
 		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
+				.filter(e -> e.getClass().getSimpleName().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
 
 		if (constraintConList.size() > 0) {
@@ -79,7 +79,7 @@ public class ConstraintCryslnocallto {
 
 					if (conCryslStr.contains("implies")) {
 						List<String> impSplitList = Arrays.asList(conCryslStr.split("implies"));
-						List<String> LHSList = Arrays.asList(impSplitList.get(0).split(","));
+						String[] LHSList = impSplitList.get(0).split(",");
 						List<String> RHSList = Arrays.asList(impSplitList.get(1));
 						List<String> methods = FunctionUtils.getEventNames(rule);
 						Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
@@ -118,7 +118,7 @@ public class ConstraintCryslnocallto {
 								}
 
 								for (String extractParamStr : extractParamList) {
-									String value = DTMap.get(extractParamStr).toString();
+									String value = DTMap.get(extractParamStr);
 									tempStr = tempStr.replace(extractParamStr, value);
 								}
 								fLHSList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
@@ -173,7 +173,7 @@ public class ConstraintCryslnocallto {
 									for (String extractParamStr : extractParamList) {
 										if (!DTMap.containsKey(extractParamStr)) {
 										} else {
-											String value = DTMap.get(extractParamStr).toString();
+											String value = DTMap.get(extractParamStr);
 											m = m.replaceFirst(extractParamStr, value);
 										}
 									}

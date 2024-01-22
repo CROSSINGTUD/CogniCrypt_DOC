@@ -54,7 +54,7 @@ public class Negates {
 	public ArrayList<String> getNegates(CrySLRule rule) throws IOException {
 		ArrayList<String> composedNegates = new ArrayList<>();
 
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -115,7 +115,7 @@ public class Negates {
 
 								for (String extractParamStr : extractParamList) {
 									if (!extractParamStr.isEmpty()) {
-										String value = DTMap.get(extractParamStr).toString();
+										String value = DTMap.get(extractParamStr);
 										tempStr = tempStr.replace(extractParamStr, value);
 									}
 								}

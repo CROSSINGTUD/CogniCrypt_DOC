@@ -170,7 +170,7 @@ public class ConstraintsPred {
 			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
 		}
 
-		String cname = new String(rule.getClassName().replace(".", ","));
+		String cname = rule.getClassName().replace(".", ",");
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
 		/*
@@ -180,7 +180,7 @@ public class ConstraintsPred {
 
 		 */
 		List<ISLConstraint> constraintPredList = rule.getConstraints().stream().filter(
-				e -> e.getClass().getSimpleName().toString().contains("CrySLPredicate") && !e.toString().contains("!"))
+				e -> e.getClass().getSimpleName().contains("CrySLPredicate") && !e.toString().contains("!"))
 				.collect(Collectors.toList());
 
 		if (constraintPredList.size() > 0) {
@@ -243,7 +243,7 @@ public class ConstraintsPred {
 							for (String extractParamStr : extractParamList) {
 								if (!DTMap.containsKey(extractParamStr)) {
 								} else {
-									String value = DTMap.get(extractParamStr).toString();
+									String value = DTMap.get(extractParamStr);
 									m = m.replace(extractParamStr, value);
 								}
 							}
