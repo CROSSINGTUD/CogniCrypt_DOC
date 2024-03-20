@@ -1,19 +1,14 @@
 package de.upb.docgen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import crypto.rules.CrySLPredicate;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -162,7 +157,8 @@ public class ConstraintsPred {
 
 	public ArrayList<String> getConstraintsPred(CrySLRule rule, Set<String> ensuresForThis, Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap) throws IOException {
 		ArrayList<String> composedConstraintsPredicates = new ArrayList<>();
-		List<String> methodsList = FunctionUtils.getEventNames(rule);
+		List<String> methodsList = FunctionUtils.getEventNamesKey(rule);
+		List<String> valueList = FunctionUtils.getEventNamesValue(rule);
 		Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
@@ -183,6 +179,20 @@ public class ConstraintsPred {
 				e -> e.getClass().getSimpleName().toString().contains("CrySLPredicate") && !e.toString().contains("!"))
 				.collect(Collectors.toList());
 
+
+
+
+
+
+		List<ISLConstraint> ope = rule.getConstraints();
+		List<CrySLPredicate> cryslpreds = new ArrayList<>();
+		for (ISLConstraint a : ope) {
+			if ( a instanceof CrySLPredicate) {
+				cryslpreds.add((CrySLPredicate) a);
+			}
+
+		}
+
 		if (constraintPredList.size() > 0) {
 
 			for (ISLConstraint consPredStr : constraintPredList) {
@@ -190,9 +200,19 @@ public class ConstraintsPred {
 				String predString = consPredStr.toString();
 				String pStr = predString.replaceAll("[()]", " ").replaceAll(",", " ");
 				List<String> strList = Arrays.asList(pStr.split(" "));
+
 				String var1 = null;
 				String var2 = null;
 				String var3 = null;
+				if (consPredStr instanceof CrySLPredicate) {
+					var1 = ((CrySLPredicate) consPredStr).getPredName();
+					var2 = ((CrySLPredicate) consPredStr).getParameters().get(0).getName();
+					if (((CrySLPredicate) consPredStr).getParameters().size() > 1) {
+						var3 = ((CrySLPredicate) consPredStr).getParameters().get(1).getName();
+					}
+
+				}
+
 
 				Multimap<String, String> var2MethNameMap = ArrayListMultimap.create();
 				Multimap<String, String> var2paraPosMap = ArrayListMultimap.create();
@@ -200,7 +220,7 @@ public class ConstraintsPred {
 				String var2PosWordsStr = null;
 
 				String camelCasePattern = "([a-z]+[A-Z]+\\w+)+";
-
+/*
 				for (int u = 0; u < strList.size(); u++) {
 
 					var1 = strList.get(0);
@@ -209,10 +229,11 @@ public class ConstraintsPred {
 					if (strList.size() > 2) {
 						var3 = strList.get(2);
 					}
-				}
+				}*/
 
 				List<String> resList = new ArrayList<>();
 
+				int iterationCount = 0;
 				for (String methodStr : methodsList) {
 
 					String var2new = "\\b" + var2 + "\\b";
@@ -240,19 +261,21 @@ public class ConstraintsPred {
 								extractParamList.add(bracketExtractStr);
 							}
 
-							for (String extractParamStr : extractParamList) {
+							/*for (String extractParamStr : extractParamList) {
 								if (!DTMap.containsKey(extractParamStr)) {
 								} else {
 									String value = DTMap.get(extractParamStr).toString();
 									m = m.replace(extractParamStr, value);
 								}
-							}
+							}*/
 
 							String methStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 							List<String> splitMethList = Arrays.asList(methStr.split(" "));
 							String posStr = String.valueOf(splitMethList.indexOf(var2));
-							var2MethNameMap.put(var2, m);
+							var2MethNameMap.put(var2, replaceAnyType(valueList.get(iterationCount)));
 							var2paraPosMap.put(var2, posStr);
+							//todo interchange
+							iterationCount++;
 						}
 					}
 				}
@@ -304,14 +327,14 @@ public class ConstraintsPred {
 						String nouns = String.join(" ", noun);
 						List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
 						String ensures = "";
-						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+						for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
 							if (maps.containsKey(var1)) {
 								ensures = maps.get(var1).get(0);
 							}
 						}
 						//this links the right class which ensures something for the current rule
 						//nouns = "<a href=\"" + ensures +".html\">" + nouns + "</a>";
-						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+						for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
 							if (maps.containsKey(var1)) {
 								nouns = "<span class=\"tooltip\">" + nouns;
 								String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
@@ -337,7 +360,7 @@ public class ConstraintsPred {
 								String resolvedString = sub.replace(sOne);
 								composedConstraintsPredicates.add(resolvedString);
 								//out.println(resolvedString);
-							
+
 							} else {
 
 								char[] sOne = getTemplatePredOne();
@@ -420,7 +443,7 @@ public class ConstraintsPred {
 
 						 */
 						List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
-						for (Map<String, List <String>> maps : ensuresOfThisClassWithVariableName) {
+						for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
 							if (maps.containsKey(var1)) {
 								String classToLink = var1;
 								var1 = "<span class=\"tooltip\">" + var1;
@@ -461,6 +484,7 @@ public class ConstraintsPred {
 				}
 			}
 		}
+
 		//out.close();
 		return composedConstraintsPredicates;
 	}
@@ -475,5 +499,17 @@ public class ConstraintsPred {
 			}
 		}
 		return sb.toString();
+	}
+
+	private String replaceAnyType(String inputString) {
+		// Check if the input string contains "AnyType"
+		if (inputString.contains("AnyType")) {
+			// If yes, replace "AnyType" with "_"
+			String replacedString = inputString.replace("AnyType", "_");
+			return replacedString;
+		} else {
+			// Otherwise, return the original string
+			return inputString;
+		}
 	}
 }

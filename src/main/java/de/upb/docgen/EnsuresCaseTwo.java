@@ -2,10 +2,6 @@
 
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -19,16 +15,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
-
-import crypto.rules.CrySLCondPredicate;
-import crypto.rules.CrySLMethod;
-import crypto.rules.CrySLPredicate;
-import crypto.rules.CrySLRule;
-import crypto.rules.StateMachineGraph;
-import crypto.rules.TransitionEdge;
 
 /**
  * @author Ritika Singh
@@ -50,8 +40,9 @@ public class EnsuresCaseTwo {
 				if (method.toString().contains(" = ")) {
 					String firstReturnTypeVar;
 					String secondMethodNameVar;
-					List<String> retEntry = Arrays
-							.asList(method.toString().replaceAll("\\[", "").replaceAll("\\]", "").split(","));
+					//List<String> retEntry = Arrays
+					//		.asList(method.toString().replaceAll("\\[", "").replaceAll("\\]", "").split(","));
+					List<String> retEntry = Arrays.asList((method.getRetObject().getKey())+" = "+ FunctionUtils.getEventCrySLMethodValue(method));
 					List<String> rfList = Arrays.asList(retEntry.get(0).split(" = "));
 					firstReturnTypeVar = rfList.get(0);
 					List<String> rsList = Arrays.asList(
@@ -226,10 +217,12 @@ public class EnsuresCaseTwo {
 		Map<String, String> DTMap = new LinkedHashMap<>();
 
 		for (Entry<String, String> dt : dataTypes) {
-			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+			DTMap.put(dt.getKey(), dt.getValue());
 		}
 
-		List<String> methodsNameList = FunctionUtils.getEventNames(rule);
+
+
+		List<String> methodsNameList = FunctionUtils.getEventNamesKey(rule);
 		Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 		Map<String, String> retTypeMap = getReturnValues(rule);
 		
@@ -242,7 +235,7 @@ public class EnsuresCaseTwo {
 
 		for (CrySLPredicate elementN : predList) {
 
-			String paramStr = elementN.getParameters().get(0).toString();
+			String paramStr = ((CrySLObject)elementN.getParameters().get(0)).getVarName();
         	if (retTypeMap.containsKey(paramStr)) {
 
 				String returnValMethod = retTypeMap.get(paramStr);
@@ -265,13 +258,17 @@ public class EnsuresCaseTwo {
 							List<String> finalpredmethodNamesList = new ArrayList<>();
 							List<CrySLMethod> methods = edge.getLabel();
 
-							for (CrySLMethod method : methods) {
+							/*for (CrySLMethod method : methods) {
 								String[] preM = method.toString().replace(".", ",").split(",");
 								predmethodNames.add(preM[preM.length - 1].replace(";", "").replaceAll("\\( ", "\\(")
 										.replaceAll(" ", ","));
+							}*/
+
+							for (CrySLMethod method : methods) {
+							predmethodNames.add(FunctionUtils.getEventCrySLMethodValue(method));
 							}
 
-							for (String methodlistStr : predmethodNames) {
+							/*for (String methodlistStr : predmethodNames) {
 								List<String> extractParamList = new ArrayList<>(); 
 
 								int startIndex = methodlistStr.indexOf("(");
@@ -296,7 +293,7 @@ public class EnsuresCaseTwo {
 										int endInd = 0;
 										String value = DTMap.get(extractParamStr).toString();
 
-										Pattern word = Pattern.compile(extractParamStr);
+										Pattern word = Pattern.compile(escapeString(extractParamStr));
 										Matcher match = word.matcher(methodlistStr);
 
 										while (match.find()) {
@@ -316,7 +313,8 @@ public class EnsuresCaseTwo {
 								finalpredmethodNamesList.add(methodlistStr);
 								joined = String.join(" or ", finalpredmethodNamesList);
 								
-							}
+							}*/
+							joined = String.join(" or ", predmethodNames);
 
 							if (verbOrNounList.size() == 1) {
 								verb = verbOrNounList.get(0);
@@ -508,7 +506,7 @@ public class EnsuresCaseTwo {
 										int endInd = 0;
 										String value = DTMap.get(extractParamStr).toString();
 
-										Pattern word = Pattern.compile(extractParamStr);
+										Pattern word = Pattern.compile(escapeString(extractParamStr));
 										Matcher match = word.matcher(methodlistStr);
 
 										while (match.find()) {
@@ -625,5 +623,16 @@ public class EnsuresCaseTwo {
 			}
 		}
 		return sb.toString();
+	}
+
+	private String escapeString(String inputString) {
+		// Check if the input string contains square brackets
+		if (inputString.contains("[") || inputString.contains("]")) {
+			// If yes, escape the string by adding a backslash before each square bracket
+            return inputString.replace("[", "\\[").replace("]", "\\]");
+		} else {
+			// Otherwise, return the original string
+			return inputString;
+		}
 	}
 }

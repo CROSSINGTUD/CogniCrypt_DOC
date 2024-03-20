@@ -4,10 +4,11 @@ OBJECTS
 	java.lang.String mdName;
 
 EVENTS
-	con: MGF1ParameterSpec(mdName)
+	c1: MGF1ParameterSpec(mdName);
+	Con := c1;
 	
 ORDER
-	con
+	Con
 
 CONSTRAINTS
 	mdName in {"SHA-256", "SHA-384", "SHA-512"};

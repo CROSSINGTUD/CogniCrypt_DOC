@@ -1,13 +1,7 @@
 package de.upb.docgen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import crypto.interfaces.ICrySLPredicateParameter;
+import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -28,7 +24,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import crypto.interfaces.ISLConstraint;
-import crypto.rules.CrySLRule;
 
 /**
  * @author Ritika Singh
@@ -37,6 +32,32 @@ import crypto.rules.CrySLRule;
 public class ConstraintsComparison {
 
 	static PrintWriter out;
+
+
+	private static String mapToOperator(String arithOp) {
+		switch (arithOp) {
+			case "p":
+				return "+";
+			case "n":
+				return "-";
+			case "m":
+				return "%";
+			case "l":
+				return "<";
+			case "le":
+				return "<=";
+			case "g":
+				return ">";
+			case "ge":
+				return ">=";
+			case "neq":
+				return "!=";
+			case "eq":
+				return "=";
+			default:
+				throw new IllegalArgumentException("Unsupported ArithOp: " + arithOp);
+		}
+	}
 
 	private static char[] getTemplateCompOne() throws IOException {
 		char[] buffOne = Utils.getTemplatesText("CompConstraint_lengthgreaterequal");
@@ -190,7 +211,7 @@ public class ConstraintsComparison {
 		Map<String, String> DTMap = new LinkedHashMap<>();
 
 		for (Entry<String, String> dt : dataTypes) {
-			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+			DTMap.put(dt.getKey(), dt.getValue());
 		}
 
 		String cname = new String(rule.getClassName().replace(".", ","));
@@ -207,7 +228,7 @@ public class ConstraintsComparison {
 			List<String> subListRHS = new ArrayList<>();
 			String symbolStr;
 
-			List<String> methods = FunctionUtils.getEventNames(rule);
+			List<String> methods = FunctionUtils.getEventNamesKey(rule);
 			Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 
 			for (ISLConstraint compCon : constraintCompConList) {
@@ -216,6 +237,99 @@ public class ConstraintsComparison {
 				Multimap<String, String> paraPosMap = ArrayListMultimap.create();
 
 				String compStr = compCon.toString();
+
+				CrySLComparisonConstraint crySLComparisonConstraint = (CrySLComparisonConstraint) compCon;
+				CrySLArithmeticConstraint leftArit = crySLComparisonConstraint.getLeft();
+				String compStrReal;
+
+// Check if getLeft is a CrySLPredicate
+				if (leftArit.getLeft() instanceof CrySLPredicate) {
+					CrySLPredicate leftAritPrd = (CrySLPredicate) leftArit.getLeft();
+
+					// Your existing code for processing CrySLPredicate
+					List<String> leftAritPrdVarNames = new ArrayList<>();
+					for (ICrySLPredicateParameter e : leftAritPrd.getParameters()) {
+						if (e instanceof CrySLObject) {
+							CrySLObject crySLObject = (CrySLObject) e;
+							leftAritPrdVarNames.add(crySLObject.getVarName());
+						} else {
+							// Handle other cases if needed
+						}
+					}
+
+					compStrReal = leftAritPrd.getPredName() + "(" + StringUtils.join(leftAritPrdVarNames, ",") + ")";
+				} else if (leftArit.getLeft() instanceof CrySLObject) {
+					// Handle the case where getLeft is a CrySLObject
+					CrySLObject leftArtObj = (CrySLObject) leftArit.getLeft();
+					compStrReal = leftArtObj.getVarName();
+				} else {
+					// Handle other cases if needed
+					compStrReal = ""; // Update this with appropriate handling
+				}
+
+// Continue with the operator and rightArit
+				compStrReal += " " + mapToOperator(leftArit.getOperator().toString()) + " ";
+
+// Repeat the similar logic for getRight
+				if (leftArit.getRight() instanceof CrySLPredicate) {
+					CrySLPredicate rightAritPrd = (CrySLPredicate) leftArit.getRight();
+
+					// Your existing code for processing CrySLPredicate
+					List<String> rightAritPrdVarNames = new ArrayList<>();
+					for (ICrySLPredicateParameter e : rightAritPrd.getParameters()) {
+						if (e instanceof CrySLObject) {
+							CrySLObject crySLObject = (CrySLObject) e;
+							rightAritPrdVarNames.add(crySLObject.getVarName());
+						} else {
+							// Handle other cases if needed
+						}
+					}
+
+					compStrReal += rightAritPrd.getPredName() + "(" + StringUtils.join(rightAritPrdVarNames, ",") + ")";
+				} else if (leftArit.getRight() instanceof CrySLObject) {
+					// Handle the case where getRight is a CrySLObject
+					CrySLObject rightArtObj = (CrySLObject) leftArit.getRight();
+					compStrReal += rightArtObj.getVarName();
+				} else {
+					// Handle other cases if needed
+					compStrReal += ""; // Update this with appropriate handling
+				}
+
+// Now compStrReal contains the fully constructed string
+
+
+				CrySLArithmeticConstraint rightArit = crySLComparisonConstraint.getRight();
+
+
+
+
+				// length + ( + varnames + ) + ooperator + int
+				// add operator
+				compStrReal += " "+ mapToOperator(crySLComparisonConstraint.getOperator().toString()) +" ";
+				// add rightside
+
+//
+
+
+				List<LeafNodeWithOperator> rightOperations = new ArrayList<>();
+				ArithmeticNode root = buildTree(rightArit);
+				String equation = root.buildEquation();
+				System.out.println("Reconstructed Equation: " + equation);
+
+
+				collectLeafNodes(rightArit, rightOperations);
+
+
+
+				//compStrReal += ((CrySLArithmeticConstraint)rightArit.getLeft()).() + mapToOperator(rightArit.getOperator().toString()) + ((CrySLArithmeticConstraint)rightArit.getRight()).getVarName();
+
+				compStrReal += equation;
+
+				compStr = compStrReal;
+
+
+
+
 
 				if (compStr.contains("length")) {
 
@@ -296,7 +410,7 @@ public class ConstraintsComparison {
 					List<String> elisttmethLHS = new ArrayList<>();
 					List<String> resListLHS = new ArrayList<>();
 
-					for (Map.Entry<String, String> paraPosentry : paraPosMap.entries()) {
+					for (Entry<String, String> paraPosentry : paraPosMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraPosentry.toString().split("="));
@@ -309,7 +423,7 @@ public class ConstraintsComparison {
 						}
 					}
 
-					for (Map.Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
+					for (Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraMethentry.toString().split("="));
@@ -327,16 +441,17 @@ public class ConstraintsComparison {
 					String parRHSstrOnePos = null;
 					String parRHSstrTwoPos = null;
 
-					if (subListRHS.get(subListRHS.size() - 1).equals("0")) {
+					if (!subListRHS.get(subListRHS.size() - 3).equals("0")) {
+						parRHSstrTwo = subListRHS.get(subListRHS.size() - 3);
 					} else {
-						parRHSstrTwo = subListRHS.get(subListRHS.size() - 1);
+
 					}
 
 					List<String> elistposRHSOne = new ArrayList<>();
 					List<String> elisttmethRHSOne = new ArrayList<>();
 					List<String> resListRHSOne = new ArrayList<>();
 
-					for (Map.Entry<String, String> paraPosentry : paraPosMap.entries()) {
+					for (Entry<String, String> paraPosentry : paraPosMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraPosentry.toString().split("="));
@@ -349,7 +464,7 @@ public class ConstraintsComparison {
 						}
 					}
 
-					for (Map.Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
+					for (Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraMethentry.toString().split("="));
@@ -366,7 +481,7 @@ public class ConstraintsComparison {
 					List<String> elisttmethRHSTWo = new ArrayList<>();
 					List<String> resListRHSTwo = new ArrayList<>();
 
-					for (Map.Entry<String, String> paraPosentry : paraPosMap.entries()) {
+					for (Entry<String, String> paraPosentry : paraPosMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraPosentry.toString().split("="));
@@ -379,7 +494,7 @@ public class ConstraintsComparison {
 						}
 					}
 
-					for (Map.Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
+					for (Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraMethentry.toString().split("="));
@@ -499,7 +614,12 @@ public class ConstraintsComparison {
 
 									//out.println(resolvedString);
 
-								} else if (symbolStr.equals(">")) {
+								}
+
+
+
+
+								else if (symbolStr.equals(">")) {
 
 									char[] strThree = getTemplateCompSeven();
 									Map<String, String> valuesMap = new HashMap<String, String>();
@@ -601,9 +721,13 @@ public class ConstraintsComparison {
 							int indexOp = splitCompListTwo.indexOf("<");
 							subListLHS = splitCompListTwo.subList(0, indexOp);
 							subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
-						} else {
+						} else if (splitCompListTwo.contains(">=")) {
 
 							int indexOp = splitCompListTwo.indexOf(">=");
+							subListLHS = splitCompListTwo.subList(0, indexOp);
+							subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
+						} else {
+							int indexOp = splitCompListTwo.indexOf("!=");
 							subListLHS = splitCompListTwo.subList(0, indexOp);
 							subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
 						}
@@ -616,7 +740,7 @@ public class ConstraintsComparison {
 					List<String> elisttmethLhs = new ArrayList<>();
 					List<String> resListLhs = new ArrayList<>();
 
-					for (Map.Entry<String, String> paraPosentry : paraPosMap.entries()) {
+					for (Entry<String, String> paraPosentry : paraPosMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraPosentry.toString().split("="));
@@ -629,7 +753,7 @@ public class ConstraintsComparison {
 						}
 					}
 
-					for (Map.Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
+					for (Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraMethentry.toString().split("="));
@@ -657,7 +781,7 @@ public class ConstraintsComparison {
 					List<String> elisttmethRhsAlpha = new ArrayList<>();
 					List<String> resListRhsAlpha = new ArrayList<>();
 
-					for (Map.Entry<String, String> paraPosentry : paraPosMap.entries()) {
+					for (Entry<String, String> paraPosentry : paraPosMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraPosentry.toString().split("="));
@@ -670,7 +794,7 @@ public class ConstraintsComparison {
 						}
 					}
 
-					for (Map.Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
+					for (Entry<String, String> paraMethentry : paraMethNameMap.entries()) {
 
 						List<String> pe = new ArrayList<>();
 						pe = Arrays.asList(paraMethentry.toString().split("="));
@@ -739,7 +863,7 @@ public class ConstraintsComparison {
 							String methLhs = Lhselement.get(1);
 							List<String> msplit = Arrays.asList(methLhs.split("\\("));
 
-							if (symbolStr.equals(">=") && paramRhsNumStr != null) {
+							if ((symbolStr.equals(">=") ||symbolStr.equals(">")) && paramRhsNumStr != null) {
 
 								if (msplit.get(0).contains(classnamecheck)) {
 
@@ -778,4 +902,135 @@ public class ConstraintsComparison {
 		//out.close();
 		return composedComparsionConstraint;
 	}
+
+
+	private void collectLeafNodes(CrySLArithmeticConstraint rightArit, List<LeafNodeWithOperator> rightOperations) {
+			if (rightArit.getLeft() instanceof CrySLObject && rightArit.getRight() instanceof CrySLObject) {
+				// Both left and right are leaf nodes
+				rightOperations.add(new LeafNodeWithOperator((CrySLObject) rightArit.getLeft(), rightArit.getOperator().toString()));
+				rightOperations.add(new LeafNodeWithOperator((CrySLObject) rightArit.getRight(), rightArit.getOperator().toString()));
+			} else {
+				// Recursively explore left and right nodes, checking for leaf nodes
+				if (rightArit.getLeft() instanceof ISLConstraint) {
+					ISLConstraint left = (ISLConstraint) rightArit.getLeft();
+					if (left instanceof CrySLArithmeticConstraint) {
+						collectLeafNodes((CrySLArithmeticConstraint) left, rightOperations);
+					} else {
+						// Handle if left is a leaf node (CrySLObject or other leaf types)
+						rightOperations.add(new LeafNodeWithOperator((CrySLObject) left, rightArit.getOperator().toString()));
+					}
+				}
+
+				if (rightArit.getRight() instanceof ISLConstraint) {
+					ISLConstraint right = (ISLConstraint) rightArit.getRight();
+					if (right instanceof CrySLArithmeticConstraint) {
+						collectLeafNodes((CrySLArithmeticConstraint) right, rightOperations);
+					} else {
+						// Handle if right is a leaf node (CrySLObject or other leaf types)
+						rightOperations.add(new LeafNodeWithOperator((CrySLObject) right, rightArit.getOperator().toString()));
+					}
+				}
+			}
+	}
+
+	public class LeafNodeWithOperator {
+		private CrySLObject leafNode;
+		private String operator;
+
+		public LeafNodeWithOperator(CrySLObject leafNode, String operator) {
+			this.leafNode = leafNode;
+			this.operator = operator;
+		}
+
+		public CrySLObject getLeafNode() {
+			return leafNode;
+		}
+
+		public String getOperator() {
+			return operator;
+		}
+	}
+
+	public class ArithmeticNode {
+		private String operator;
+		private CrySLObject leftLeafNode;
+		private CrySLObject rightLeafNode;
+		private ArithmeticNode left;
+		private ArithmeticNode right;
+
+		public ArithmeticNode(String operator, CrySLObject leftLeafNode, CrySLObject rightLeafNode) {
+			this.operator = operator;
+			this.leftLeafNode = leftLeafNode;
+			this.rightLeafNode = rightLeafNode;
+		}
+
+		public void setLeft(ArithmeticNode left) {
+			this.left = left;
+		}
+
+		public void setRight(ArithmeticNode right) {
+			this.right = right;
+		}
+
+		public String buildEquation() {
+			StringBuilder equationBuilder = new StringBuilder();
+
+			if (left != null) {
+				String leftEquation = left.buildEquation().trim();
+				if (!leftEquation.isEmpty()) {
+					equationBuilder.append(leftEquation).append(" ");
+				}
+			} else if (leftLeafNode != null) {
+				equationBuilder.append(leftLeafNode.getVarName()).append(" ");
+			}
+
+			equationBuilder.append(mapToOperator(operator)).append(" ");
+
+			if (right != null) {
+				String rightEquation = right.buildEquation().trim();
+				if (!rightEquation.isEmpty()) {
+					equationBuilder.append(rightEquation).append(" ");
+				}
+			} else if (rightLeafNode != null) {
+				equationBuilder.append(rightLeafNode.getVarName()).append(" ");
+			}
+
+			return equationBuilder.toString().trim();
+		}
+
+	}
+
+		public ArithmeticNode buildTree(CrySLArithmeticConstraint rightArit) {
+			if (rightArit.getLeft() instanceof CrySLObject && rightArit.getRight() instanceof CrySLObject) {
+				// Both left and right are leaf nodes
+				return new ArithmeticNode(rightArit.getOperator().toString(),
+						(CrySLObject) rightArit.getLeft(), (CrySLObject) rightArit.getRight());
+			} else {
+				// Recursively explore left and right nodes, checking for leaf nodes
+				ArithmeticNode node = new ArithmeticNode(rightArit.getOperator().toString(), null, null);
+
+				if (rightArit.getLeft() instanceof ISLConstraint) {
+					ISLConstraint left = (ISLConstraint) rightArit.getLeft();
+					if (left instanceof CrySLArithmeticConstraint) {
+						node.setLeft(buildTree((CrySLArithmeticConstraint) left));
+					} else {
+						// Handle if left is a leaf node (CrySLObject or other leaf types)
+						node.setLeft(new ArithmeticNode("", (CrySLObject) left, null));
+					}
+				}
+
+				if (rightArit.getRight() instanceof ISLConstraint) {
+					ISLConstraint right = (ISLConstraint) rightArit.getRight();
+					if (right instanceof CrySLArithmeticConstraint) {
+						node.setRight(buildTree((CrySLArithmeticConstraint) right));
+					} else {
+						// Handle if right is a leaf node (CrySLObject or other leaf types)
+						node.setRight(new ArithmeticNode("", null, (CrySLObject) right));
+					}
+				}
+
+				return node;
+			}
+		}
+
 }

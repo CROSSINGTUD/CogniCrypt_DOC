@@ -1,9 +1,5 @@
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -161,7 +157,7 @@ public class ConstraintCrySLandencmode {
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("and"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
 
-					List<String> methods = FunctionUtils.getEventNames(rule);
+					List<String> methods = FunctionUtils.getEventNamesKey(rule);
 					Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 					List<Entry<String, String>> dataTypes = rule.getObjects();
 					Map<String, String> DTMap = new LinkedHashMap<>();

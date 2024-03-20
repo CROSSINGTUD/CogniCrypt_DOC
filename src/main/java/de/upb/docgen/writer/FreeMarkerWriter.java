@@ -1,6 +1,8 @@
 package de.upb.docgen.writer;
 
+import crypto.rules.CrySLRule;
 import de.upb.docgen.*;
+import de.upb.docgen.graphviz.StateMachineToGraphviz;
 import de.upb.docgen.utils.TemplateAbsolutePathLoader;
 import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
@@ -9,6 +11,8 @@ import freemarker.template.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -50,42 +54,46 @@ public class FreeMarkerWriter {
      * @throws IOException
      * @throws TemplateException
      */
-    public static void createSinglePage(List<ComposedRule> composedRuleList, Configuration cfg, Map<String, TreeNode<String>> reqToEns, Map<String, TreeNode<String>> ensToReq, boolean a, boolean b, boolean c, boolean d, boolean e, boolean f) throws IOException, TemplateException {
-        for (ComposedRule rule : composedRuleList) {
+    public static void createSinglePage(List<ComposedRule> composedRuleList, Configuration cfg, Map<String, TreeNode<String>> reqToEns, Map<String, TreeNode<String>> ensToReq, boolean a, boolean b, boolean c, boolean d, boolean e, boolean f, List<CrySLRule> crySLRules) throws IOException, TemplateException {
+        for (int i = 0; i < composedRuleList.size(); i++) {
+            ComposedRule rule = composedRuleList.get(i);
             Map<String, Object> input = new HashMap<String, Object>();
             input.put("title", "class");
             input.put("rule", rule);
             TreeNode<String> rootReq = reqToEns.get(rule.getComposedClassName());
-            input.put("requires", rootReq); //requires tree parsed by the template
+            input.put("requires", rootReq); // requires tree parsed by the template
             TreeNode<String> rootEns = ensToReq.get(rule.getComposedClassName());
-            input.put("ensures", rootEns); //ensures tree parsed by the template
+            input.put("ensures", rootEns); // ensures tree parsed by the template
 
-            //necessary input for the template to load abslote path from crysl rule which can be displayed
-            input.put("pathToRules", Utils.pathForTemplates("file://"+DocSettings.getInstance().getRulesetPathDir()));
-            //Set flags
-            input.put("booleanA", a); //To show StateMachineGraph
-            input.put("booleanB", b); //To show Help Button
+            // necessary input for the template to load absolute path from crysl rule which can be displayed
+            input.put("pathToRules", Utils.pathForTemplates("file://" + DocSettings.getInstance().getRulesetPathDir()));
+            // Set flags
+            input.put("booleanA", a); // To show StateMachineGraph
+            input.put("booleanB", b); // To show Help Button
             input.put("booleanC", c);
             input.put("booleanD", d);
             input.put("booleanE", e);
             input.put("booleanF", f);
 
-            // 2.2. Get the template
-            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+"singleclass.ftl"));
+            input.put("stateMachine", StateMachineToGraphviz.toGraphviz(crySLRules.get(i).getUsagePattern()));
 
-            //create composedRules directory where single pages are stored
-            new File(DocSettings.getInstance().getReportDirectory()+"/"+"composedRules/").mkdir();
-            //create the page
-            try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory()+"/"+"composedRules/"+rule.getComposedClassName()+".html"))) {
+            // 2.2. Get the template
+            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/" + "singleclass.ftl"));
+
+            // create composedRules directory where single pages are stored
+            new File(DocSettings.getInstance().getReportDirectory() + "/" + "composedRules/").mkdir();
+            // create the page
+            try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + "/" + "composedRules/" + rule.getComposedClassName() + ".html"))) {
                 template.process(input, fileWriter);
             }
         }
     }
 
-    /**
-     * sets freemarker settings
-     * @param cfg
-     */
+
+        /**
+         * sets freemarker settings
+         * @param cfg
+         */
     public static void setupFreeMarker(Configuration cfg) {
         // setup freemarker to load absolute paths
         cfg.setTemplateLoader(new TemplateAbsolutePathLoader());
@@ -103,13 +111,18 @@ public class FreeMarkerWriter {
      */
     public static void createCogniCryptLayout(Configuration cfg) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
-        /* Not used anymore
-        Template headerTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "header.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"header.html"))) {
-            headerTemplate.process(input, fileWriter);
+        
+        if (!Files.exists(Paths.get(DocSettings.getInstance().getReportDirectory()))) {
+            try {
+                // Attempt to create the directory
+                Files.createDirectory(Paths.get(DocSettings.getInstance().getReportDirectory()));
+                System.out.println("Directory created successfully.");
+            } catch (IOException e) {
+                System.err.println("Failed to create directory: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Directory already exists.");
         }
-
-         */
         Template frontpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "frontpage.ftl"));
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
             frontpageTemplate.process(input, fileWriter);

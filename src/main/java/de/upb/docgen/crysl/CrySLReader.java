@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import crypto.cryslhandler.CrySLModelReader;
+import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLRule;
 
 /**
@@ -37,7 +38,7 @@ public class CrySLReader {
 			// System.out.println(rules);
 			return rules;
 
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | CryptoAnalysisException e) {
 			e.printStackTrace();
 		}
 		return null;
