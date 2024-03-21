@@ -1,10 +1,6 @@
 //case1.parameters contain "this" + method. case2. parameters contains "this"
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -113,7 +109,7 @@ public class Ensures {
 		Map<String, String> DTMap = new LinkedHashMap<>();
 
 		for (Entry<String, String> dt : dataTypes) {
-			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+			DTMap.put(dt.getValue(), dt.getKey());
 		}
 
 		String cname = new String(rule.getClassName().replace(".", ","));
@@ -153,13 +149,16 @@ public class Ensures {
 							List<String> predmethodThisNamesList = new ArrayList<String>();
 							List<CrySLMethod> methodsThisedgeList = edge.getLabel();
 
-							for (CrySLMethod methodT : methodsThisedgeList) {
-								String[] preMTStrArr = methodT.toString().replace(".", ",").split(",");
-								predmethodThisNamesList.add(preMTStrArr[preMTStrArr.length - 1].replace(";", "")
-										.replaceAll("\\( ", "\\(").replaceAll(" ", ","));
+
+
+
+							for (CrySLMethod method : methodsThisedgeList) {
+								predmethodThisNamesList.add(FunctionUtils.getEventCrySLMethodValue(method));
+
 							}
 
-							for (String methodlistStr : predmethodThisNamesList) {
+
+							/*for (String methodlistStr : predmethodThisNamesList) {
 								List<String> extractParamList = new ArrayList<>();
 								int startIndex = methodlistStr.indexOf("(");
 								int endIndex = methodlistStr.indexOf(")");
@@ -186,7 +185,8 @@ public class Ensures {
 								joined = String.join(" or ", finalpredmethodThisNamesList);
 								//System.out.println(joined);
 							}
-
+*/
+							joined = String.join(" or ", predmethodThisNamesList);
 							List<String> msplit = Arrays.asList(joined.split("\\("));
 
 							if (verbOrNounList.size() == 1) {

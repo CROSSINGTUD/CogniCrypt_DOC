@@ -27,8 +27,7 @@ public class DocumentGeneratorMain {
 		//create singleton to access parsed flags from other classes
 		DocSettings docSettings = DocSettings.getInstance();
 		docSettings.parseSettingsFromCLI(args);
-		//generate Graphviz dot and pngs set --booleanC to turnOff generation
-		if(docSettings.isBooleanE()) StateMachineToGraphviz.generateGraphvizStateMachines(docSettings.getRulesetPathDir(),docSettings.getReportDirectory());
+
 		//read CryslRules from absolutePath provided by the user
 		Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
 
@@ -56,6 +55,7 @@ public class DocumentGeneratorMain {
 		}
 
 		//iterate over every Crysl rule, create composedRule for every Rule
+		List<CrySLRule> cryslRuleList = new ArrayList<>();
 		for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
 			ComposedRule composedRule = new ComposedRule();
 			CrySLRule rule = ruleEntry.getValue();
@@ -108,6 +108,8 @@ public class DocumentGeneratorMain {
 			composedRule.setEnsuresPredicates(entwo.getEnsures(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
 			composedRule.setNegatesPredicates(neg.getNegates(rule));
 			composedRuleList.add(composedRule);
+
+			cryslRuleList.add(rule);
 		}
 
 		//Necessary DataStructure to generate Requires and Ensures Tree
@@ -126,7 +128,7 @@ public class DocumentGeneratorMain {
 		FreeMarkerWriter.setupFreeMarker(cfg);
 		FreeMarkerWriter.createCogniCryptLayout(cfg);
 		FreeMarkerWriter.createSidebar(composedRuleList, cfg);
-		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE() , docSettings.isBooleanF());
+		FreeMarkerWriter.createSinglePage(composedRuleList, cfg, ensToReq, reqToEns, docSettings.isBooleanA(), docSettings.isBooleanB(), docSettings.isBooleanC() , docSettings.isBooleanD() , docSettings.isBooleanE() , docSettings.isBooleanF(), cryslRuleList);
 		//copy CryslRulesFolder into generated Cognicrypt folder
 		//specifify this flag to distribute the documentation
 		if (!docSettings.isBooleanF()) {

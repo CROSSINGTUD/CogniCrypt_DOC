@@ -3,42 +3,43 @@ SPEC java.security.SecureRandom
 OBJECTS 
 	byte[] seed;
 	byte[] genSeed;
-	java.lang.String randomAlgorithm;
+	java.lang.String algorithm;
 	long lSeed;
-	byte[] next;
-	int numB;
+	byte[] bytes;
 	int randInt;
+	int randIntInRange;
+	int range;
 	
 EVENTS
 	c1: SecureRandom();
 	c2: SecureRandom(seed);
-	Cons := c1 | c2;
+	Con := c1 | c2;
 	
-	g1: getInstance(randomAlgorithm);
-	g2: getInstance(randomAlgorithm, _);
+	g1: getInstance(algorithm);
+	g2: getInstance(algorithm, _);
 	gI: getInstanceStrong();
-	Gets := g1 | g2 | gI;
+	Get := g1 | g2 | gI;
 	
-	Ins := Gets | Cons;
+	Ins := Get | Con;
 
 	s1: setSeed(seed);
 	s2: setSeed(lSeed);
-	Seeds := s1 | s2;
+	Seed := s1 | s2;
 
 	gS: genSeed = generateSeed(_);	
 
-	ne: next(numB);
-	nB: nextBytes(next);
+	nB: nextBytes(bytes);
 	nI: randInt = nextInt();
-	Nexts := ne | nB | nI;
+	nIR: randIntInRange = nextInt(range);
+	Next := nB | nI | nIR;
 	
-	Ends := gS | Nexts;
+	End := gS | Next;
 
 ORDER
- 	Ins, (Seeds?, Ends*)*
+	Ins, (Seed?, End*)*
  	
 CONSTRAINTS
-	randomAlgorithm in {"SHA1PRNG", "Windows-PRNG", "NativePRNG", "NativePRNGBlocking", "NativePRNGNonBlocking", "PKCS11"};
+	algorithm in {"SHA1PRNG", "Windows-PRNG", "NativePRNG", "NativePRNGBlocking", "NativePRNGNonBlocking", "PKCS11"};
 	
 REQUIRES	
 	randomized[seed];
@@ -47,6 +48,6 @@ REQUIRES
 ENSURES
 	randomized[this] after Ins;
 	randomized[genSeed] after gS;
-	randomized[next] after nB;
-	randomized[numB] after ne;
+	randomized[bytes] after nB;
 	randomized[randInt] after nI;
+	randomized[randIntInRange] after nIR;

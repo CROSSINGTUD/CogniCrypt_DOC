@@ -1,13 +1,7 @@
 package de.upb.docgen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import crypto.rules.CrySLObject;
+import crypto.rules.CrySLValueConstraint;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -72,7 +68,7 @@ public class ConstraintsVc {
 
 		ArrayList<String> composedConstraints = new ArrayList<>();
 		Map<String, String> constraintVCMap = new LinkedHashMap<>();
-		List<String> methodsList = FunctionUtils.getEventNames(rule);
+		List<String> methodsList = FunctionUtils.getEventNamesKey(rule);
 		Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 
@@ -110,12 +106,33 @@ public class ConstraintsVc {
 				String sc = ":";
 				String d = " - ";
 				String substringBetween = StringUtils.substringBetween(vclistStr, sc, d);
-				firstConVCList.add(substringBetween);
+				CrySLObject object = ((CrySLValueConstraint)vclist).getVar();
+				firstConVCList.add(object.getVarName());
 
 			}
-			constraintVCMap = constraintVCList.stream()
-					.map(s -> s.toString().replaceAll("VC:", "").replaceAll(",$", "").split(" - "))
-					.collect(Collectors.toMap(a -> a[0], a -> a[1]));
+			//constraintVCMap = constraintVCList.stream()
+			//		.map(s -> s.toString().replaceAll("VC:", "").replaceAll(",$", "").split(" - "))
+			//		.collect(Collectors.toMap(a -> a[0], a -> a[1]));
+
+			Map<String, String> hashMap = new HashMap<>();
+
+			// Iterate over the list of ISLConstraint objects
+			constraintVCList.stream()
+					.filter(constraint -> constraint instanceof CrySLValueConstraint)
+					.map(constraint -> (CrySLValueConstraint) constraint)
+					.forEach(valueConstraint -> {
+						// Extract the key using getVar().getVarName()
+						String key = valueConstraint.getVar().getVarName();
+
+						// Extract the value using getValueRange() and concatenate all values into a single string with commas
+						String value = valueConstraint.getValueRange().stream().collect(Collectors.joining(","));
+
+						// Put the key-value pair into the HashMap
+						hashMap.put(key, value);
+					});
+
+			constraintVCMap = hashMap;
+
 
 			for (String firstConVCStr : firstConVCList) {
 

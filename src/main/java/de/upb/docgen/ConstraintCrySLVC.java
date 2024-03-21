@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import crypto.rules.CrySLConstraint;
+import crypto.rules.CrySLValueConstraint;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -97,14 +99,46 @@ public class ConstraintCrySLVC {
 					List<Entry<String, String>> dataTypes = rule.getObjects();
 					Map<String, String> DTMap = new LinkedHashMap<>();
 					for (Entry<String, String> dt : dataTypes) {
-						DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+						DTMap.put(dt.getKey(), FunctionUtils.getDataType(rule, dt.getKey()));
 					}
 
 					List<String> impSplitList = Arrays.asList(conCryslStr.split("implies"));
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("and"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
 
-					List<String> methods = FunctionUtils.getEventNames(rule);
+
+					CrySLConstraint crySLConstraint = null;
+					if (conCryslISL instanceof CrySLConstraint) crySLConstraint = (CrySLConstraint) conCryslISL;
+					CrySLValueConstraint leftParam = null;
+					if (crySLConstraint.getLeft() instanceof CrySLValueConstraint) {
+						leftParam = (CrySLValueConstraint) crySLConstraint.getLeft();
+
+					} else {
+						continue;
+					}
+					if (conCryslISL instanceof CrySLConstraint) crySLConstraint = (CrySLConstraint) conCryslISL;
+					CrySLValueConstraint rightParam = null;
+					if (crySLConstraint.getRight() instanceof CrySLValueConstraint) {
+						rightParam = (CrySLValueConstraint) crySLConstraint.getRight();
+
+					} else {
+						continue;
+					}
+					//CrySLValueConstraint rightParam = (CrySLValueConstraint) crySLConstraint.getRight();
+
+					List<String> realLeft = new ArrayList<>();
+					realLeft.add(leftParam.getVarName());
+					for (String s : leftParam.getValueRange()) {
+						realLeft.add(s);
+					}
+					//resLHSlist = leftCryslConstraint.var.varname,left.valuerange
+					List<String> realRight = new ArrayList<>();
+					realRight.add(rightParam.getVarName());
+					for (String s : rightParam.getValueRange()) {
+						realRight.add(s);
+					}
+
+					List<String> methods = FunctionUtils.getEventNamesKey(rule);
 					Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 					String templatestringLHS = getTemplateVCLHS();
 					String templatestringRHS = getTemplateVCRHS();
@@ -127,7 +161,7 @@ public class ConstraintCrySLVC {
 							for (String methodStr : methods) {
 								String LHSfirstStr = resLHSList.get(0);
 
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(realLeft.get(0))) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -160,7 +194,7 @@ public class ConstraintCrySLVC {
 										joined = String.join(", ", finalpredmethodList);
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(realLeft.get(0)));
 
 										resLHSList.add(posStr);
 
@@ -206,7 +240,7 @@ public class ConstraintCrySLVC {
 								String LHSfirstStr = resLHSlistsecond.get(0);
 								String posStr = null;
 
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(realLeft.get(0))) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -279,10 +313,10 @@ public class ConstraintCrySLVC {
 								.replaceAll("VC:", "").replaceAll(",$", " ").split(" - ")));
 
 						for (String methodStr : methods) {
-							String RHSfirstStr = resRHSList.get(0);
+							//String RHSfirstStr = resRHSList.get(0);
 							String posStr = null;
 
-							if (methodStr.contains(RHSfirstStr)) {
+							if (methodStr.contains(realRight.get(0))) {
 
 								List<String> methList = new ArrayList<>();
 								methList.add(methodStr);
@@ -316,7 +350,7 @@ public class ConstraintCrySLVC {
 
 									String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 									List<String> strList = Arrays.asList(mStr.split(" "));
-									posStr = String.valueOf(strList.indexOf(RHSfirstStr));
+									posStr = String.valueOf(strList.indexOf(realRight.get(0)));
 									resRHSList.add(posStr);
 
 									if (posInWordsMap.containsKey(posStr)) {
@@ -327,6 +361,7 @@ public class ConstraintCrySLVC {
 								}
 							}
 						}
+						if (RHSStr.contains("noCallTo")) break; // mode() => noCallTo is not correctly handled temp fix to ensure doc generation
 						resRHSList.add(joinedRHS);
 
 						String varrhsone = resRHSList.get(1);

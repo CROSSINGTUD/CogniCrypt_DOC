@@ -1,9 +1,5 @@
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -16,12 +12,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
+import org.apache.commons.collections4.bag.SynchronizedSortedBag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.interfaces.ISLConstraint;
-import crypto.rules.CrySLRule;
 
 /**
  * @author Ritika Singh
@@ -82,8 +79,37 @@ public class ConstraintCrySLInstanceof {
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
 		if (constraintConList.size() > 0) {
-
 			for (ISLConstraint conCryslISL : constraintConList) {
+				CrySLConstraint leftConstraint = null;
+				List<ISLConstraint> allNodesLeft = null;
+				List<ISLConstraint> allLeftConstraints = new ArrayList<>();
+
+				CrySLConstraint rightConstraint = null;
+				List<ISLConstraint> allNodesRight = null;
+				List<ISLConstraint> allRightConstraints = new ArrayList<>();
+				String whopper = "";
+				String dopper = whopper;
+				System.out.println(dopper);
+
+				if (conCryslISL instanceof CrySLConstraint) {
+
+					if (((CrySLConstraint) conCryslISL).getLeft() instanceof CrySLConstraint) leftConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getLeft();
+					if (((CrySLConstraint) conCryslISL).getRight() instanceof CrySLConstraint) rightConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getRight();
+
+					if (leftConstraint != null) {
+						allNodesLeft = getAllLeafNodes(allLeftConstraints, leftConstraint);
+					}
+
+					if (rightConstraint != null) {
+						allNodesRight = getAllLeafNodes(allRightConstraints, rightConstraint);
+					}
+
+
+
+
+				}
+
+
 
 				String conCryslStr = conCryslISL.toString();
 
@@ -92,7 +118,7 @@ public class ConstraintCrySLInstanceof {
 					List<String> impSplitList = Arrays.asList(conCryslStr.split("implies"));
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("or"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
-					List<String> methods = FunctionUtils.getEventNames(rule);
+					List<String> methods = FunctionUtils.getEventNamesKey(rule);
 					Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 					List<Entry<String, String>> dataTypes = rule.getObjects();
 
@@ -125,11 +151,19 @@ public class ConstraintCrySLInstanceof {
 										Arrays.asList(a.replaceAll("VC:", "").replaceAll(",$", "").split(" - ")));
 							}
 
+							if (allNodesLeft == null) {
+								allNodesLeft = new ArrayList<>();
+								allNodesLeft.add(((CrySLConstraint)conCryslISL).getLeft());
+							}
 							for (String methodStr : methods) {
-
+								String realLHS = ((CrySLObject)((CrySLPredicate)allNodesLeft.get(0)).getParameters().get(0)).getVarName();
+								String real = ((CrySLObject)((CrySLPredicate)allNodesLeft.get(0)).getParameters().get(1)).getVarName();
 								String LHSfirstStr = resLHSlist.get(0);
+								resLHSlist.set(0,realLHS);
+								resLHSlist.set(1,real);
+//iCH  brauche key
 
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(realLHS)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -163,7 +197,7 @@ public class ConstraintCrySLInstanceof {
 
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(realLHS));
 										resLHSlist.add(posStr);
 
 										if (posInWordsMap.containsKey(posStr)) {
@@ -196,6 +230,21 @@ public class ConstraintCrySLInstanceof {
 							String d = " or";
 							String b = templatestringLHS;
 							String a = LHSList.get(i);
+							ISLConstraint currentConstraint = allNodesLeft.get(i);
+							String leftSidePredicateOrVCvarname = null;
+							if (currentConstraint instanceof CrySLPredicate) {
+								CrySLPredicate predicate = (CrySLPredicate) currentConstraint;
+								leftSidePredicateOrVCvarname = ((CrySLObject)predicate.getParameters().get(0)).getVarName();
+								// Your code specific to CrySLPredicate
+							} else if (currentConstraint instanceof CrySLValueConstraint) {
+								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) currentConstraint;
+								leftSidePredicateOrVCvarname = valueConstraint.getVarName();
+							} else {
+								// Handle other cases if needed
+								System.exit(255);
+							}
+
+
 							List<String> resLHSlistsecond = new ArrayList<>();
 							List<String> finalpredmethodSecList = new ArrayList<>();
 							String joinedSec = null;
@@ -211,7 +260,7 @@ public class ConstraintCrySLInstanceof {
 
 							for (String methodStr : methods) {
 
-								String LHSfirstStr = resLHSlistsecond.get(0);
+								String LHSfirstStr = leftSidePredicateOrVCvarname;
 
 								if (methodStr.contains(LHSfirstStr)) {
 
@@ -276,6 +325,13 @@ public class ConstraintCrySLInstanceof {
 
 					String b = templatestringRHS;
 
+					if (allNodesRight == null) {
+						allNodesRight = new ArrayList<>();
+						allNodesRight.add(((CrySLConstraint)conCryslISL).getRight());
+					}
+
+
+
 					for (String RHSStr : RHSList) {
 
 						List<String> resRHSList = new ArrayList<>();
@@ -284,8 +340,25 @@ public class ConstraintCrySLInstanceof {
 						List<String> finalpredmethodRHSList = new ArrayList<>();
 						String joinedRHS = null;
 
+
 						for (String methodStr : methods) {
-							String RHSfirstStr = resRHSList.get(0);
+							String rightSidePredicateOrVCvarname = null;
+							if (allNodesRight.get(0) instanceof CrySLPredicate) {
+								CrySLPredicate predicate = (CrySLPredicate) allNodesRight.get(0);
+								rightSidePredicateOrVCvarname = ((CrySLObject)predicate.getParameters().get(0)).getVarName();
+								// Your code specific to CrySLPredicate
+							} else if (allNodesRight.get(0) instanceof CrySLValueConstraint) {
+								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) allNodesRight.get(0);
+								rightSidePredicateOrVCvarname = valueConstraint.getVarName();
+								// Your code specific to CrySLValueConstraint
+							} else {
+								// Handle other cases if needed
+								System.exit(255);
+							}
+
+
+							String RHSfirstStr = rightSidePredicateOrVCvarname;
+
 
 							if (methodStr.contains(RHSfirstStr)) {
 
@@ -356,5 +429,42 @@ public class ConstraintCrySLInstanceof {
 		}
 		//out.close();
 		return composedInstaceOf;
+	}
+
+	public List<ISLConstraint> getAllLeafNodes(List<ISLConstraint> leafNodes, ISLConstraint node) {
+		collectLeafNodes(node, leafNodes);
+		return leafNodes;
+	}
+
+	// Helper method to recursively collect leaf nodes
+	private void collectLeafNodes(ISLConstraint node, List<ISLConstraint> leafNodes) {
+		if (node instanceof CrySLConstraint) {
+			CrySLConstraint crySLNode = (CrySLConstraint) node;
+			ISLConstraint left = crySLNode.getLeft();
+			ISLConstraint right = crySLNode.getRight();
+
+			if (left == null && right == null) {
+				// This node is a leaf node
+				leafNodes.add(node);
+			} else {
+				// Recursively explore left and right nodes, checking for leaf nodes
+				if (left != null) {
+					if (left instanceof CrySLConstraint) {
+						collectLeafNodes((CrySLConstraint) left, leafNodes);
+					} else {
+						// Handle if left is a leaf node (CrySLValueConstraint or CrySLPredicate)
+						leafNodes.add(left);
+					}
+				}
+				if (right != null) {
+					if (right instanceof CrySLConstraint) {
+						collectLeafNodes((CrySLConstraint) right, leafNodes);
+					} else {
+						// Handle if right is a leaf node (CrySLValueConstraint or CrySLPredicate)
+						leafNodes.add(right);
+					}
+				}
+			}
+		}
 	}
 }

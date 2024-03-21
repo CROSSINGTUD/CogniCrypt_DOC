@@ -216,6 +216,9 @@
 </head>
 
 <body style="background-color: #f1f1f1">
+<script src="https://unpkg.com/d3@5.16.0/dist/d3.min.js"></script>
+<script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+<script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
 
 <#if booleanB>
     <button title="Click to Show" id="toggleBtn" value="Show Help" class="floatbutton" type="button" onclick="toggle()">
@@ -264,8 +267,7 @@
                 A class is not securely used if method calls deviate from the displayed order.
             </p>
         </div>
-        <div class="fortree">
-            <img src="../dotFSMs/${rule.composedClassName}.svg" style="background-color: #f1f1f1">
+        <div id="graph" style="text-align: center; width: 100%; overflow-x: auto; white-space: nowrap;">
         </div>
     </#if>
 </div>
@@ -485,6 +487,13 @@
             }
         }
     }
+    var dotString = `
+        ${stateMachine}
+`;
+
+    d3.select("#graph").graphviz()
+        .renderDot(dotString);
+
 </script>
 </body>
 </html>

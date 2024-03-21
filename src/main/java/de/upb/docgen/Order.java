@@ -123,6 +123,7 @@ public class Order {
 		Map<String, List<String>> labelIdentifiersmap = new LinkedHashMap<>();
 
 		for (String line : lines) {
+			if (line.contains("//")) continue;
 			if (!line.contains(":")) {
 				throw new RuntimeException("Unexpected line found: " + line);
 			}
@@ -169,7 +170,9 @@ public class Order {
 			}
 		}
 
-		labelIdentifiersmap.forEach((key, idList) -> {
+		for (Map.Entry<String, List<String>> entry : labelIdentifiersmap.entrySet()) {
+			String key = entry.getKey();
+			List<String> idList = entry.getValue();
 			Event event = new Event(key);
 			for (String id : idList) {
 				String method = methodIdentifiersmap.get(id);
@@ -251,7 +254,7 @@ public class Order {
 			}
 			eventList.add(event);
 
-		});
+		}
 
 		{
 			methodIdentifiersmap.forEach((key, methodList) -> {
@@ -390,7 +393,7 @@ public class Order {
 			String control = "n";
 			orderList = new ArrayList<>(Arrays.asList(orderArr));
 			int number = 0;
-			
+
 			for (int i = 0; i < orderList.size(); i++) {
 				String s = orderList.get(i);
 				int flag = 0;
@@ -433,7 +436,7 @@ public class Order {
 				flag = 0;
 			}
 		}
-		
+
 		 */
 
 		ArrayList<String> allNLsentences = parseOrderToNL(orderSplittedWithBrackets);
@@ -522,12 +525,12 @@ public class Order {
 					i -=2;
 				} else if (n.get(i).startsWith(symbolMap.get(")"))) {
 					//removing closing brackets and lowering the level
-					while (n.get(i).startsWith(symbolMap.get(")"))) {
+					while (n.size() > i && n.get(i).startsWith(symbolMap.get(")"))) {
 						identlevel--;
 						n.remove(i);
 					}
 					//remove already processed sentences
-					if (!n.get(i).startsWith(symbolMap.get("|"))) {
+					if (n.size() > i && !n.get(i).startsWith(symbolMap.get("|"))) {
 						n.remove(i);
 					}
 					i -= 2;
@@ -537,14 +540,14 @@ public class Order {
 					n.remove(i);
 					i -= 2;
 				} else {
- 					a = StringUtils.repeat("\t", identlevel) + n.get(i) + " " + n.get(i + 1);
+					a = StringUtils.repeat("\t", identlevel) + n.get(i) + " " + n.get(i + 1);
 					fo.add(a);
 				}
 			}} else{
 
-				a = StringUtils.repeat("\t", identlevel) + n.get(0) + " " + n.get(1);
-				fo.add(a);
-			}
+			a = StringUtils.repeat("\t", identlevel) + n.get(0) + " " + n.get(1);
+			fo.add(a);
+		}
 		return fo;
 	}
 
