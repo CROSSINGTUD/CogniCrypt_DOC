@@ -10,11 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import crypto.rules.CrySLObject;
 import crypto.rules.CrySLValueConstraint;
 import de.upb.docgen.utils.Utils;
-import org.apache.commons.collections4.bag.SynchronizedSortedBag;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import com.google.common.collect.ArrayListMultimap;
