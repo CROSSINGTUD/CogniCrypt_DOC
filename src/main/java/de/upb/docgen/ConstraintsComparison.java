@@ -314,14 +314,11 @@ public class ConstraintsComparison {
 				List<LeafNodeWithOperator> rightOperations = new ArrayList<>();
 				ArithmeticNode root = buildTree(rightArit);
 				String equation = root.buildEquation();
-				System.out.println("Reconstructed Equation: " + equation);
 
 
 				collectLeafNodes(rightArit, rightOperations);
 
 
-
-				//compStrReal += ((CrySLArithmeticConstraint)rightArit.getLeft()).() + mapToOperator(rightArit.getOperator().toString()) + ((CrySLArithmeticConstraint)rightArit.getRight()).getVarName();
 
 				compStrReal += equation;
 
