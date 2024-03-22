@@ -38,7 +38,7 @@ public class CrySLReader {
 			// System.out.println(rules);
 			return rules;
 
-		} catch (MalformedURLException | CryptoAnalysisException e) {
+		} catch (CryptoAnalysisException e) {
 			e.printStackTrace();
 		}
 		return null;
