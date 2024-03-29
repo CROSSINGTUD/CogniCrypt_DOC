@@ -25,7 +25,6 @@ public class ConstraintsComparison {
 
     static PrintWriter out;
 
-
     private static String mapToOperator(String arithOp) {
         switch (arithOp) {
             case "p":
@@ -93,10 +92,10 @@ public class ConstraintsComparison {
                 .filter(e -> e.getClass().getSimpleName().contains("CrySLComparisonConstraint"))
                 .collect(Collectors.toList());
         List<Entry<String, String>> dataTypes = rule.getObjects();
-        Map<String, String> DTMap = new LinkedHashMap<>();
+        Map<String, String> dataTypeAndParameterNameMap = new LinkedHashMap<>();
 
         for (Entry<String, String> dt : dataTypes) {
-            DTMap.put(dt.getKey(), dt.getValue());
+            dataTypeAndParameterNameMap.put(dt.getKey(), dt.getValue());
         }
 
         String classnamecheck = rule.getClassName().substring(rule.getClassName().lastIndexOf('.') + 1);
@@ -156,7 +155,6 @@ public class ConstraintsComparison {
                             rightAritPrdVarNames.add(crySLObject.getVarName());
                         }
                     }
-
                     compStrTemp += rightAritPrd.getPredName() + "(" + StringUtils.join(rightAritPrdVarNames, ",") + ")";
                 } else if (leftArit.getRight() instanceof CrySLObject) {
                     // Handle the case where getRight is a CrySLObject
@@ -166,71 +164,51 @@ public class ConstraintsComparison {
                     // Handle other cases if needed
                     compStrTemp += ""; // Update this with appropriate handling
                 }
-
-
                 CrySLArithmeticConstraint rightArit = crySLComparisonConstraint.getRight();
-
-
                 // length + ( + varnames + ) + operator + int
                 // add operator
                 compStrTemp += " " + mapToOperator(crySLComparisonConstraint.getOperator().toString()) + " ";
                 // add rightside
-
                 List<LeafNodeWithOperator> rightOperations = new ArrayList<>();
                 ArithmeticNode root = buildTree(rightArit);
                 String equation = root.buildEquation();
-
                 collectLeafNodes(rightArit, rightOperations);
-
-
                 compStrTemp += equation;
-
                 compStr = compStrTemp;
-
-
                 if (compStr.contains("length")) {
-
                     List<String> splitCompList = Arrays
                             .asList(compStr.replaceAll("[()]", " ").replaceAll("\\s+", " ").split(" "));
-                    for (String complistStr : splitCompList) {
-
+                    for (String parameterNameComp : splitCompList) {
                         for (String methodStr : methods) {
-
-                            String result = StringUtils.substringBetween(methodStr, "(", ")");
-                            String[] resList = result.split(",");
-
-                            for (String r : resList) {
-
-                                if (r.equals(complistStr)) {
-
-                                    String m = methodStr;
+                            String substringBetween = StringUtils.substringBetween(methodStr, "(", ")");
+                            String[] parameterNamesFromMethod = substringBetween.split(",");
+                            for (String parameterNameFromMethod : parameterNamesFromMethod) {
+                                if (parameterNameFromMethod.equals(parameterNameComp)) {
+                                    String methodStrTemp = methodStr;
                                     List<String> extractParamList = new ArrayList<>();
-                                    int startIndex = m.indexOf("(");
-                                    int endIndex = m.indexOf(")");
-                                    String bracketExtractStr = m.substring(startIndex + 1, endIndex);
-
+                                    int startIndex = methodStrTemp.indexOf("(");
+                                    int endIndex = methodStrTemp.indexOf(")");
+                                    String bracketExtractStr = methodStrTemp.substring(startIndex + 1, endIndex);
                                     if (bracketExtractStr.contains(",")) {
                                         String[] elements = bracketExtractStr.split(",");
-
                                         Collections.addAll(extractParamList, elements);
                                     } else {
                                         extractParamList.add(bracketExtractStr);
                                     }
-
-                                    for (String extractParamStr : extractParamList) {
-                                        if (!DTMap.containsKey(extractParamStr)) {
+                                    for (String parameterName : extractParamList) {
+                                        if (!dataTypeAndParameterNameMap.containsKey(parameterName)) {
                                         } else {
-                                            String value = DTMap.get(extractParamStr);
-                                            m = m.replaceFirst(extractParamStr, value);
+                                            String javaType = dataTypeAndParameterNameMap.get(parameterName);
+                                            methodStrTemp = methodStrTemp.replaceFirst(parameterName, javaType);
                                         }
                                     }
 
-                                    paraMethNameMap.put(complistStr, m);
+                                    paraMethNameMap.put(parameterNameComp, methodStrTemp);
 
                                     String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
                                     List<String> strList = Arrays.asList(mStr.split(" "));
-                                    String posStr = String.valueOf(strList.indexOf(complistStr));
-                                    paraPosMap.put(complistStr, posStr);
+                                    String posStr = String.valueOf(strList.indexOf(parameterNameComp));
+                                    paraPosMap.put(parameterNameComp, posStr);
                                 }
                             }
                         }
@@ -513,12 +491,12 @@ public class ConstraintsComparison {
 
                                     for (String extractParamStr : extractParamList) {
 
-                                        if (!DTMap.containsKey(extractParamStr)) {
+                                        if (!dataTypeAndParameterNameMap.containsKey(extractParamStr)) {
 
                                         } else {
                                             int startInd = 0;
                                             int endInd = 0;
-                                            String value = DTMap.get(extractParamStr);
+                                            String value = dataTypeAndParameterNameMap.get(extractParamStr);
 
                                             Pattern word = Pattern.compile(extractParamStr);
                                             Matcher match = word.matcher(m);
