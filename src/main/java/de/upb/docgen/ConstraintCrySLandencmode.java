@@ -26,93 +26,26 @@ public class ConstraintCrySLandencmode {
 	static PrintWriter out;
 
 	private static String getTemplateEncLHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeLHS1Clause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeLHS1Clause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeLHS1Clause");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static String getTemplateEncCallLHS2() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallLHS2Clause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeCallLHS2Clause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallLHS2Clause");
 	}
 
 	private static String getTemplateEncCallRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallRHSClause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeCallRHSClause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallRHSClause");
 	}
 
 	private static String getTemplateEncNoCallLHS2() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLHS2Clause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeNocallLHS2Clause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLHS2Clause");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static String getTemplateEncNoCallRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLRHSClause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeNocallLRHSClause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLRHSClause");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static Map<String, String> getwordMap(CrySLRule rule) {
@@ -127,14 +60,7 @@ public class ConstraintCrySLandencmode {
 
 	public ArrayList<String> getConCryslandenc(CrySLRule rule) throws IOException {
 		ArrayList<String> composedConAndEnc = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		/*
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
 
-		 */
 
 		List<ISLConstraint> constraintConencmodeList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")

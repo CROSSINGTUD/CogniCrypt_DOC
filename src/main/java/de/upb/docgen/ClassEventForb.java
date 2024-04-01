@@ -97,7 +97,12 @@ public class ClassEventForb {
                 sb.append(resolveMethod(forMethod.getMethod()));
                 if (forMethod.getAlternatives().size() > 0) {
                     for (CrySLMethod altMethod : forMethod.getAlternatives()) {
+
+
+
                         alternatives.add(resolveMethod(altMethod));
+
+
                     }
                 }
                 if (alternatives.size() > 0) {
@@ -153,7 +158,7 @@ public class ClassEventForb {
         Iterator entryIterator = forMethod.getParameters().iterator();
         while (entryIterator.hasNext()) {
             Entry<String, String> par = (Entry) entryIterator.next();
-            sb.append(par.getValue());
+            sb.append(par.getValue().replaceAll("AnyType", "_"));
             if (entryIterator.hasNext()) {
                 sb.append(", ");
             }

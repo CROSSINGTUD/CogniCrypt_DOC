@@ -35,8 +35,8 @@ public class ConstraintCryslnocallto {
 
 	public ArrayList<String> getnoCalltoConstraint(CrySLRule rule) throws IOException {
 		ArrayList<String> composedNocallToConstraints = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
+
+
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());

@@ -159,7 +159,6 @@ public class ConstraintCrySLVC {
 							String joined = null;
 
 							for (String methodStr : methods) {
-								String LHSfirstStr = resLHSList.get(0);
 
 								if (methodStr.contains(realLeft.get(0))) {
 
@@ -175,9 +174,7 @@ public class ConstraintCrySLVC {
 
 										if (bracketExtractStr.contains(",")) {
 											String[] elements = bracketExtractStr.split(",");
-											for (int a1 = 0; a1 < elements.length; a1++) {
-												extractParamList.add(elements[a1]);
-											}
+											extractParamList.addAll(Arrays.asList(elements));
 										} else {
 											extractParamList.add(bracketExtractStr);
 										}
@@ -185,7 +182,7 @@ public class ConstraintCrySLVC {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -232,13 +229,12 @@ public class ConstraintCrySLVC {
 							List<String> finalpredmethodList = new ArrayList<>();
 							String joinedSec = null;
 
-							List<String> resLHSlistsecond = new ArrayList<>();
-							resLHSlistsecond = new ArrayList<>(Arrays.asList(a.replaceAll("\\(.*\\)", "")
+							List<String> resLHSlistsecond = new ArrayList<>(Arrays.asList(a.replaceAll("\\(.*\\)", "")
 									.replaceAll("VC:", "").replaceAll(",$", " ").split(" - ")));
 
 							for (String methodStr : methods) {
 								String LHSfirstStr = resLHSlistsecond.get(0);
-								String posStr = null;
+								String posStr;
 
 								if (methodStr.contains(realLeft.get(0))) {
 
@@ -264,7 +260,7 @@ public class ConstraintCrySLVC {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -314,7 +310,7 @@ public class ConstraintCrySLVC {
 
 						for (String methodStr : methods) {
 							//String RHSfirstStr = resRHSList.get(0);
-							String posStr = null;
+							String posStr;
 
 							if (methodStr.contains(realRight.get(0))) {
 
@@ -361,7 +357,6 @@ public class ConstraintCrySLVC {
 								}
 							}
 						}
-						if (RHSStr.contains("noCallTo")) break; // mode() => noCallTo is not correctly handled temp fix to ensure doc generation
 						resRHSList.add(joinedRHS);
 
 						String varrhsone = resRHSList.get(1);
@@ -378,11 +373,9 @@ public class ConstraintCrySLVC {
 					}
 					printout = resultmainstringLHS + resultmainstringRHS;
 					composedConsraintsValueConstraints.add(printout);
-					//out.println("" + printout);
 				}
 			}
 		}
-		//out.close();
 		return composedConsraintsValueConstraints;
 	}
 }
