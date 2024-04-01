@@ -1,4 +1,4 @@
-SPEC java.security.Key
+SPEC java.security.PublicKey
 
 OBJECTS 
 	byte[] keyMaterial;
@@ -11,7 +11,7 @@ ORDER
 	GetEnc*
 
 REQUIRES
-	generatedKey[this, _] || generatedPubkey[this] || generatedPrivkey[this];
+	generatedPubkey[this];
 	
 ENSURES
 	preparedKeyMaterial[keyMaterial] after GetEnc;

@@ -3,6 +3,7 @@ package de.upb.docgen;
 import java.io.*;
 import java.util.*;
 
+import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
 import de.upb.docgen.crysl.CrySLReader;
@@ -23,7 +24,7 @@ import org.apache.commons.io.FileUtils;
 public class DocumentGeneratorMain {
 
 
-	public static void main(String[] args) throws IOException, TemplateException {
+	public static void main(String[] args) throws IOException, TemplateException, CryptoAnalysisException {
 		//create singleton to access parsed flags from other classes
 		DocSettings docSettings = DocSettings.getInstance();
 		docSettings.parseSettingsFromCLI(args);
