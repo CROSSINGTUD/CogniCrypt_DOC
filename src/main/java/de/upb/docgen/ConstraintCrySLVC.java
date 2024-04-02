@@ -1,4 +1,5 @@
 package de.upb.docgen;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -29,12 +30,12 @@ public class ConstraintCrySLVC {
 
 	private static String getTemplateVCLHS() throws IOException {
 		return Utils.getTemplatesTextString("ConstraintCrySLVCClauseLHS");
-		
+
 	}
 
 	private static String getTemplateVCRHS() throws IOException {
 		return Utils.getTemplatesTextString("ConstraintCrySLVCClauseRHS");
-		
+
 	}
 
 	public ArrayList<String> getConCryslVC(CrySLRule rule) throws IOException {
@@ -66,9 +67,9 @@ public class ConstraintCrySLVC {
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("and"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
 
-
 					CrySLConstraint crySLConstraint = null;
-					if (conCryslISL instanceof CrySLConstraint) crySLConstraint = (CrySLConstraint) conCryslISL;
+					if (conCryslISL instanceof CrySLConstraint)
+						crySLConstraint = (CrySLConstraint) conCryslISL;
 					CrySLValueConstraint leftParam = null;
 					if (crySLConstraint.getLeft() instanceof CrySLValueConstraint) {
 						leftParam = (CrySLValueConstraint) crySLConstraint.getLeft();
@@ -76,7 +77,8 @@ public class ConstraintCrySLVC {
 					} else {
 						continue;
 					}
-					if (conCryslISL instanceof CrySLConstraint) crySLConstraint = (CrySLConstraint) conCryslISL;
+					if (conCryslISL instanceof CrySLConstraint)
+						crySLConstraint = (CrySLConstraint) conCryslISL;
 					CrySLValueConstraint rightParam = null;
 					if (crySLConstraint.getRight() instanceof CrySLValueConstraint) {
 						rightParam = (CrySLValueConstraint) crySLConstraint.getRight();
@@ -84,14 +86,15 @@ public class ConstraintCrySLVC {
 					} else {
 						continue;
 					}
-					//CrySLValueConstraint rightParam = (CrySLValueConstraint) crySLConstraint.getRight();
+					// CrySLValueConstraint rightParam = (CrySLValueConstraint)
+					// crySLConstraint.getRight();
 
 					List<String> realLeft = new ArrayList<>();
 					realLeft.add(leftParam.getVarName());
 					for (String s : leftParam.getValueRange()) {
 						realLeft.add(s);
 					}
-					//resLHSlist = leftCryslConstraint.var.varname,left.valuerange
+					// resLHSlist = leftCryslConstraint.var.varname,left.valuerange
 					List<String> realRight = new ArrayList<>();
 					realRight.add(rightParam.getVarName());
 					for (String s : rightParam.getValueRange()) {
@@ -269,7 +272,7 @@ public class ConstraintCrySLVC {
 								.replaceAll("VC:", "").replaceAll(",$", " ").split(" - ")));
 
 						for (String methodStr : methods) {
-							//String RHSfirstStr = resRHSList.get(0);
+							// String RHSfirstStr = resRHSList.get(0);
 							String posStr;
 
 							if (methodStr.contains(realRight.get(0))) {

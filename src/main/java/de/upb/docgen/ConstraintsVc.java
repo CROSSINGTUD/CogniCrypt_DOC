@@ -83,7 +83,8 @@ public class ConstraintsVc {
                                 extractParamList.add(bracketExtractStr);
                             }
                             for (String extractParamStr : extractParamList) {
-                                if (extractParamStr.equals("_")) continue;
+                                if (extractParamStr.equals("_"))
+                                    continue;
                                 String value = DTMap.get(extractParamStr);
                                 m = m.replace(extractParamStr, value);
                             }
@@ -96,7 +97,7 @@ public class ConstraintsVc {
                     }
                 }
             }
-            //reslist format: positionOfParameter|method|valuesWhichParameter has to assume
+            // reslist format: positionOfParameter|method|valuesWhichParameter has to assume
             List<String> resList = new ArrayList<>();
             for (String firstConVCStr : firstConVCList) {
                 List<String> postionOfParameterList = new ArrayList<>();
@@ -123,7 +124,8 @@ public class ConstraintsVc {
 
                 for (int i = 0; i < postionOfParameterList.size(); i++) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append(postionOfParameterList.get(i)).append("|").append(methodList.get(i)).append("|").append(paraConVCMapValStr);
+                    sb.append(postionOfParameterList.get(i)).append("|").append(methodList.get(i)).append("|")
+                            .append(paraConVCMapValStr);
                     resList.add(sb.toString());
                 }
             }

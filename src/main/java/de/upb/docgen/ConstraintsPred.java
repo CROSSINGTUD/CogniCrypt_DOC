@@ -57,7 +57,8 @@ public class ConstraintsPred {
         return Utils.getTemplatesText("ConstraintPredType4Con");
     }
 
-    public ArrayList<String> getConstraintsPred(CrySLRule rule, Set<String> ensuresForThis, Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap) throws IOException {
+    public ArrayList<String> getConstraintsPred(CrySLRule rule, Set<String> ensuresForThis,
+            Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap) throws IOException {
         ArrayList<String> composedConstraintsPredicates = new ArrayList<>();
         List<String> methodsList = FunctionUtils.getEventNamesKey(rule);
         List<String> valueList = FunctionUtils.getEventNamesValue(rule);
@@ -68,7 +69,9 @@ public class ConstraintsPred {
             DTMap.put(dt.getKey(), dt.getValue());
         }
         String classnamecheck = rule.getClassName().substring(rule.getClassName().lastIndexOf('.') + 1);
-        List<ISLConstraint> constraintPredList = rule.getConstraints().stream().filter(e -> e.getClass().getSimpleName().contains("CrySLPredicate") && !e.toString().contains("!")).collect(Collectors.toList());
+        List<ISLConstraint> constraintPredList = rule.getConstraints().stream()
+                .filter(e -> e.getClass().getSimpleName().contains("CrySLPredicate") && !e.toString().contains("!"))
+                .collect(Collectors.toList());
 
         if (constraintPredList.size() > 0) {
 
@@ -84,7 +87,6 @@ public class ConstraintsPred {
                     }
 
                 }
-
 
                 Multimap<String, String> var2MethNameMap = ArrayListMultimap.create();
                 Multimap<String, String> var2paraPosMap = ArrayListMultimap.create();
@@ -122,7 +124,8 @@ public class ConstraintsPred {
                             }
 
                             for (String extractParamStr : extractParamList) {
-                                if (extractParamStr.equals("_")) continue;
+                                if (extractParamStr.equals("_"))
+                                    continue;
                                 String value = DTMap.get(extractParamStr);
                                 m = m.replace(extractParamStr, value);
                             }
@@ -141,12 +144,13 @@ public class ConstraintsPred {
                 List<String> methodList = new ArrayList<>();
 
                 for (Map.Entry<String, String> paraPosentry : var2paraPosMap.entries()) {
-                    //format: paramter \n number
+                    // format: paramter \n number
                     List<String> parameterAndPositionList = Arrays.asList(paraPosentry.toString().split("="));
                     if (parameterAndPositionList.get(0).equals(predicate)) {
                         if (posInWordsMap.containsKey(parameterAndPositionList.get(1))) {
                             predicatePosWordsStr = posInWordsMap.get(parameterAndPositionList.get(1));
-                            Collections.replaceAll(parameterAndPositionList, parameterAndPositionList.get(1), predicatePosWordsStr);
+                            Collections.replaceAll(parameterAndPositionList, parameterAndPositionList.get(1),
+                                    predicatePosWordsStr);
                         }
                         positionOfParameterList.add(parameterAndPositionList.get(1));
                     }
@@ -175,30 +179,32 @@ public class ConstraintsPred {
 
                     if (crySLPredicateType.matches(camelCasePattern)) {
 
-                        String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(crySLPredicateType), ' ');
+                        String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(crySLPredicateType),
+                                ' ');
                         List<String> verbOrNounList = Arrays.asList(str.split("\\s"));
                         String verb = verbOrNounList.get(0);
                         List<String> noun = verbOrNounList.subList(1, verbOrNounList.size());
                         String nouns = String.join(" ", noun);
-                        List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
+                        List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap
+                                .get(rule.getClassName());
                         for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
                             if (maps.containsKey(crySLPredicateType)) {
                                 maps.get(crySLPredicateType).get(0);
                             }
                         }
-                        //this links the right class which ensures something for the current rule
-                        //nouns = "<a href=\"" + ensures +".html\">" + nouns + "</a>";
+                        // this links the right class which ensures something for the current rule
+                        // nouns = "<a href=\"" + ensures +".html\">" + nouns + "</a>";
                         for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
                             if (maps.containsKey(crySLPredicateType)) {
                                 nouns = "<span class=\"tooltip\">" + nouns;
                                 String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
-                                String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), crySLPredicateType);
+                                String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()),
+                                        crySLPredicateType);
                                 String end = "</span></span>";
 
                                 nouns += tooltiptext + classesLinks + end;
                             }
                         }
-
 
                         if (verb.endsWith("ed")) {
                             char[] template;
@@ -217,12 +223,15 @@ public class ConstraintsPred {
                             StringSubstitutor sub = new StringSubstitutor(valuesMap);
                             String resolvedString = sub.replace(new String(template));
                             composedConstraintsPredicates.add(resolvedString);
-                        } char[] template = null;
+                        }
+                        char[] template = null;
 
                         if (attachedPredicate != null && attachedPredicate.equals("java.lang.String")) {
-                            template = msplit.get(0).equals(classnamecheck) ? getTemplatePred2Con() : getTemplatePredTwo();
+                            template = msplit.get(0).equals(classnamecheck) ? getTemplatePred2Con()
+                                    : getTemplatePredTwo();
                         } else if (attachedPredicate == null) {
-                            template = msplit.get(0).equals(classnamecheck) ? getTemplatePred3Con() : getTemplatePredThree();
+                            template = msplit.get(0).equals(classnamecheck) ? getTemplatePred3Con()
+                                    : getTemplatePredThree();
                         }
 
                         if (template != null) {
@@ -239,13 +248,15 @@ public class ConstraintsPred {
                         }
 
                     } else {
-                        List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
+                        List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap
+                                .get(rule.getClassName());
                         for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
                             if (maps.containsKey(crySLPredicateType)) {
                                 String classToLink = crySLPredicateType;
                                 crySLPredicateType = "<span class=\"tooltip\">" + crySLPredicateType;
                                 String tooltiptext = "<span class=\"tooltiptext\">The following classes ensure this predicate:\n";
-                                String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()), classToLink);
+                                String classesLinks = htmlLinksClass(singleRuleEnsuresMap.get(rule.getClassName()),
+                                        classToLink);
                                 String end = "</span></span>";
 
                                 crySLPredicateType += tooltiptext + classesLinks + end;

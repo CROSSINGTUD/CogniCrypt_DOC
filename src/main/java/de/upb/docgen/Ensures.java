@@ -40,14 +40,15 @@ public class Ensures {
 	}
 
 	private static String getTemplateverbnoun() throws IOException {
-		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun");	
+		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun");
 	}
 
 	private static String getTemplateverbnounedgeCon() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edgeCons");
 	}
 
-	public ArrayList<String> getEnsuresThis(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
+	public ArrayList<String> getEnsuresThis(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap)
+			throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
@@ -63,8 +64,9 @@ public class Ensures {
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
 
-		List<CrySLPredicate> predsThisList = rule.getPredicates().stream().filter(e -> e.toString().contains("this") && !e.toString().contains("!"))
-				.collect(Collectors.toList()); 
+		List<CrySLPredicate> predsThisList = rule.getPredicates().stream()
+				.filter(e -> e.toString().contains("this") && !e.toString().contains("!"))
+				.collect(Collectors.toList());
 
 		if (predsThisList.size() > 0) {
 
@@ -87,43 +89,40 @@ public class Ensures {
 							List<String> predmethodThisNamesList = new ArrayList<String>();
 							List<CrySLMethod> methodsThisedgeList = edge.getLabel();
 
-
-
-
 							for (CrySLMethod method : methodsThisedgeList) {
 								predmethodThisNamesList.add(FunctionUtils.getEventCrySLMethodValue(method));
 
 							}
 
-
-							/*for (String methodlistStr : predmethodThisNamesList) {
-								List<String> extractParamList = new ArrayList<>();
-								int startIndex = methodlistStr.indexOf("(");
-								int endIndex = methodlistStr.indexOf(")");
-								String bracketExtractStr = methodlistStr.substring(startIndex + 1, endIndex);
-
-								if (bracketExtractStr.contains(",")) {
-									String[] elements = bracketExtractStr.split(",");
-									for (int a = 0; a < elements.length; a++) {
-										extractParamList.add(elements[a]);
-									}
-								} else {
-									extractParamList.add(bracketExtractStr);
-								}
-
-								for (String extractParamStr : extractParamList) {
-									if (!DTMap.containsKey(extractParamStr)) {
-									} else {
-										String value = DTMap.get(extractParamStr).toString();
-										methodlistStr = methodlistStr.replace(extractParamStr, value);
-									}
-								}
-
-								finalpredmethodThisNamesList.add(methodlistStr);
-								joined = String.join(" or ", finalpredmethodThisNamesList);
-								//System.out.println(joined);
-							}
-*/
+							/*
+							 * for (String methodlistStr : predmethodThisNamesList) {
+							 * List<String> extractParamList = new ArrayList<>();
+							 * int startIndex = methodlistStr.indexOf("(");
+							 * int endIndex = methodlistStr.indexOf(")");
+							 * String bracketExtractStr = methodlistStr.substring(startIndex + 1, endIndex);
+							 * 
+							 * if (bracketExtractStr.contains(",")) {
+							 * String[] elements = bracketExtractStr.split(",");
+							 * for (int a = 0; a < elements.length; a++) {
+							 * extractParamList.add(elements[a]);
+							 * }
+							 * } else {
+							 * extractParamList.add(bracketExtractStr);
+							 * }
+							 * 
+							 * for (String extractParamStr : extractParamList) {
+							 * if (!DTMap.containsKey(extractParamStr)) {
+							 * } else {
+							 * String value = DTMap.get(extractParamStr).toString();
+							 * methodlistStr = methodlistStr.replace(extractParamStr, value);
+							 * }
+							 * }
+							 * 
+							 * finalpredmethodThisNamesList.add(methodlistStr);
+							 * joined = String.join(" or ", finalpredmethodThisNamesList);
+							 * //System.out.println(joined);
+							 * }
+							 */
 							joined = String.join(" or ", predmethodThisNamesList);
 							List<String> msplit = Arrays.asList(joined.split("\\("));
 
@@ -137,7 +136,7 @@ public class Ensures {
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbedge);
 								composedEnsures.add(resolvedString);
-								//out.println(resolvedString);
+								// out.println(resolvedString);
 							}
 
 							else {
@@ -157,7 +156,7 @@ public class Ensures {
 
 									StringSubstitutor sub = new StringSubstitutor(valuesMap);
 									String resolvedString = sub.replace(verbedge);
-									//out.println(resolvedString);
+									// out.println(resolvedString);
 									composedEnsures.add(resolvedString);
 
 									break;
@@ -170,7 +169,7 @@ public class Ensures {
 
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(verbnounedge);
-								//out.println(resolvedString);
+								// out.println(resolvedString);
 								composedEnsures.add(resolvedString);
 
 							}
@@ -194,7 +193,7 @@ public class Ensures {
 
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(verbnoun);
-						//out.println(resolvedString);
+						// out.println(resolvedString);
 						composedEnsures.add(resolvedString);
 
 					}
@@ -204,7 +203,8 @@ public class Ensures {
 		return composedEnsures;
 	}
 
-	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word, String predicate) {
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word,
+			String predicate) {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
 		for (Map<String, List<String>> maps : requiresOfClasses) {
 			if (maps.containsKey(predicate)) {
@@ -219,7 +219,8 @@ public class Ensures {
 		return word;
 	}
 
-	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word) {
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap,
+			String word) {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
 		for (Map<String, List<String>> maps : requiresOfClasses) {
 			if (maps.containsKey(word)) {
@@ -237,7 +238,7 @@ public class Ensures {
 
 	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
 		StringBuilder sb = new StringBuilder();
-		for (Map<String, List <String>> map : maps) {
+		for (Map<String, List<String>> map : maps) {
 			if (map.containsKey(var1)) {
 				for (String className : map.get(var1)) {
 					sb.append("<a href=\"").append(className).append(".html\">").append(className).append("</a>\n");

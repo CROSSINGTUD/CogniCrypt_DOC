@@ -15,7 +15,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-
 /**
  * @author Ritika Singh
  */
@@ -27,7 +26,6 @@ public class ClassEventForb {
     public String getClassName(CrySLRule rule) throws IOException {
         return rule.getClassName();
     }
-
 
     public String getLinkOnly(CrySLRule rule) throws IOException {
         return rule.getClassName().replaceAll("\\.", "/");
@@ -77,7 +75,8 @@ public class ClassEventForb {
         Map<String, String> valuesMap = new HashMap<>();
         valuesMap.put("number", methodNumber);
         StringSubstitutor sub = new StringSubstitutor(valuesMap);
-        if ("1".equals(methodNumber)) return sub.replace(buff1);
+        if ("1".equals(methodNumber))
+            return sub.replace(buff1);
         return sub.replace(buff2);
 
     }
@@ -98,10 +97,7 @@ public class ClassEventForb {
                 if (forMethod.getAlternatives().size() > 0) {
                     for (CrySLMethod altMethod : forMethod.getAlternatives()) {
 
-
-
                         alternatives.add(resolveMethod(altMethod));
-
 
                     }
                 }
@@ -114,7 +110,7 @@ public class ClassEventForb {
                         StringSubstitutor sub = new StringSubstitutor(valuesMap);
                         String resolvedString = sub.replace(buff3);
                         composedForbs.add(resolvedString);
-                    } else { //constructor
+                    } else { // constructor
                         Map<String, String> valuesMap = new HashMap<String, String>();
                         valuesMap.put("ForbMethodName", sb.toString());
                         String resolvedAlternates = String.join(" or ", alternatives);
@@ -166,6 +162,5 @@ public class ClassEventForb {
         sb.append(")");
         return sb.toString();
     }
-
 
 }

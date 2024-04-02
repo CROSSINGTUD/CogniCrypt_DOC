@@ -40,9 +40,11 @@ public class EnsuresCaseTwo {
 				if (method.toString().contains(" = ")) {
 					String firstReturnTypeVar;
 					String secondMethodNameVar;
-					//List<String> retEntry = Arrays
-					//		.asList(method.toString().replaceAll("\\[", "").replaceAll("\\]", "").split(","));
-					List<String> retEntry = Arrays.asList((method.getRetObject().getKey())+" = "+ FunctionUtils.getEventCrySLMethodValue(method));
+					// List<String> retEntry = Arrays
+					// .asList(method.toString().replaceAll("\\[", "").replaceAll("\\]",
+					// "").split(","));
+					List<String> retEntry = Arrays.asList(
+							(method.getRetObject().getKey()) + " = " + FunctionUtils.getEventCrySLMethodValue(method));
 					List<String> rfList = Arrays.asList(retEntry.get(0).split(" = "));
 					firstReturnTypeVar = rfList.get(0);
 					List<String> rsList = Arrays.asList(
@@ -50,7 +52,7 @@ public class EnsuresCaseTwo {
 					secondMethodNameVar = rsList.get((rsList.size()) - 1);
 					retValMap.put(firstReturnTypeVar, secondMethodNameVar);
 				}
-				//break;
+				// break;
 			}
 		}
 		return retValMap;
@@ -67,7 +69,6 @@ public class EnsuresCaseTwo {
 	private static String getTemplateReturnValueThree() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verb");
 	}
-		
 
 	private static String getTemplateReturnValueFour() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnoun");
@@ -75,7 +76,7 @@ public class EnsuresCaseTwo {
 
 	private static String getTemplateOne() throws IOException {
 		return Utils.getTemplatesTextString("Ensures-thisNA-verbmeth");
-		
+
 	}
 
 	private static String getTemplateTwo() throws IOException {
@@ -85,14 +86,15 @@ public class EnsuresCaseTwo {
 
 	private static String getTemplateThree() throws IOException {
 		return Utils.getTemplatesTextString("Ensures-thisNA-verb");
-		
+
 	}
 
 	private static String getTemplateFour() throws IOException {
 		return Utils.getTemplatesTextString("Ensures-thisNA-verbnoun");
 	}
 
-	public ArrayList<String> getEnsures(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
+	public ArrayList<String> getEnsures(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap)
+			throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
 		String joined = null;
 		List<Entry<String, String>> dataTypes = rule.getObjects();
@@ -102,12 +104,10 @@ public class EnsuresCaseTwo {
 			DTMap.put(dt.getKey(), dt.getValue());
 		}
 
-
-
 		List<String> methodsNameList = FunctionUtils.getEventNamesKey(rule);
 		Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 		Map<String, String> retTypeMap = getReturnValues(rule);
-		
+
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
 
@@ -117,8 +117,8 @@ public class EnsuresCaseTwo {
 
 		for (CrySLPredicate elementN : predList) {
 
-			String paramStr = ((CrySLObject)elementN.getParameters().get(0)).getVarName();
-        	if (retTypeMap.containsKey(paramStr)) {
+			String paramStr = ((CrySLObject) elementN.getParameters().get(0)).getVarName();
+			if (retTypeMap.containsKey(paramStr)) {
 
 				String returnValMethod = retTypeMap.get(paramStr);
 
@@ -135,17 +135,14 @@ public class EnsuresCaseTwo {
 					for (TransitionEdge edge : edges) {
 
 						if (conPred.getConditionalMethods().contains(edge.to()) && !edge.to().equals(edge.from())) {
-						
+
 							List<String> predmethodNames = new ArrayList<String>();
 							List<CrySLMethod> methods = edge.getLabel();
 
-					
-
 							for (CrySLMethod method : methods) {
-							predmethodNames.add(FunctionUtils.getEventCrySLMethodValue(method));
+								predmethodNames.add(FunctionUtils.getEventCrySLMethodValue(method));
 							}
 
-						
 							joined = String.join(" or ", predmethodNames);
 
 							if (verbOrNounList.size() == 1) {
@@ -154,13 +151,13 @@ public class EnsuresCaseTwo {
 								String strRetOne = getTemplateReturnValueOne();
 								Map<String, String> valuesMap = new HashMap<String, String>();
 								valuesMap.put("returnValMethod", returnValMethod);
-								valuesMap.put("verb", toHoverLink(rule, stringListMap, verb,predNameStr));
+								valuesMap.put("verb", toHoverLink(rule, stringListMap, verb, predNameStr));
 								valuesMap.put("methodName", joined);
 
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strRetOne);
 								composedEnsures.add(resolvedString);
-								//out.println(resolvedString);
+								// out.println(resolvedString);
 
 							} else {
 								verb = verbOrNounList.get(0);
@@ -171,12 +168,12 @@ public class EnsuresCaseTwo {
 								Map<String, String> valuesMap = new HashMap<String, String>();
 								valuesMap.put("returnValMethod", returnValMethod);
 								valuesMap.put("verb", verb);
-								valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns,predNameStr));
+								valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns, predNameStr));
 								valuesMap.put("joined", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strRetTwo);
 								composedEnsures.add(resolvedString);
-								//out.println(resolvedString);
+								// out.println(resolvedString);
 							}
 							break;
 						}
@@ -189,11 +186,11 @@ public class EnsuresCaseTwo {
 						String strRetThree = getTemplateReturnValueThree();
 						Map<String, String> valuesMap = new HashMap<String, String>();
 						valuesMap.put("returnValMethod", returnValMethod);
-						valuesMap.put("verb", toHoverLink(rule, stringListMap, verb ,predNameStr));
+						valuesMap.put("verb", toHoverLink(rule, stringListMap, verb, predNameStr));
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strRetThree);
 						composedEnsures.add(resolvedString);
-						//out.println(resolvedString);
+						// out.println(resolvedString);
 
 					} else {
 						verb = verbOrNounList.get(0);
@@ -204,11 +201,11 @@ public class EnsuresCaseTwo {
 						Map<String, String> valuesMap = new HashMap<String, String>();
 						valuesMap.put("returnValMethod", returnValMethod);
 						valuesMap.put("verb", verb);
-						valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns , predNameStr));
+						valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns, predNameStr));
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strRetFour);
 						composedEnsures.add(resolvedString);
-						//out.println(resolvedString);
+						// out.println(resolvedString);
 					}
 				}
 			}
@@ -313,7 +310,7 @@ public class EnsuresCaseTwo {
 							}
 
 							for (String methodlistStr : predmethodNames) {
-								List<String> extractParamList = new ArrayList<>(); 
+								List<String> extractParamList = new ArrayList<>();
 
 								int startIndex = methodlistStr.indexOf("(");
 								int endIndex = methodlistStr.indexOf(")");
@@ -368,7 +365,7 @@ public class EnsuresCaseTwo {
 								valuesMap.put("joined", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strOne);
-								//out.println(resolvedString);
+								// out.println(resolvedString);
 								composedEnsures.add(resolvedString);
 
 							} else {
@@ -380,11 +377,11 @@ public class EnsuresCaseTwo {
 								valuesMap.put("paraPosInWordValStr", paraPosInWordValStr);
 								valuesMap.put("paraMethNameMapValStr", paraMethNameMapValStr);
 								valuesMap.put("verb", verb);
-								valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns ,predNameStr));
+								valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns, predNameStr));
 								valuesMap.put("joined", joined);
 								StringSubstitutor sub = new StringSubstitutor(valuesMap);
 								String resolvedString = sub.replace(strTwo);
-							    //out.println(resolvedString);
+								// out.println(resolvedString);
 								composedEnsures.add(resolvedString);
 							}
 							break;
@@ -399,10 +396,10 @@ public class EnsuresCaseTwo {
 						Map<String, String> valuesMap = new HashMap<String, String>();
 						valuesMap.put("paraPosInWordValStr", paraPosInWordValStr);
 						valuesMap.put("paraMethNameMapValStr", paraMethNameMapValStr);
-						valuesMap.put("verb", toHoverLink(rule, stringListMap, verb ,predNameStr));
+						valuesMap.put("verb", toHoverLink(rule, stringListMap, verb, predNameStr));
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strThree);
-						//out.println(resolvedString);
+						// out.println(resolvedString);
 						composedEnsures.add(resolvedString);
 
 					} else {
@@ -415,21 +412,22 @@ public class EnsuresCaseTwo {
 						valuesMap.put("paraPosInWordValStr", paraPosInWordValStr);
 						valuesMap.put("paraMethNameMapValStr", paraMethNameMapValStr);
 						valuesMap.put("verb", verb);
-						valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns,predNameStr));
+						valuesMap.put("nouns", toHoverLink(rule, stringListMap, nouns, predNameStr));
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						String resolvedString = sub.replace(strFour);
-						//out.println(resolvedString);
+						// out.println(resolvedString);
 						composedEnsures.add(resolvedString);
-						
+
 					}
 				}
-			}			
+			}
 		}
-		//out.close();
+		// out.close();
 		return composedEnsures;
 	}
 
-	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word, String predicate) {
+	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word,
+			String predicate) {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
 		for (Map<String, List<String>> maps : requiresOfClasses) {
 			if (maps.containsKey(predicate)) {
@@ -447,7 +445,7 @@ public class EnsuresCaseTwo {
 
 	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1, String predicate) {
 		StringBuilder sb = new StringBuilder();
-		for (Map<String, List <String>> map : maps) {
+		for (Map<String, List<String>> map : maps) {
 			if (map.containsKey(predicate)) {
 				for (String className : map.get(predicate)) {
 					sb.append("<a href=\"").append(className).append(".html\">").append(className).append("</a>\n");
@@ -461,7 +459,7 @@ public class EnsuresCaseTwo {
 		// Check if the input string contains square brackets
 		if (inputString.contains("[") || inputString.contains("]")) {
 			// If yes, escape the string by adding a backslash before each square bracket
-            return inputString.replace("[", "\\[").replace("]", "\\]");
+			return inputString.replace("[", "\\[").replace("]", "\\]");
 		} else {
 			// Otherwise, return the original string
 			return inputString;

@@ -49,8 +49,10 @@ public class ConstraintCrySLInstanceof {
 				List<ISLConstraint> allNodesRight = null;
 				List<ISLConstraint> allRightConstraints = new ArrayList<>();
 				if (conCryslISL instanceof CrySLConstraint) {
-					if (((CrySLConstraint) conCryslISL).getLeft() instanceof CrySLConstraint) leftConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getLeft();
-					if (((CrySLConstraint) conCryslISL).getRight() instanceof CrySLConstraint) rightConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getRight();
+					if (((CrySLConstraint) conCryslISL).getLeft() instanceof CrySLConstraint)
+						leftConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getLeft();
+					if (((CrySLConstraint) conCryslISL).getRight() instanceof CrySLConstraint)
+						rightConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getRight();
 					if (leftConstraint != null) {
 						allNodesLeft = getAllLeafNodes(allLeftConstraints, leftConstraint);
 					}
@@ -95,14 +97,15 @@ public class ConstraintCrySLInstanceof {
 
 							if (allNodesLeft == null) {
 								allNodesLeft = new ArrayList<>();
-								allNodesLeft.add(((CrySLConstraint)conCryslISL).getLeft());
+								allNodesLeft.add(((CrySLConstraint) conCryslISL).getLeft());
 							}
 							for (String methodStr : methods) {
-								String realLHS = ((CrySLObject)((CrySLPredicate)allNodesLeft.get(0)).getParameters().get(0)).getVarName();
-								String real = ((CrySLObject)((CrySLPredicate)allNodesLeft.get(0)).getParameters().get(1)).getJavaType();
-								resLHSlist.set(0,realLHS);
-								resLHSlist.set(1,real);//if null dont add
-
+								String realLHS = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
+										.get(0)).getVarName();
+								String real = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
+										.get(1)).getJavaType();
+								resLHSlist.set(0, realLHS);
+								resLHSlist.set(1, real);// if null dont add
 
 								if (methodStr.contains(realLHS)) {
 
@@ -175,14 +178,14 @@ public class ConstraintCrySLInstanceof {
 							String leftSidePredicateOrVCvarname = null;
 							if (currentConstraint instanceof CrySLPredicate) {
 								CrySLPredicate predicate = (CrySLPredicate) currentConstraint;
-								leftSidePredicateOrVCvarname = ((CrySLObject)predicate.getParameters().get(0)).getVarName();
+								leftSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
+										.getVarName();
 							} else if (currentConstraint instanceof CrySLValueConstraint) {
 								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) currentConstraint;
 								leftSidePredicateOrVCvarname = valueConstraint.getVarName();
 							} else {
 								System.exit(255);
 							}
-
 
 							List<String> resLHSlistsecond;
 							List<String> finalpredmethodSecList = new ArrayList<>();
@@ -199,7 +202,7 @@ public class ConstraintCrySLInstanceof {
 
 							for (String methodStr : methods) {
 
-                                if (methodStr.contains(leftSidePredicateOrVCvarname)) {
+								if (methodStr.contains(leftSidePredicateOrVCvarname)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -262,10 +265,8 @@ public class ConstraintCrySLInstanceof {
 
 					if (allNodesRight == null) {
 						allNodesRight = new ArrayList<>();
-						allNodesRight.add(((CrySLConstraint)conCryslISL).getRight());
+						allNodesRight.add(((CrySLConstraint) conCryslISL).getRight());
 					}
-
-
 
 					for (String RHSStr : RHSList) {
 
@@ -275,12 +276,12 @@ public class ConstraintCrySLInstanceof {
 						List<String> finalpredmethodRHSList = new ArrayList<>();
 						String joinedRHS = null;
 
-
 						for (String methodStr : methods) {
 							String rightSidePredicateOrVCvarname = null;
 							if (allNodesRight.get(0) instanceof CrySLPredicate) {
 								CrySLPredicate predicate = (CrySLPredicate) allNodesRight.get(0);
-								rightSidePredicateOrVCvarname = ((CrySLObject)predicate.getParameters().get(0)).getVarName();
+								rightSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
+										.getVarName();
 								// Your code specific to CrySLPredicate
 							} else if (allNodesRight.get(0) instanceof CrySLValueConstraint) {
 								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) allNodesRight.get(0);
@@ -291,9 +292,7 @@ public class ConstraintCrySLInstanceof {
 								System.exit(255);
 							}
 
-
 							String RHSfirstStr = rightSidePredicateOrVCvarname;
-
 
 							if (methodStr.contains(RHSfirstStr)) {
 

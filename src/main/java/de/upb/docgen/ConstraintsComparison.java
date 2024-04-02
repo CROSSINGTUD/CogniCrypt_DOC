@@ -137,13 +137,13 @@ public class ConstraintsComparison {
                     compStrTemp = leftArtObj.getVarName();
                 } else {
                     // Handle other cases if needed
-                    compStrTemp = ""; 
+                    compStrTemp = "";
                 }
 
-// Continue with the operator and rightArit
+                // Continue with the operator and rightArit
                 compStrTemp += " " + mapToOperator(leftArit.getOperator().toString()) + " ";
 
-// Repeat the similar logic for getRight
+                // Repeat the similar logic for getRight
                 if (leftArit.getRight() instanceof CrySLPredicate) {
                     CrySLPredicate rightAritPrd = (CrySLPredicate) leftArit.getRight();
 
@@ -161,7 +161,7 @@ public class ConstraintsComparison {
                     compStrTemp += rightArtObj.getVarName();
                 } else {
                     // Handle other cases if needed
-                    compStrTemp += ""; 
+                    compStrTemp += "";
                 }
                 CrySLArithmeticConstraint rightArit = crySLComparisonConstraint.getRight();
                 // length + ( + varnames + ) + operator + int
@@ -403,7 +403,7 @@ public class ConstraintsComparison {
                                     String resolvedString = sub.replace(strTwo);
                                     composedComparsionConstraint.add(resolvedString);
 
-                                    //out.println(resolvedString);
+                                    // out.println(resolvedString);
                                 }
                             }
                         }
@@ -432,7 +432,6 @@ public class ConstraintsComparison {
                                     StringSubstitutor sub = new StringSubstitutor(valuesMap);
                                     String resolvedString = sub.replace(strThree);
                                     composedComparsionConstraint.add(resolvedString);
-
 
                                 } else if (symbolStr.equals(">")) {
 
@@ -660,7 +659,6 @@ public class ConstraintsComparison {
                                     String resolvedString = sub.replace(strSix);
                                     composedComparsionConstraint.add(resolvedString);
 
-
                                 }
                             }
                         }
@@ -686,7 +684,6 @@ public class ConstraintsComparison {
                                     String resolvedString = sub.replace(strFour);
                                     composedComparsionConstraint.add(resolvedString);
 
-
                                 } else {
 
                                     char[] strFour = getTemplateCompFour();
@@ -698,7 +695,6 @@ public class ConstraintsComparison {
                                     String resolvedString = sub.replace(strFour);
                                     composedComparsionConstraint.add(resolvedString);
 
-
                                 }
                             }
                         }
@@ -707,16 +703,17 @@ public class ConstraintsComparison {
             }
         }
 
-        //out.close();
+        // out.close();
         return composedComparsionConstraint;
     }
-
 
     private void collectLeafNodes(CrySLArithmeticConstraint rightArit, List<LeafNodeWithOperator> rightOperations) {
         if (rightArit.getLeft() instanceof CrySLObject && rightArit.getRight() instanceof CrySLObject) {
             // Both left and right are leaf nodes
-            rightOperations.add(new LeafNodeWithOperator((CrySLObject) rightArit.getLeft(), rightArit.getOperator().toString()));
-            rightOperations.add(new LeafNodeWithOperator((CrySLObject) rightArit.getRight(), rightArit.getOperator().toString()));
+            rightOperations.add(
+                    new LeafNodeWithOperator((CrySLObject) rightArit.getLeft(), rightArit.getOperator().toString()));
+            rightOperations.add(
+                    new LeafNodeWithOperator((CrySLObject) rightArit.getRight(), rightArit.getOperator().toString()));
         } else {
             // Recursively explore left and right nodes, checking for leaf nodes
             if (rightArit.getLeft() instanceof ISLConstraint) {
@@ -725,7 +722,8 @@ public class ConstraintsComparison {
                     collectLeafNodes((CrySLArithmeticConstraint) left, rightOperations);
                 } else {
                     // Handle if left is a leaf node (CrySLObject or other leaf types)
-                    rightOperations.add(new LeafNodeWithOperator((CrySLObject) left, rightArit.getOperator().toString()));
+                    rightOperations
+                            .add(new LeafNodeWithOperator((CrySLObject) left, rightArit.getOperator().toString()));
                 }
             }
 
@@ -735,7 +733,8 @@ public class ConstraintsComparison {
                     collectLeafNodes((CrySLArithmeticConstraint) right, rightOperations);
                 } else {
                     // Handle if right is a leaf node (CrySLObject or other leaf types)
-                    rightOperations.add(new LeafNodeWithOperator((CrySLObject) right, rightArit.getOperator().toString()));
+                    rightOperations
+                            .add(new LeafNodeWithOperator((CrySLObject) right, rightArit.getOperator().toString()));
                 }
             }
         }

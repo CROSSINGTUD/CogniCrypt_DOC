@@ -32,7 +32,6 @@ public class Order {
 	static Map<String, String> objectMap = new LinkedHashMap<>();
 	public static PrintWriter out;
 
-
 	// reading the file and adding it to map(k,v), k- event , v- content inside it
 	private static Map<String, List<String>> readCryslFile(String filePath) throws IOException {
 		Map<String, List<String>> cryslFileContentMap = new LinkedHashMap<>();
@@ -65,7 +64,7 @@ public class Order {
 		Properties properties = new Properties();
 
 		try {
-			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath()+"/symbol.properties");
+			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath() + "/symbol.properties");
 			FileInputStream fileInput = new FileInputStream(fileone);
 			properties.load(fileInput);
 			fileInput.close();
@@ -92,15 +91,12 @@ public class Order {
 		getSymValues();
 		List<String> orderSplittedWithBrackets = connectBrackets(originalOrder);
 
-		
-
 		ArrayList<String> allNLsentences = parseOrderToNL(orderSplittedWithBrackets);
 
 		List<String> resolvedSentences = aggrgatesToMethods(allNLsentences);
 
 		List<String> orderConstructed = combineAndIndentation(resolvedSentences);
 
-	
 		objectMap.clear();
 		processedresultMap.clear();
 		symbolMap.clear();
@@ -133,37 +129,37 @@ public class Order {
 		int identlevel = 0;
 		if (n.size() > 2) {
 			for (int i = 0; i <= n.size() - 2; i += 2) {
-				if (n.get(i).startsWith(symbolMap.get("(")) ) {
+				if (n.get(i).startsWith(symbolMap.get("("))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
 					identlevel++;
 					n.remove(i);
 					i -= 2;
-				} else if  (n.get(i).startsWith(symbolMap.get("|")) && (n.get(i+1).startsWith(symbolMap.get("(")))){
+				} else if (n.get(i).startsWith(symbolMap.get("|")) && (n.get(i + 1).startsWith(symbolMap.get("(")))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
-					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1));
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i + 1));
 					identlevel++;
 					n.remove(i);
 					n.remove(i);
 					i -= 2;
-				} else if  (n.get(i).startsWith(symbolMap.get("|"))){
+				} else if (n.get(i).startsWith(symbolMap.get("|"))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
-					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1) + n.get(i+2));
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i + 1) + n.get(i + 2));
 					n.remove(i);
 					n.remove(i);
 					n.remove(i);
-					i -=2;
+					i -= 2;
 				} else if (n.get(i).startsWith(symbolMap.get(")"))) {
-					//removing closing brackets and lowering the level
+					// removing closing brackets and lowering the level
 					while (n.size() > i && n.get(i).startsWith(symbolMap.get(")"))) {
 						identlevel--;
 						n.remove(i);
 					}
-					//remove already processed sentences
+					// remove already processed sentences
 					if (n.size() > i && !n.get(i).startsWith(symbolMap.get("|"))) {
 						n.remove(i);
 					}
 					i -= 2;
-				} else if (n.get(i+1).startsWith(symbolMap.get("|"))) {
+				} else if (n.get(i + 1).startsWith(symbolMap.get("|"))) {
 					a = StringUtils.repeat("\t", identlevel) + n.get(i);
 					fo.add(a);
 					n.remove(i);
@@ -172,7 +168,8 @@ public class Order {
 					a = StringUtils.repeat("\t", identlevel) + n.get(i) + " " + n.get(i + 1);
 					fo.add(a);
 				}
-			}} else{
+			}
+		} else {
 
 			a = StringUtils.repeat("\t", identlevel) + n.get(0) + " " + n.get(1);
 			fo.add(a);
@@ -205,18 +202,19 @@ public class Order {
 						break;
 					}
 				}
-				if (added) continue;
+				if (added)
+					continue;
 				fl.add(s);
 				String next = "";
 				int orderListSize = orderList.size();
-				if (i+1 < orderListSize) {
-					next = orderList.get(i+1);
+				if (i + 1 < orderListSize) {
+					next = orderList.get(i + 1);
 				}
 				if (!symbolMap.containsKey(next)) {
 					fl.add("has to be called once.");
 
 				}
-				if (next.equals(")") || next.equals("(") || next.equals("|") ) {
+				if (next.equals(")") || next.equals("(") || next.equals("|")) {
 					fl.add("has to be called once.");
 
 				}
@@ -229,24 +227,26 @@ public class Order {
 		int totalCounter = 0;
 		boolean breakof = false;
 		for (int i = 0; i < decided.length(); i++) {
-			if (decided.charAt(i)=='(') {
+			if (decided.charAt(i) == '(') {
 				if (toIgnore > 0) {
 					toIgnore--;
 					continue;
 				}
 				totalCounter++;
-				if (totalCounter > 0) breakof = true;
+				if (totalCounter > 0)
+					breakof = true;
 			}
-			if (decided.charAt(i)==')') {
-				if (totalCounter-1 <0) continue;
+			if (decided.charAt(i) == ')') {
+				if (totalCounter - 1 < 0)
+					continue;
 				totalCounter--;
 			}
 			if (totalCounter == 0 && breakof) {
-				//check if i+1 is empty
-				if (i+1 == decided.length()) {
+				// check if i+1 is empty
+				if (i + 1 == decided.length()) {
 					decided = "has to be called once.";
 				} else {
-					switch (decided.charAt(i+1)) {
+					switch (decided.charAt(i + 1)) {
 						case '*':
 							decided = "can be called arbitary times.";
 							break;
@@ -276,20 +276,19 @@ public class Order {
 
 				int bracketcounter = 0;
 				int j = i;
-				for (;j < fo.size();j++){
+				for (; j < fo.size(); j++) {
 					bracketcounter += fo.get(j).chars().filter(ch -> ch == '(').count();
 				}
-				for (j=i; j < fo.size(); ++j) {
+				for (j = i; j < fo.size(); ++j) {
 					if (bracketcounter == 0) {
 
 						break;
 					}
 					bracketcounter -= fo.get(j).chars().filter(ch -> ch == ')').count();
-					sb.append(fo.get(j) +" ");
+					sb.append(fo.get(j) + " ");
 				}
 				connected.add(sb.toString());
 				i = j;
-
 
 			} else {
 				connected.add(fo.get(i));

@@ -63,7 +63,6 @@ public class ConstraintCrySLandencmode {
 	public ArrayList<String> getConCryslandenc(CrySLRule rule) throws IOException {
 		ArrayList<String> composedConAndEnc = new ArrayList<>();
 
-
 		List<ISLConstraint> constraintConencmodeList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")
 						&& e.toString().contains("int encmode"))
@@ -119,8 +118,9 @@ public class ConstraintCrySLandencmode {
 
 								CrySLConstraint crySLConstraint = (CrySLConstraint) conCryslISL;
 								CrySLConstraint leftConstraint = (CrySLConstraint) crySLConstraint.getLeft();
-								CrySLValueConstraint LeftValueConstraint = (CrySLValueConstraint) leftConstraint.getLeft();
-								CrySLObject CrySLObject= (CrySLObject) LeftValueConstraint.getVar();
+								CrySLValueConstraint LeftValueConstraint = (CrySLValueConstraint) leftConstraint
+										.getLeft();
+								CrySLObject CrySLObject = (CrySLObject) LeftValueConstraint.getVar();
 								String varname = CrySLObject.getVarName();
 
 								if (methodStr.contains(varname)) {
@@ -302,14 +302,13 @@ public class ConstraintCrySLandencmode {
 					for (String RHSStr : RHSList) {
 
 						if (RHSStr.startsWith("noCall")) {
-							//List<String> NCList = Arrays.asList(RHSStr.split(","));
+							// List<String> NCList = Arrays.asList(RHSStr.split(","));
 							List<String> NCList = extractMethodSignatures(RHSStr);
 							String nocall = "";
 							String finalnocallstring = "";
 
 							for (String nc : NCList) {
 
-								
 								List<String> fList = new ArrayList<>();
 								String joinedMethods = "";
 								String b = templatestringEncNoCallRHS;
@@ -318,30 +317,28 @@ public class ConstraintCrySLandencmode {
 
 								String tempStr = extractMethodParameters(nc);
 
+								List<String> extractParamList = new ArrayList<>();
+								int startIndex = tempStr.indexOf("(");
+								int endIndex = tempStr.indexOf(")");
+								String bracketExtractStr = tempStr.substring(startIndex + 1, endIndex);
 
-
-									List<String> extractParamList = new ArrayList<>();
-									int startIndex = tempStr.indexOf("(");
-									int endIndex = tempStr.indexOf(")");
-									String bracketExtractStr = tempStr.substring(startIndex + 1, endIndex);
-
-									if (bracketExtractStr.contains(",")) {
-										String[] elements = bracketExtractStr.split(",");
-										for (int a = 0; a < elements.length; a++) {
-											extractParamList.add(elements[a]);
-										}
-									} else {
-										extractParamList.add(bracketExtractStr);
+								if (bracketExtractStr.contains(",")) {
+									String[] elements = bracketExtractStr.split(",");
+									for (int a = 0; a < elements.length; a++) {
+										extractParamList.add(elements[a]);
 									}
+								} else {
+									extractParamList.add(bracketExtractStr);
+								}
 
-									for (String extractParamStr : extractParamList) {
+								for (String extractParamStr : extractParamList) {
 
-										String[] parts = extractParamStr.trim().split(" ");
-										String value = DTMap.get(parts[1]);
-										tempStr = tempStr.replace(extractParamStr, value);
-									}
-									fList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
-									joinedMethods = String.join("", fList);
+									String[] parts = extractParamStr.trim().split(" ");
+									String value = DTMap.get(parts[1]);
+									tempStr = tempStr.replace(extractParamStr, value);
+								}
+								fList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
+								joinedMethods = String.join("", fList);
 
 								nocall += joinedMethods + ", ";
 								finalnocallstring = nocall.substring(0, nocall.lastIndexOf(","));
@@ -411,14 +408,13 @@ public class ConstraintCrySLandencmode {
 					}
 					printout = resultmainstringLHS + resultmainstringRHS;
 					composedConAndEnc.add(printout);
-					//out.println(printout);
+					// out.println(printout);
 				}
 			}
 		}
-		//out.close();
+		// out.close();
 		return composedConAndEnc;
 	}
-
 
 	public static ArrayList<String> extractMethodSignatures(String input) {
 		ArrayList<String> methodSignatures = new ArrayList<>();

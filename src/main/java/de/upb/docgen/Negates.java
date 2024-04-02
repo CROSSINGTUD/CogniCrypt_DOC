@@ -100,7 +100,7 @@ public class Negates {
 
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(strRetOne);
-							//out.println(resolvedString);
+							// out.println(resolvedString);
 							composedNegates.add(resolvedString);
 							break;
 
@@ -113,9 +113,8 @@ public class Negates {
 			}
 
 		}
-		//out.close();
+		// out.close();
 		return composedNegates;
-
 
 	}
 
