@@ -181,10 +181,9 @@ public class ConstraintsPred {
                         List<String> noun = verbOrNounList.subList(1, verbOrNounList.size());
                         String nouns = String.join(" ", noun);
                         List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap.get(rule.getClassName());
-                        String ensures = "";
                         for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
                             if (maps.containsKey(crySLPredicateType)) {
-                                ensures = maps.get(crySLPredicateType).get(0);
+                                maps.get(crySLPredicateType).get(0);
                             }
                         }
                         //this links the right class which ensures something for the current rule

@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
-import org.apache.commons.collections4.bag.SynchronizedSortedBag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 

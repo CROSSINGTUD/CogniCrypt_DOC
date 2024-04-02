@@ -57,161 +57,43 @@ public class EnsuresCaseTwo {
 	}
 
 	private static String getTemplateReturnValueOne() throws IOException {
-		String strDOne = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbmeth");
-		/*
-		File fileOne = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verbmeth");
-		BufferedReader brOne = new BufferedReader(new FileReader(fileOne));
-		String strLineOne = "";
-		String strDOne = "";
-
-		while ((strLineOne = brOne.readLine()) != null) {
-			strDOne += strLineOne + "\n";
-			strLineOne = brOne.readLine();
-		}
-		brOne.close();
-
-		 */
-		return strDOne;
+		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbmeth");
 	}
 
 	private static String getTemplateReturnValueTwo() throws IOException {
-		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnounmeth");
-		/*
-		File fileTwo = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verbnounmeth");
-		BufferedReader brTwo = new BufferedReader(new FileReader(fileTwo));
-		String strLineTwo = "";
-		String strDTwo = "";
-
-		while ((strLineTwo = brTwo.readLine()) != null) {
-			strDTwo += strLineTwo + "\n";
-			strLineTwo = brTwo.readLine();
-		}
-		brTwo.close();
-
-		 */
-		return strDTwo;
+		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnounmeth");
 	}
 
 	private static String getTemplateReturnValueThree() throws IOException {
-		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verb");
-		/*
-
-		File fileThree = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verb");
-		BufferedReader brThree = new BufferedReader(new FileReader(fileThree));
-		String strLineThree = "";
-		String strDThree = "";
-
-		while ((strLineThree = brThree.readLine()) != null) {
-			strDThree += strLineThree + "\n";
-			strLineThree = brThree.readLine();
-		}
-		brThree.close();
-
-		 */
-		return strDTwo;
+		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verb");
 	}
+		
 
 	private static String getTemplateReturnValueFour() throws IOException {
-		String strDFour = Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnoun");
-		/*
-		File fileFour = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseReturnVal_verbnoun");
-		BufferedReader brFour = new BufferedReader(new FileReader(fileFour));
-		String strLineFour = "";
-		String strDFour = "";
-
-		while ((strLineFour = brFour.readLine()) != null) {
-			strDFour += strLineFour + "\n";
-			strLineFour = brFour.readLine();
-		}
-		brFour.close();
-
-		 */
-		return strDFour;
+		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnoun");
 	}
 
 	private static String getTemplateOne() throws IOException {
-		String strDFive = Utils.getTemplatesTextString("Ensures-thisNA-verbmeth");
-		/*
-		File fileFive = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verbmeth");
-		BufferedReader brFive = new BufferedReader(new FileReader(fileFive));
-		String strLineFive = "";
-		String strDFive = "";
-
-		while ((strLineFive = brFive.readLine()) != null) {
-			strDFive += strLineFive + "\n";
-			strLineFive = brFive.readLine();
-		}
-		brFive.close();
-
-		 */
-		return strDFive;
+		return Utils.getTemplatesTextString("Ensures-thisNA-verbmeth");
+		
 	}
 
 	private static String getTemplateTwo() throws IOException {
 		String strDSix = Utils.getTemplatesTextString("Ensures-thisNA-verbnounmeth");
-		/*
-		File fileSix = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verbnounmeth");
-		BufferedReader brSix = new BufferedReader(new FileReader(fileSix));
-		String strLineSix = "";
-		String strDSix = "";
-
-		while ((strLineSix = brSix.readLine()) != null) {
-			strDSix += strLineSix + "\n";
-			strLineSix = brSix.readLine();
-		}
-		brSix.close();
-
-		 */
 		return strDSix;
 	}
 
 	private static String getTemplateThree() throws IOException {
-		String strDSeven = Utils.getTemplatesTextString("Ensures-thisNA-verb");
-		/*
-		File fileSeven = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verb");
-		BufferedReader brSeven = new BufferedReader(new FileReader(fileSeven));
-		String strLineSeven = "";
-		String strDSeven = "";
-
-		while ((strLineSeven = brSeven.readLine()) != null) {
-			strDSeven += strLineSeven + "\n";
-			strLineSeven = brSeven.readLine();
-		}
-		brSeven.close();
-
-		 */
-		return strDSeven;
+		return Utils.getTemplatesTextString("Ensures-thisNA-verb");
+		
 	}
 
 	private static String getTemplateFour() throws IOException {
-		String strDEight = Utils.getTemplatesTextString("Ensures-thisNA-verbnoun");
-		/*
-		File fileEight = new File(".\\src\\main\\resources\\Templates\\Ensures-thisNA-verbnoun");
-		BufferedReader brEight = new BufferedReader(new FileReader(fileEight));
-		String strLineEight = "";
-		String strDEight = "";
-
-		while ((strLineEight = brEight.readLine()) != null) {
-			strDEight += strLineEight + "\n";
-			strLineEight = brEight.readLine();
-		}
-		brEight.close();
-
-		 */
-		return strDEight;
+		return Utils.getTemplatesTextString("Ensures-thisNA-verbnoun");
 	}
 
 	public ArrayList<String> getEnsures(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-/*
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
- */
-
 		String joined = null;
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
@@ -255,65 +137,15 @@ public class EnsuresCaseTwo {
 						if (conPred.getConditionalMethods().contains(edge.to()) && !edge.to().equals(edge.from())) {
 						
 							List<String> predmethodNames = new ArrayList<String>();
-							List<String> finalpredmethodNamesList = new ArrayList<>();
 							List<CrySLMethod> methods = edge.getLabel();
 
-							/*for (CrySLMethod method : methods) {
-								String[] preM = method.toString().replace(".", ",").split(",");
-								predmethodNames.add(preM[preM.length - 1].replace(";", "").replaceAll("\\( ", "\\(")
-										.replaceAll(" ", ","));
-							}*/
+					
 
 							for (CrySLMethod method : methods) {
 							predmethodNames.add(FunctionUtils.getEventCrySLMethodValue(method));
 							}
 
-							/*for (String methodlistStr : predmethodNames) {
-								List<String> extractParamList = new ArrayList<>(); 
-
-								int startIndex = methodlistStr.indexOf("(");
-								int endIndex = methodlistStr.indexOf(")");
-								String bracketExtractStr = methodlistStr.substring(startIndex + 1, endIndex);
-
-								if (bracketExtractStr.contains(",")) {
-									String[] elements = bracketExtractStr.split(",");
-									for (int a = 0; a < elements.length; a++) {
-										extractParamList.add(elements[a]);
-									}
-								} else {
-									extractParamList.add(bracketExtractStr);
-								}
-
-								for (String extractParamStr : extractParamList) {
-
-									if (!DTMap.containsKey(extractParamStr)) {
-
-									} else {
-										int startInd = 0;
-										int endInd = 0;
-										String value = DTMap.get(extractParamStr).toString();
-
-										Pattern word = Pattern.compile(escapeString(extractParamStr));
-										Matcher match = word.matcher(methodlistStr);
-
-										while (match.find()) {
-											startInd = match.start();
-											endInd = match.end() - 1;
-											break;
-										}
-										String strDiv = methodlistStr.substring(startInd, endInd + 1);
-										if (strDiv.equals(extractParamStr)) {
-											StringBuilder sDB = new StringBuilder(methodlistStr);
-											sDB.replace(startInd, endInd + 1, value);
-											methodlistStr = sDB.toString();
-										}
-									}
-								}
-
-								finalpredmethodNamesList.add(methodlistStr);
-								joined = String.join(" or ", finalpredmethodNamesList);
-								
-							}*/
+						
 							joined = String.join(" or ", predmethodNames);
 
 							if (verbOrNounList.size() == 1) {

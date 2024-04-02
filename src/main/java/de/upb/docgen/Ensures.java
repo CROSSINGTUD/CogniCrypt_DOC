@@ -32,75 +32,19 @@ public class Ensures {
 	static PrintWriter out;
 
 	private static String getTemplateverbedge() throws IOException {
-		String strDOne = Utils.getTemplatesTextString("EnsuresClauseVerb-edge");
-		/*
-		File fileOne = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-edge");
-		BufferedReader brOne = new BufferedReader(new FileReader(fileOne));
-		String strLineOne = "";
-		String strDOne = "";
-
-		while ((strLineOne = brOne.readLine()) != null) {
-			strDOne += strLineOne + "\n";
-			strLineOne = brOne.readLine();
-		}
-		brOne.close();
-
-		 */
-		return strDOne;
+		return Utils.getTemplatesTextString("EnsuresClauseVerb-edge");
 	}
 
 	private static String getTemplateverbnounedge() throws IOException {
-		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edge");
-		/*
-		File fileTwo = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun-edge");
-		BufferedReader brTwo = new BufferedReader(new FileReader(fileTwo));
-		String strLineTwo = "";
-		String strDTwo = "";
-
-		while ((strLineTwo = brTwo.readLine()) != null) {
-			strDTwo += strLineTwo + "\n";
-			strLineTwo = brTwo.readLine();
-		}
-		brTwo.close();
-
-		 */
-		return strDTwo;
+		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edge");
 	}
 
 	private static String getTemplateverbnoun() throws IOException {
-		String strDTwo = Utils.getTemplatesTextString("EnsuresClauseVerb-noun");
-		/*
-		File fileThree = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun");
-		BufferedReader brThree = new BufferedReader(new FileReader(fileThree));
-		String strLineThree = "";
-		String strDThree = "";
-
-		while ((strLineThree = brThree.readLine()) != null) {
-			strDThree += strLineThree + "\n";
-			strLineThree = brThree.readLine();
-		}
-		brThree.close();
-
-		 */
-		return strDTwo;
+		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun");	
 	}
 
 	private static String getTemplateverbnounedgeCon() throws IOException {
-		String strDCon = Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edgeCons");
-		/*
-		File fileCon = new File(".\\src\\main\\resources\\Templates\\EnsuresClauseVerb-noun-edgeCons");
-		BufferedReader brCon = new BufferedReader(new FileReader(fileCon));
-		String strLineCon = "";
-		String strDCon = "";
-
-		while ((strLineCon = brCon.readLine()) != null) {
-			strDCon += strLineCon + "\n";
-			strLineCon = brCon.readLine();
-		}
-		brCon.close();
-
-		 */
-		return strDCon;
+		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edgeCons");
 	}
 
 	public ArrayList<String> getEnsuresThis(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap) throws IOException {
@@ -115,11 +59,6 @@ public class Ensures {
 		String cname = new String(rule.getClassName().replace(".", ","));
 		List<String> strArray = Arrays.asList(cname.split(","));
 		String classnamecheck = strArray.get((strArray.size()) - 1);
-/*
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
- */
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
@@ -136,7 +75,6 @@ public class Ensures {
 				List<String> verbOrNounList = Arrays.asList(str.split("\\s"));
 				String verb;
 				List<String> noun = new ArrayList<>();
-				List<String> finalpredmethodThisNamesList = new ArrayList<>();
 				String joined = null;
 
 				if (elementStr instanceof CrySLCondPredicate) {
@@ -263,7 +201,6 @@ public class Ensures {
 				}
 			}
 		}
-		//out.close();
 		return composedEnsures;
 	}
 
@@ -271,7 +208,6 @@ public class Ensures {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
 		for (Map<String, List<String>> maps : requiresOfClasses) {
 			if (maps.containsKey(predicate)) {
-				String classToLink = word;
 				word = "<span class=\"tooltip\">" + word;
 				String tooltiptext = "<span class=\"tooltiptext\">The following classes can require this predicate:\n";
 				String classesLinks = htmlLinksClass(stringListMap.get(rule.getClassName()), predicate);

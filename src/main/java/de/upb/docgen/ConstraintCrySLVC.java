@@ -1,9 +1,4 @@
 package de.upb.docgen;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -33,40 +28,13 @@ public class ConstraintCrySLVC {
 	static PrintWriter out;
 
 	private static String getTemplateVCLHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCClauseLHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCClauseLHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLVCClauseLHS");
+		
 	}
 
 	private static String getTemplateVCRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCClauseRHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCClauseRHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLVCClauseRHS");
+		
 	}
 
 	public ArrayList<String> getConCryslVC(CrySLRule rule) throws IOException {

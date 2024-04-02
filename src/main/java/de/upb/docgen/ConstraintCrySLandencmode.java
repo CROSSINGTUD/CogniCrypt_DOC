@@ -115,7 +115,7 @@ public class ConstraintCrySLandencmode {
 							String joined = null;
 
 							for (String methodStr : methods) {
-								String LHSfirstStr = resLHSList.get(0);
+								resLHSList.get(0);
 
 								CrySLConstraint asd = (CrySLConstraint) conCryslISL;
 								CrySLConstraint asdLeft = (CrySLConstraint) asd.getLeft();
@@ -309,14 +309,12 @@ public class ConstraintCrySLandencmode {
 
 							for (String nc : NCList) {
 
-								List<String> ncTempList = new ArrayList<>();
+								
 								List<String> fList = new ArrayList<>();
 								String joinedMethods = "";
 								String b = templatestringEncNoCallRHS;
 
-								String[] ncArr = nc.replace(".", ",").split(",");
-								//ncTempList.add(ncArr[ncArr.length - 1].replace(";)", "").replace(";", "")
-								//		.replaceAll("\\( ", "\\(").replaceAll(" ", ","));
+								nc.replace(".", ",").split(",");
 
 								String tempStr = extractMethodParameters(nc);
 
