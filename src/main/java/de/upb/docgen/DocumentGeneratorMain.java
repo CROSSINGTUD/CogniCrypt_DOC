@@ -58,8 +58,6 @@ public class DocumentGeneratorMain {
 		for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
 			ComposedRule composedRule = new ComposedRule();
 			CrySLRule rule = ruleEntry.getValue();
-			if (!rule.getClassName().contains("Cipher")) continue;
-
 			//Overview section
 			String classname = rule.getClassName();
 			//fully qualified name

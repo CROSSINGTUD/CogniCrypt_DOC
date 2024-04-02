@@ -117,11 +117,11 @@ public class ConstraintCrySLandencmode {
 							for (String methodStr : methods) {
 								resLHSList.get(0);
 
-								CrySLConstraint asd = (CrySLConstraint) conCryslISL;
-								CrySLConstraint asdLeft = (CrySLConstraint) asd.getLeft();
-								CrySLComparisonConstraint asdComp = (CrySLComparisonConstraint) asdLeft.getRight();
-								CrySLArithmeticConstraint arti= (CrySLArithmeticConstraint) asdComp.getLeft();
-								String varname =((CrySLObject) arti.getLeft()).getVarName();
+								CrySLConstraint crySLConstraint = (CrySLConstraint) conCryslISL;
+								CrySLConstraint leftConstraint = (CrySLConstraint) crySLConstraint.getLeft();
+								CrySLValueConstraint LeftValueConstraint = (CrySLValueConstraint) leftConstraint.getLeft();
+								CrySLObject CrySLObject= (CrySLObject) LeftValueConstraint.getVar();
+								String varname = CrySLObject.getVarName();
 
 								if (methodStr.contains(varname)) {
 

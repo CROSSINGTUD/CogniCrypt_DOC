@@ -137,7 +137,7 @@ public class ConstraintsComparison {
                     compStrTemp = leftArtObj.getVarName();
                 } else {
                     // Handle other cases if needed
-                    compStrTemp = ""; // Update this with appropriate handling
+                    compStrTemp = ""; 
                 }
 
 // Continue with the operator and rightArit
@@ -147,7 +147,6 @@ public class ConstraintsComparison {
                 if (leftArit.getRight() instanceof CrySLPredicate) {
                     CrySLPredicate rightAritPrd = (CrySLPredicate) leftArit.getRight();
 
-                    // Your existing code for processing CrySLPredicate
                     List<String> rightAritPrdVarNames = new ArrayList<>();
                     for (ICrySLPredicateParameter e : rightAritPrd.getParameters()) {
                         if (e instanceof CrySLObject) {
@@ -162,7 +161,7 @@ public class ConstraintsComparison {
                     compStrTemp += rightArtObj.getVarName();
                 } else {
                     // Handle other cases if needed
-                    compStrTemp += ""; // Update this with appropriate handling
+                    compStrTemp += ""; 
                 }
                 CrySLArithmeticConstraint rightArit = crySLComparisonConstraint.getRight();
                 // length + ( + varnames + ) + operator + int
