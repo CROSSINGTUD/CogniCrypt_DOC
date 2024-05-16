@@ -2,6 +2,7 @@ package de.upb.docgen.crysl;
 
 import java.io.File;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,11 +18,11 @@ import crypto.rules.CrySLRule;
 
 public class CrySLReader {
 
-	public static List<CrySLRule> readRulesFromSourceFilesWithoutFiles(final String folderPath) throws CryptoAnalysisException {
+	public static List<CrySLRule> readRulesFromSourceFilesWithoutFiles(final String folderPath) throws CryptoAnalysisException, MalformedURLException {
 		return new ArrayList<>(readRulesFromSourceFiles(folderPath).values());
 	}
 
-	public static Map<File, CrySLRule> readRulesFromSourceFiles(final String folderPath) throws  CryptoAnalysisException {
+	public static Map<File, CrySLRule> readRulesFromSourceFiles(final String folderPath) throws CryptoAnalysisException, MalformedURLException {
 		if (folderPath == null || folderPath.isEmpty()) {
 			throw new IllegalArgumentException("Folder path cannot be null or empty");
 		}

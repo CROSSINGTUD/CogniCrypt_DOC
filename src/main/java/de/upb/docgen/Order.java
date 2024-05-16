@@ -13,6 +13,8 @@ import java.nio.file.Files;
 
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,14 +79,253 @@ public class Order {
 		return symbolMap;
 	}
 
-	public List<String> runOrder(CrySLRule rule, File file) throws IOException {
-		Map<String, List<String>> fileContent = readCryslFile(file.toString());
+
+	private static List<Event> processEvents(List<String> lines) {
+		List<Event> eventList = new ArrayList<>();
+		Map<String, String> methodIdentifiersmap = new LinkedHashMap<>();
+		Map<String, List<String>> labelIdentifiersmap = new LinkedHashMap<>();
+
+		for (String line : lines) {
+			if (line.contains("//")) continue;
+			if (!line.contains(":")) {
+				throw new RuntimeException("Unexpected line found: " + line);
+			}
+			if (line.contains(":=")) {
+				String[] temp1 = line.split(":=");
+				String labelName = temp1[0].trim();
+				String replacelabelName = null;
+				String[] keyval = temp1[1].split("\\|");
+
+				for (int i = 0; i < keyval.length; i++) {
+					keyval[i] = temp1[0].trim() + ":" + keyval[i].trim();
+				}
+
+				List<String> labelNameList = Arrays.asList(temp1[1].split("\\|")).stream().map(x -> x.trim())
+						.collect(Collectors.toList());
+
+				List<String> result = new ArrayList<>();
+
+				for (String labelList : labelNameList) {
+					if (labelIdentifiersmap.containsKey(labelList)) {
+						List<String> resultnew = (labelIdentifiersmap.get(labelList));
+						result.addAll(resultnew);
+						replacelabelName = labelName;
+					} else {
+						result.add(labelList);
+					}
+				}
+				if (labelName.equalsIgnoreCase(replacelabelName)) {
+					labelIdentifiersmap.put(labelName, result);
+				} else {
+					labelIdentifiersmap.put(labelName, labelNameList); // Gets - g1
+				}
+			} else {
+				String[] temp1 = line.split(":");
+				String methodLabel = temp1[0].trim();
+				String methodName = temp1[1].trim();
+
+				if (methodName.contains("=")) {
+					String[] methodname = methodName.split("=");
+					methodname[1].trim();
+					methodName = methodname[1].trim();
+				}
+				methodIdentifiersmap.put(methodLabel, methodName);// maps g1 to getInstance()...
+			}
+		}
+
+		for (Map.Entry<String, List<String>> entry : labelIdentifiersmap.entrySet()) {
+			String key = entry.getKey();
+			List<String> idList = entry.getValue();
+			Event event = new Event(key);
+			for (String id : idList) {
+				String method = methodIdentifiersmap.get(id);
+				List<String> methodLabelList = new ArrayList<>();
+				methodLabelList.add(method);
+
+				for (String methodLabelStr : methodLabelList) {
+					List<String> extractParamList = new ArrayList<>();
+					int startIndex = methodLabelStr.indexOf("(");
+					int endIndex = methodLabelStr.indexOf(")");
+					String bracketExtractStr = methodLabelStr.substring(startIndex + 1, endIndex);
+
+					if (bracketExtractStr.contains(",")) {
+						String[] elements = bracketExtractStr.split(",");
+						for (int a = 0; a < elements.length; a++) {
+							extractParamList.add(elements[a].replace(" ", ""));
+						}
+					} else {
+						extractParamList.add(bracketExtractStr);
+					}
+
+					for (int y = 0; y < extractParamList.size(); y++) {
+
+						int startInd = 0;
+						int endInd = 0;
+						String dataTypevalue = "";
+
+						if (y > 0) {
+
+							if (!objectMap.containsKey(extractParamList.get(y))) {
+							} else {
+
+								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+
+								Pattern word = Pattern.compile(extractParamList.get(y));
+								Matcher match = word.matcher(methodLabelStr);
+
+								while (match.find()) {
+									startInd = match.start();
+									endInd = match.end() - 1;
+									if (startInd > startIndex) {
+										if (methodLabelStr.charAt(startInd - 1) == ' ') {
+											break;
+										}
+
+									}
+								}
+							}
+						} else {
+
+							if (!objectMap.containsKey(extractParamList.get(y))) {
+							} else {
+
+								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+
+								Pattern word = Pattern.compile(extractParamList.get(y));
+								Matcher match = word.matcher(methodLabelStr);
+
+								while (match.find()) {
+									startInd = match.start();
+									endInd = match.end() - 1;
+									if (startInd > startIndex) {
+										break;
+									}
+								}
+							}
+						}
+
+						String strDiv = methodLabelStr.substring(startInd, endInd + 1);
+						if (strDiv.equals(extractParamList.get(y))) {
+							StringBuilder sDB = new StringBuilder(methodLabelStr);
+							sDB.replace(startInd, endInd + 1, dataTypevalue);
+							methodLabelStr = sDB.toString();
+						}
+
+						event.addIdentifierAndMethod(id, methodLabelStr);
+					}
+				}
+			}
+			eventList.add(event);
+
+		}
+
+		{
+			methodIdentifiersmap.forEach((key, methodList) -> {
+				Event event = new Event(key);
+				String method = methodIdentifiersmap.get(key);
+				List<String> methodLabelList = new ArrayList<>();
+				methodLabelList.add(method);
+
+				for (String methodLabelStr : methodLabelList) {
+					List<String> extractParamList = new ArrayList<>();
+					int startIndex = methodLabelStr.indexOf("(");
+					int endIndex = methodLabelStr.indexOf(")");
+					String bracketExtractStr = methodLabelStr.substring(startIndex + 1, endIndex);
+
+					if (bracketExtractStr.contains(",")) {
+						String[] elements = bracketExtractStr.split(",");
+						for (int a = 0; a < elements.length; a++) {
+							extractParamList.add(elements[a].replace(" ", ""));
+						}
+					} else {
+						extractParamList.add(bracketExtractStr);
+					}
+
+					for (int y = 0; y < extractParamList.size(); y++) {
+
+						int startInd = 0;
+						int endInd = 0;
+						String dataTypevalue = "";
+
+						if (y > 0) {
+
+							if (!objectMap.containsKey(extractParamList.get(y))) {
+							} else {
+
+								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+
+								Pattern word = Pattern.compile(extractParamList.get(y));
+								Matcher match = word.matcher(methodLabelStr);
+
+								while (match.find()) {
+									startInd = match.start();
+									endInd = match.end() - 1;
+									if (startInd > startIndex) {
+										if (methodLabelStr.charAt(startInd - 1) == ' ') {
+											break;
+										}
+									}
+								}
+							}
+
+						} else {
+
+							if (!objectMap.containsKey(extractParamList.get(y))) {
+							} else {
+
+								dataTypevalue = objectMap.get(extractParamList.get(y)).toString();
+
+								Pattern word = Pattern.compile(extractParamList.get(y));
+								Matcher match = word.matcher(methodLabelStr);
+
+								while (match.find()) {
+									startInd = match.start();
+									endInd = match.end() - 1;
+									if (startInd > startIndex) {
+										break;
+									}
+								}
+							}
+
+						}
+
+						String strDiv = methodLabelStr.substring(startInd, endInd + 1);
+						if (strDiv.equals(extractParamList.get(y))) {
+							StringBuilder sDB = new StringBuilder(methodLabelStr);
+							sDB.replace(startInd, endInd + 1, dataTypevalue);
+							methodLabelStr = sDB.toString();
+						}
+
+						event.addIdentifierAndMethod(key, methodLabelStr);
+					}
+				}
+				eventList.add(event);
+			});
+		}
+
+		getProcessedMap(eventList);
+		return eventList;
+	}
+
+	private static void getProcessedMap(List<Event> eventList) {
+		eventList.forEach(event -> {
+			processedresultMap.put(event.getEvent(), event.getMethodIdentifierMap());
+		});
+	}
+
+
+	public List<String> runOrder(CrySLRule file) throws IOException {
+		String filePath = DocSettings.getInstance().getRulesetPathDir();
+		filePath += File.separator + file.getClassName().substring(file.getClassName().lastIndexOf(".") + 1) + ".crysl";
+		Map<String, List<String>> fileContent = readCryslFile(filePath);
 		List<String> objectList = fileContent.get("OBJECTS");
 
 		for (String pair : objectList) {
 			String[] entry = pair.split(" ");
 			objectMap.put(entry[1], entry[0]);
 		}
+
+		processEvents(fileContent.get("EVENTS"));
 
 		List<String> originalOrder = Arrays
 				.asList(fileContent.get("ORDER").get(0).replaceAll("\\(", "\\( ").split(","));

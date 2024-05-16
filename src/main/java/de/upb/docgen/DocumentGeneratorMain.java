@@ -6,7 +6,7 @@ import java.util.*;
 import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.crysl.CrySLReader;
+import crypto.rules.CrySLRuleReader;
 import de.upb.docgen.utils.PredicateTreeGenerator;
 import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
@@ -21,13 +21,19 @@ import org.apache.commons.io.FileUtils;
 
 public class DocumentGeneratorMain {
 
+	private static final CrySLRuleReader ruleReader = new CrySLRuleReader();
+
 	public static void main(String[] args) throws IOException, TemplateException, CryptoAnalysisException {
 		// create singleton to access parsed flags from other classes
 		DocSettings docSettings = DocSettings.getInstance();
 		docSettings.parseSettingsFromCLI(args);
 
 		// read CryslRules from absolutePath provided by the user
-		Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+		//Map<File, CrySLRule> crules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+		List<CrySLRule> rules = ruleReader.readFromDirectory(new File(docSettings.getRulesetPathDir()));
+
+
+
 
 		ClassEventForb cef = new ClassEventForb();
 		ConstraintsVc valueconstraint = new ConstraintsVc();
@@ -46,17 +52,17 @@ public class DocumentGeneratorMain {
 		Map<String, List<CrySLPredicate>> mapRequires = new HashMap<>();
 
 		// generate 2 Maps with Ensures, Requires predicates
-		for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
-			CrySLRule rule = ruleEntry.getValue();
+		for (CrySLRule ruleEntry : rules) {
+			CrySLRule rule = ruleEntry;
 			mapEnsures.put(rule.getClassName(), rule.getPredicates());
 			mapRequires.put(rule.getClassName(), rule.getRequiredPredicates());
 		}
 
 		// iterate over every Crysl rule, create composedRule for every Rule
 		List<CrySLRule> cryslRuleList = new ArrayList<>();
-		for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
+		for (CrySLRule ruleEntry : rules) {
 			ComposedRule composedRule = new ComposedRule();
-			CrySLRule rule = ruleEntry.getValue();
+			CrySLRule rule = ruleEntry;
 			// Overview section
 			String classname = rule.getClassName();
 			// fully qualified name
@@ -71,7 +77,7 @@ public class DocumentGeneratorMain {
 			composedRule.setNumberOfMethods(cef.getEventNumbers(rule));
 
 			// Order section
-			composedRule.setOrder(or.runOrder(rule, ruleEntry.getKey()));
+			composedRule.setOrder(or.runOrder(rule));
 
 			//
 			composedRule.setValueConstraints(valueconstraint.getConstraintsVc(rule));
