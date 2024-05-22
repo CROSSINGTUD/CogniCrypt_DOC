@@ -11,16 +11,6 @@ import java.util.*;
 public class StateMachineToGraphviz {
 
 
-    //To run this process on his own not used in the actual generation process
-   /* public static void main(String[] args) throws IOException {
-        Map<File, CrySLRule> rules = CrySLReader.readRulesFromSourceFiles(Constant.rulePath);
-        for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
-            rulesOrderSectionToDot(ruleEntry.getValue());
-            toPNG(ruleEntry.getValue().getClassName());
-        }
-    }*/
-    //Runs the translation and generation of PNG for every rule
-
     //Translates the state machine provided by a CrySL rule into DOT syntax of Graphviz
     public static String toGraphviz(StateMachineGraph smg) {
         StringBuilder stringBuilderToFile = new StringBuilder();
