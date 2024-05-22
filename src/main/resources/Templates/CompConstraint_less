@@ -1,2 +1,2 @@
-The ${paramLhsPosWordStr} parameter of the method ${paramLhsMethStr} should be less than 
-the ${paramRhsAlphaPosWordStr} parameter of the method ${paramRhsAphaMethStr}.
+The <strong>${paramLhsPosWordStr}</strong> parameter of the method <strong>${paramLhsMethStr}</strong> should be less than 
+the <strong>${paramRhsAlphaPosWordStr}</strong> parameter of the method <strong>${paramRhsAphaMethStr}</strong>.

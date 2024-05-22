@@ -1,1 +1,1 @@
-There is ${number} method in this class that is called to use the class correctly.
+There is <strong>${number}</strong> method in this class that is called to use the class correctly.

@@ -1,1 +1,1 @@
-The ${position} parameter of the constructor ${methodname} must assume one of these values ${var2}.
+The <strong>${position}</strong> parameter of the constructor <strong>${methodname}</strong> must assume one of these values <strong>${var2}</strong>.
