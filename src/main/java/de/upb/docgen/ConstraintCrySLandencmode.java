@@ -10,13 +10,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.interfaces.ISLConstraint;
-import crypto.rules.CrySLRule;
 
 /**
  * @author Ritika Singh
@@ -26,93 +28,26 @@ public class ConstraintCrySLandencmode {
 	static PrintWriter out;
 
 	private static String getTemplateEncLHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeLHS1Clause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeLHS1Clause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeLHS1Clause");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static String getTemplateEncCallLHS2() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallLHS2Clause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeCallLHS2Clause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallLHS2Clause");
 	}
 
 	private static String getTemplateEncCallRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallRHSClause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeCallRHSClause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeCallRHSClause");
 	}
 
 	private static String getTemplateEncNoCallLHS2() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLHS2Clause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeNocallLHS2Clause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLHS2Clause");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static String getTemplateEncNoCallRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLRHSClause");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCandEncmodeNocallLRHSClause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCandEncmodeNocallLRHSClause");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static Map<String, String> getwordMap(CrySLRule rule) {
@@ -127,18 +62,10 @@ public class ConstraintCrySLandencmode {
 
 	public ArrayList<String> getConCryslandenc(CrySLRule rule) throws IOException {
 		ArrayList<String> composedConAndEnc = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		/*
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
-		 */
 
 		List<ISLConstraint> constraintConencmodeList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")
-						&& e.toString().contains("andencmode"))
+						&& e.toString().contains("int encmode"))
 				.collect(Collectors.toList());
 
 		if (constraintConencmodeList.size() > 0) {
@@ -162,7 +89,7 @@ public class ConstraintCrySLandencmode {
 					List<Entry<String, String>> dataTypes = rule.getObjects();
 					Map<String, String> DTMap = new LinkedHashMap<>();
 					for (Entry<String, String> dt : dataTypes) {
-						DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+						DTMap.put(dt.getKey(), dt.getValue());
 					}
 
 					String templatestringEncLHS = getTemplateEncLHS();
@@ -187,9 +114,16 @@ public class ConstraintCrySLandencmode {
 							String joined = null;
 
 							for (String methodStr : methods) {
-								String LHSfirstStr = resLHSList.get(0);
+								resLHSList.get(0);
 
-								if (methodStr.contains(LHSfirstStr)) {
+								CrySLConstraint crySLConstraint = (CrySLConstraint) conCryslISL;
+								CrySLConstraint leftConstraint = (CrySLConstraint) crySLConstraint.getLeft();
+								CrySLValueConstraint LeftValueConstraint = (CrySLValueConstraint) leftConstraint
+										.getLeft();
+								CrySLObject CrySLObject = (CrySLObject) LeftValueConstraint.getVar();
+								String varname = CrySLObject.getVarName();
+
+								if (methodStr.contains(varname)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -223,7 +157,7 @@ public class ConstraintCrySLandencmode {
 
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(varname));
 										resLHSList.add(posStr);
 
 										if (posInWordsMap.containsKey(posStr)) {
@@ -327,7 +261,7 @@ public class ConstraintCrySLandencmode {
 								if (resLHSlistsecond.contains("!=")) {
 
 									int indexsym = resLHSlistsecond.indexOf("!=");
-									String noteqVal = resLHSlistsecond.get(indexsym + 1);
+									String noteqVal = resLHSlistsecond.get(indexsym + 2);
 									b = templatestringEncNoCallLHS2;
 
 									String poslhstwo = resLHSlistsecond.get(resLHSlistsecond.size() - 2);
@@ -368,44 +302,44 @@ public class ConstraintCrySLandencmode {
 					for (String RHSStr : RHSList) {
 
 						if (RHSStr.startsWith("noCall")) {
-							List<String> NCList = Arrays.asList(RHSStr.split(","));
+							// List<String> NCList = Arrays.asList(RHSStr.split(","));
+							List<String> NCList = extractMethodSignatures(RHSStr);
 							String nocall = "";
 							String finalnocallstring = "";
 
 							for (String nc : NCList) {
 
-								List<String> ncTempList = new ArrayList<>();
 								List<String> fList = new ArrayList<>();
 								String joinedMethods = "";
 								String b = templatestringEncNoCallRHS;
 
-								String[] ncArr = nc.replace(".", ",").split(",");
-								ncTempList.add(ncArr[ncArr.length - 1].replace(";)", "").replace(";", "")
-										.replaceAll("\\( ", "\\(").replaceAll(" ", ","));
+								nc.replace(".", ",").split(",");
 
-								for (String tempStr : ncTempList) {
+								String tempStr = extractMethodParameters(nc);
 
-									List<String> extractParamList = new ArrayList<>();
-									int startIndex = tempStr.indexOf("(");
-									int endIndex = tempStr.indexOf(")");
-									String bracketExtractStr = tempStr.substring(startIndex + 1, endIndex);
+								List<String> extractParamList = new ArrayList<>();
+								int startIndex = tempStr.indexOf("(");
+								int endIndex = tempStr.indexOf(")");
+								String bracketExtractStr = tempStr.substring(startIndex + 1, endIndex);
 
-									if (bracketExtractStr.contains(",")) {
-										String[] elements = bracketExtractStr.split(",");
-										for (int a = 0; a < elements.length; a++) {
-											extractParamList.add(elements[a]);
-										}
-									} else {
-										extractParamList.add(bracketExtractStr);
+								if (bracketExtractStr.contains(",")) {
+									String[] elements = bracketExtractStr.split(",");
+									for (int a = 0; a < elements.length; a++) {
+										extractParamList.add(elements[a]);
 									}
-
-									for (String extractParamStr : extractParamList) {
-										String value = DTMap.get(extractParamStr).toString();
-										tempStr = tempStr.replace(extractParamStr, value);
-									}
-									fList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
-									joinedMethods = String.join("", fList);
+								} else {
+									extractParamList.add(bracketExtractStr);
 								}
+
+								for (String extractParamStr : extractParamList) {
+
+									String[] parts = extractParamStr.trim().split(" ");
+									String value = DTMap.get(parts[1]);
+									tempStr = tempStr.replace(extractParamStr, value);
+								}
+								fList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
+								joinedMethods = String.join("", fList);
+
 								nocall += joinedMethods + ", ";
 								finalnocallstring = nocall.substring(0, nocall.lastIndexOf(","));
 
@@ -474,11 +408,37 @@ public class ConstraintCrySLandencmode {
 					}
 					printout = resultmainstringLHS + resultmainstringRHS;
 					composedConAndEnc.add(printout);
-					//out.println(printout);
+					// out.println(printout);
 				}
 			}
 		}
-		//out.close();
+		// out.close();
 		return composedConAndEnc;
+	}
+
+	public static ArrayList<String> extractMethodSignatures(String input) {
+		ArrayList<String> methodSignatures = new ArrayList<>();
+
+		Pattern pattern = Pattern.compile("(\\w+\\.\\w+\\([^)]+\\))");
+		Matcher matcher = pattern.matcher(input);
+
+		while (matcher.find()) {
+			methodSignatures.add(matcher.group(1));
+		}
+
+		return methodSignatures;
+	}
+
+	public static String extractMethodParameters(String methodSignature) {
+		// Define a regular expression to match parameters
+		String regex = "\\((.*?)\\)";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(methodSignature);
+
+		if (matcher.find()) {
+			return "(" + matcher.group(1) + ")";
+		}
+
+		return null;
 	}
 }

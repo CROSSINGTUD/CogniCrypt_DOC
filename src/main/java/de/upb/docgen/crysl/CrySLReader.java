@@ -1,6 +1,7 @@
 package de.upb.docgen.crysl;
 
 import java.io.File;
+
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,31 +18,35 @@ import crypto.rules.CrySLRule;
 
 public class CrySLReader {
 
-	public static List<CrySLRule> readRulesFromSourceFilesWithoutFiles(final String folderPath) {
+	public static List<CrySLRule> readRulesFromSourceFilesWithoutFiles(final String folderPath) throws CryptoAnalysisException, MalformedURLException {
 		return new ArrayList<>(readRulesFromSourceFiles(folderPath).values());
 	}
 
-	public static Map<File, CrySLRule> readRulesFromSourceFiles(final String folderPath) {
+	public static Map<File, CrySLRule> readRulesFromSourceFiles(final String folderPath) throws CryptoAnalysisException, MalformedURLException {
+		if (folderPath == null || folderPath.isEmpty()) {
+			throw new IllegalArgumentException("Folder path cannot be null or empty");
+		}
 
-		File f = null;
+		CrySLModelReader cryslModelReader = new CrySLModelReader();
+		Map<File, CrySLRule> rules = new HashMap<>();
+
 		try {
-			CrySLModelReader cryslmodelreader = new CrySLModelReader();
+			File folder = new File(folderPath);
+			if (!folder.isDirectory()) {
+				throw new IllegalArgumentException("Invalid folder path: " + folderPath);
+			}
 
-			Map<File, CrySLRule> rules = new HashMap<>();
-			File[] files = new File(folderPath).listFiles();
-			for (File file : files) {
-				if (file != null && file.getName().endsWith(".crysl")) {
-					f = file;
-					rules.put(file, cryslmodelreader.readRule(file));
+			for (File file : folder.listFiles()) {
+				if (file.getName().endsWith(".crysl")) {
+					rules.put(file, cryslModelReader.readRule(file));
 				}
 			}
-			// System.out.println(rules);
-			return rules;
-
-		} catch (MalformedURLException | CryptoAnalysisException e) {
-			e.printStackTrace();
+		} catch (CryptoAnalysisException e) {
+			// Handle CryptoAnalysisException
+			throw e;
 		}
-		return null;
+
+		return rules;
 	}
 
 }

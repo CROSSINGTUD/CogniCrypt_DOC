@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,15 +34,14 @@ public class ConstraintCryslnocallto {
 
 	public ArrayList<String> getnoCalltoConstraint(CrySLRule rule) throws IOException {
 		ArrayList<String> composedNocallToConstraints = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
+
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
 		ArrayList<String> methds = new ArrayList<>();
 		ArrayList<String> valuesWhichHaveToBeUsedThen = new ArrayList<>();
 		ArrayList<CrySLMethod> crySLMethods = extractMethodsFromSmg(rule);
-		Entry<String,String> cryslObjectEntry;
+		Entry<String, String> cryslObjectEntry;
 		if (constraintConList.size() > 0) {
 			String valuesWhichHaveToBeSet;
 			for (ISLConstraint conCryslISL : constraintConList) {
@@ -51,12 +49,15 @@ public class ConstraintCryslnocallto {
 					CrySLConstraint crySLConstraint = ((CrySLConstraint) conCryslISL);
 					if (crySLConstraint.getName().contains("noCallTo")) {
 						if ("implies".equals(valueOf(crySLConstraint.getOperator()))) {
-							if (crySLConstraint.getLeft() instanceof CrySLPredicate && "noCallTo".equals(((CrySLPredicate) crySLConstraint.getLeft()).getPredName())&& crySLConstraint.getRight() instanceof CrySLValueConstraint) {
+							if (crySLConstraint.getLeft() instanceof CrySLPredicate
+									&& "noCallTo".equals(((CrySLPredicate) crySLConstraint.getLeft()).getPredName())
+									&& crySLConstraint.getRight() instanceof CrySLValueConstraint) {
 								CrySLPredicate crySLPredicate = (CrySLPredicate) crySLConstraint.getLeft();
 								for (ICrySLPredicateParameter parameter : crySLPredicate.getParameters()) {
 									methds.add(FunctionUtils.getEventCrySLMethodValue((CrySLMethod) parameter));
 								}
-								CrySLValueConstraint crySLValueConstraint = (CrySLValueConstraint) crySLConstraint.getRight();
+								CrySLValueConstraint crySLValueConstraint = (CrySLValueConstraint) crySLConstraint
+										.getRight();
 								CrySLObject object = crySLValueConstraint.getVar();
 								String javaType = object.getJavaType();
 								String objectName = object.getVarName();
@@ -68,7 +69,8 @@ public class ConstraintCryslnocallto {
 								List<CrySLMethod> getInstances = new ArrayList<>();
 								for (CrySLMethod method : crySLMethods) {
 									for (Entry<String, String> parameters : method.getParameters()) {
-										if (cryslObjectEntry != null && parameters.getKey().equals(cryslObjectEntry.getKey())) {
+										if (cryslObjectEntry != null
+												&& parameters.getKey().equals(cryslObjectEntry.getKey())) {
 											getInstances.add(method);
 										}
 									}
@@ -116,22 +118,18 @@ public class ConstraintCryslnocallto {
 		return composedNocallToConstraints;
 	}
 
-
-
-
 	public static <T> void addIfNotExists(List<CrySLMethod> list, CrySLMethod element) {
 		if (!list.contains(element)) {
 			list.add(element);
 		}
 	}
 
-
 	private static ArrayList<CrySLMethod> extractMethodsFromSmg(CrySLRule rule) {
 		ArrayList<CrySLMethod> allMethodsOfCrySLRule = new ArrayList<>();
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> transitionEdgeList = smg.getEdges();
 		for (TransitionEdge e : transitionEdgeList) {
-			for(CrySLMethod method : e.getLabel()) {
+			for (CrySLMethod method : e.getLabel()) {
 				addIfNotExists(allMethodsOfCrySLRule, method);
 			}
 		}

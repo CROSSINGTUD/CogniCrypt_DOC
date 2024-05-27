@@ -3,16 +3,14 @@
  * */
 package de.upb.docgen;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.DirectoryStream;
+
 import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -30,27 +28,11 @@ import crypto.rules.CrySLRule;
 
 public class Order {
 
-	private static final String FOLDER_PATH = DocSettings.getInstance().getRulesetPathDir();
 	private static final List<String> clauseNames = Arrays.asList("EVENTS", "ORDER", "OBJECTS", "FORBIDDEN");
 	static Map<String, String> processedresultMap = new LinkedHashMap<>();
 	static Map<String, String> symbolMap = new LinkedHashMap<>();
 	static Map<String, String> objectMap = new LinkedHashMap<>();
 	public static PrintWriter out;
-
-
-	// retrieve a list of the crysl rule files in the Cryslrules folder
-	private static List<File> getCryslFiles(String folderPath) throws IOException {
-		List<File> fileNames = new ArrayList<>();
-		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(folderPath))) {
-			for (Path path : directoryStream) {
-				fileNames.add(path.toAbsolutePath().toFile());
-			}
-		} catch (IOException ex) {
-			System.out.println("Error reading files");
-			ex.printStackTrace();
-		}
-		return fileNames;
-	}
 
 	// reading the file and adding it to map(k,v), k- event , v- content inside it
 	private static Map<String, List<String>> readCryslFile(String filePath) throws IOException {
@@ -84,7 +66,7 @@ public class Order {
 		Properties properties = new Properties();
 
 		try {
-			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath()+"/symbol.properties");
+			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath() + "/symbol.properties");
 			FileInputStream fileInput = new FileInputStream(fileone);
 			properties.load(fileInput);
 			fileInput.close();
@@ -97,26 +79,7 @@ public class Order {
 		return symbolMap;
 	}
 
-	private static String getTemplateOrder() throws IOException {
-		//String strD = Utils.getTemplatesTextString("OrderClause");
 
-		//File file = new File(".\\src\\main\\resources\\Templates\\OrderClause");
-		File file = new File(DocSettings.getInstance().getLangTemplatesPath() + "\\" + "OrderClause");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = br.readLine();
-		String strD = "";
-
-		while (strLine != null) {
-			strD += strLine + "\n";
-			strLine = br.readLine();
-		}
-		br.close();
-
-
-		return strD;
-	}
-
-	// function to map labels with their corresponding method names
 	private static List<Event> processEvents(List<String> lines) {
 		List<Event> eventList = new ArrayList<>();
 		Map<String, String> methodIdentifiersmap = new LinkedHashMap<>();
@@ -350,22 +313,11 @@ public class Order {
 		});
 	}
 
-	public List<String> runOrder(CrySLRule rule, File file) throws IOException {
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
-		List<File> fileNames = getCryslFiles(FOLDER_PATH);
 
-		// for (File file : fileNames)
-
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		/*
-
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
-		 */
-
-		Map<String, List<String>> fileContent = readCryslFile(file.toString());
+	public List<String> runOrder(CrySLRule file) throws IOException {
+		String filePath = DocSettings.getInstance().getRulesetPathDir();
+		filePath += File.separator + file.getClassName().substring(file.getClassName().lastIndexOf(".") + 1) + ".crysl";
+		Map<String, List<String>> fileContent = readCryslFile(filePath);
 		List<String> objectList = fileContent.get("OBJECTS");
 
 		for (String pair : objectList) {
@@ -373,71 +325,12 @@ public class Order {
 			objectMap.put(entry[1], entry[0]);
 		}
 
-		List<Event> eventList = processEvents(fileContent.get("EVENTS"));
+		processEvents(fileContent.get("EVENTS"));
+
 		List<String> originalOrder = Arrays
 				.asList(fileContent.get("ORDER").get(0).replaceAll("\\(", "\\( ").split(","));
 		getSymValues();
 		List<String> orderSplittedWithBrackets = connectBrackets(originalOrder);
-
-		/* old order parsing
-		for (String orderStr : orderSplittedWithBrackets) {
-			identLevel = 0;
-			bracketCounter = 0;
-			orderArr = orderStr.split("[\\s,]+|(?<![\\s,])(?![a-zA-Z0-9\\s,])");
-
-			if (orderArr.length > 1 && orderArr[0].isEmpty()) {
-				orderArr = Arrays.copyOfRange(orderArr, 1, orderArr.length);
-			}
-			int orderArrlength = orderArr.length;
-			int delete;
-			String control = "n";
-			orderList = new ArrayList<>(Arrays.asList(orderArr));
-			int number = 0;
-
-			for (int i = 0; i < orderList.size(); i++) {
-				String s = orderList.get(i);
-				int flag = 0;
-				// control = "n";
-				for (Map.Entry<String, String> entry : symbolMap.entrySet()) {
-
-					if (entry.getKey().equals(s)) { // symbol keys
-						if (s.equals(")")) identLevel--;
-						String symbolSearchstr = s.replace(s, entry.getValue()); // symbol values
-						if (symbolSearchstr.equals("The next block ")) {
-							symbolSearchstr += decideSymbolOfBracket(orderStr, number);
-							number++;
-							bracketCounter--;
-							control = "n";
-						}
-
-						if (fl.size() - 1 < 0) {
-						} else {
-							if (symbolSearchstr.equals("]")) {
-								fl.add(symbolSearchstr);
-								continue;
-							}
-
-							if (control.equals("y") && number == 0) {
-								control = "n";
-								delete = fl.size() - 1;
-								fl.remove(delete);
-							}
-						}
-
-						fl.add(symbolSearchstr);
-						flag++;
-					}
-				}
-				if (flag == 0) {
-					control = "y";
-					fl.add(s);
-					fl.add("must be called exactly once.");
-				}
-				flag = 0;
-			}
-		}
-
-		 */
 
 		ArrayList<String> allNLsentences = parseOrderToNL(orderSplittedWithBrackets);
 
@@ -445,33 +338,6 @@ public class Order {
 
 		List<String> orderConstructed = combineAndIndentation(resolvedSentences);
 
-		/*
-		String strTemp = getTemplateOrder();
-		List<String> lines = Arrays.asList(strTemp.split("\\r?\\n"));
-		String d = lines.get(1);
-		String c = lines.get(0);
-		String b = lines.get(3);
-		String finalresult = "";
-		finalresult = c + "\n" + "\n";
-
-		for (String ftr : orderConstructed) {
-			Map<String, String> valuesMap = new HashMap<String, String>();
-			valuesMap.put("methodName+Cardinality", ftr);
-			//arrayList.add(ftr);
-			StringSubstitutor sub = new StringSubstitutor(valuesMap);
-			String resolvedString = sub.replace(d);
-			arrayList.add(resolvedString);
-			finalresult += resolvedString + "\n";
-		}
-		finalresult += "\n" + b + "\n";
-
-		 */
-
-		//out.println(finalresult);
-
-
-		// }
-		//out.close();
 		objectMap.clear();
 		processedresultMap.clear();
 		symbolMap.clear();
@@ -504,37 +370,37 @@ public class Order {
 		int identlevel = 0;
 		if (n.size() > 2) {
 			for (int i = 0; i <= n.size() - 2; i += 2) {
-				if (n.get(i).startsWith(symbolMap.get("(")) ) {
+				if (n.get(i).startsWith(symbolMap.get("("))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
 					identlevel++;
 					n.remove(i);
 					i -= 2;
-				} else if  (n.get(i).startsWith(symbolMap.get("|")) && (n.get(i+1).startsWith(symbolMap.get("(")))){
+				} else if (n.get(i).startsWith(symbolMap.get("|")) && (n.get(i + 1).startsWith(symbolMap.get("(")))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
-					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1));
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i + 1));
 					identlevel++;
 					n.remove(i);
 					n.remove(i);
 					i -= 2;
-				} else if  (n.get(i).startsWith(symbolMap.get("|"))){
+				} else if (n.get(i).startsWith(symbolMap.get("|"))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
-					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i+1) + n.get(i+2));
+					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i + 1) + n.get(i + 2));
 					n.remove(i);
 					n.remove(i);
 					n.remove(i);
-					i -=2;
+					i -= 2;
 				} else if (n.get(i).startsWith(symbolMap.get(")"))) {
-					//removing closing brackets and lowering the level
+					// removing closing brackets and lowering the level
 					while (n.size() > i && n.get(i).startsWith(symbolMap.get(")"))) {
 						identlevel--;
 						n.remove(i);
 					}
-					//remove already processed sentences
+					// remove already processed sentences
 					if (n.size() > i && !n.get(i).startsWith(symbolMap.get("|"))) {
 						n.remove(i);
 					}
 					i -= 2;
-				} else if (n.get(i+1).startsWith(symbolMap.get("|"))) {
+				} else if (n.get(i + 1).startsWith(symbolMap.get("|"))) {
 					a = StringUtils.repeat("\t", identlevel) + n.get(i);
 					fo.add(a);
 					n.remove(i);
@@ -543,7 +409,8 @@ public class Order {
 					a = StringUtils.repeat("\t", identlevel) + n.get(i) + " " + n.get(i + 1);
 					fo.add(a);
 				}
-			}} else{
+			}
+		} else {
 
 			a = StringUtils.repeat("\t", identlevel) + n.get(0) + " " + n.get(1);
 			fo.add(a);
@@ -576,18 +443,19 @@ public class Order {
 						break;
 					}
 				}
-				if (added) continue;
+				if (added)
+					continue;
 				fl.add(s);
 				String next = "";
 				int orderListSize = orderList.size();
-				if (i+1 < orderListSize) {
-					next = orderList.get(i+1);
+				if (i + 1 < orderListSize) {
+					next = orderList.get(i + 1);
 				}
 				if (!symbolMap.containsKey(next)) {
 					fl.add("has to be called once.");
 
 				}
-				if (next.equals(")") || next.equals("(") || next.equals("|") ) {
+				if (next.equals(")") || next.equals("(") || next.equals("|")) {
 					fl.add("has to be called once.");
 
 				}
@@ -600,24 +468,26 @@ public class Order {
 		int totalCounter = 0;
 		boolean breakof = false;
 		for (int i = 0; i < decided.length(); i++) {
-			if (decided.charAt(i)=='(') {
+			if (decided.charAt(i) == '(') {
 				if (toIgnore > 0) {
 					toIgnore--;
 					continue;
 				}
 				totalCounter++;
-				if (totalCounter > 0) breakof = true;
+				if (totalCounter > 0)
+					breakof = true;
 			}
-			if (decided.charAt(i)==')') {
-				if (totalCounter-1 <0) continue;
+			if (decided.charAt(i) == ')') {
+				if (totalCounter - 1 < 0)
+					continue;
 				totalCounter--;
 			}
 			if (totalCounter == 0 && breakof) {
-				//check if i+1 is empty
-				if (i+1 == decided.length()) {
+				// check if i+1 is empty
+				if (i + 1 == decided.length()) {
 					decided = "has to be called once.";
 				} else {
-					switch (decided.charAt(i+1)) {
+					switch (decided.charAt(i + 1)) {
 						case '*':
 							decided = "can be called arbitary times.";
 							break;
@@ -647,20 +517,19 @@ public class Order {
 
 				int bracketcounter = 0;
 				int j = i;
-				for (;j < fo.size();j++){
+				for (; j < fo.size(); j++) {
 					bracketcounter += fo.get(j).chars().filter(ch -> ch == '(').count();
 				}
-				for (j=i; j < fo.size(); ++j) {
+				for (j = i; j < fo.size(); ++j) {
 					if (bracketcounter == 0) {
 
 						break;
 					}
 					bracketcounter -= fo.get(j).chars().filter(ch -> ch == ')').count();
-					sb.append(fo.get(j) +" ");
+					sb.append(fo.get(j) + " ");
 				}
 				connected.add(sb.toString());
 				i = j;
-
 
 			} else {
 				connected.add(fo.get(i));

@@ -14,7 +14,6 @@ import crypto.rules.StateMachineGraph;
 import crypto.rules.TransitionEdge;
 import org.apache.commons.lang3.StringUtils;
 
-
 /**
  * @author Ritika Singh
  */
@@ -51,10 +50,10 @@ public class FunctionUtils {
 				sb.append(methodName);
 				sb.append("(");
 				ArrayList<String> shortMehtodNames = new ArrayList<>();
-				for ( Entry<String, String> entry : method.getParameters()) {
+				for (Entry<String, String> entry : method.getParameters()) {
 					shortMehtodNames.add(entry.getKey());
 				}
-				sb.append(StringUtils.join(shortMehtodNames,","));
+				sb.append(StringUtils.join(shortMehtodNames, ","));
 				sb.append(")");
 				methodNames.add(sb.toString());
 			}
@@ -76,10 +75,10 @@ public class FunctionUtils {
 				sb.append(methodName);
 				sb.append("(");
 				ArrayList<String> shortMehtodNames = new ArrayList<>();
-				for ( Entry<String, String> entry : method.getParameters()) {
+				for (Entry<String, String> entry : method.getParameters()) {
 					shortMehtodNames.add(entry.getValue());
 				}
-				sb.append(StringUtils.join(shortMehtodNames,","));
+				sb.append(StringUtils.join(shortMehtodNames, ","));
 				sb.append(")");
 				methodNames.add(sb.toString());
 			}
@@ -93,14 +92,13 @@ public class FunctionUtils {
 		sb.append(methodName);
 		sb.append("(");
 		ArrayList<String> shortMehtodNames = new ArrayList<>();
-		for ( Entry<String, String> entry : method.getParameters()) {
+		for (Entry<String, String> entry : method.getParameters()) {
 			shortMehtodNames.add(entry.getKey());
 		}
-		sb.append(StringUtils.join(shortMehtodNames,","));
+		sb.append(StringUtils.join(shortMehtodNames, ","));
 		sb.append(")");
 		return sb.toString();
 	}
-
 
 	public static String getEventCrySLMethodValue(CrySLMethod method) {
 		StringBuilder sb = new StringBuilder();
@@ -108,7 +106,7 @@ public class FunctionUtils {
 		sb.append(methodName);
 		sb.append("(");
 		ArrayList<String> shortMethodNames = new ArrayList<>();
-		for ( Entry<String, String> entry : method.getParameters()) {
+		for (Entry<String, String> entry : method.getParameters()) {
 			String value = entry.getValue();
 			if (value.equals("AnyType")) {
 				shortMethodNames.add("_");
@@ -116,7 +114,7 @@ public class FunctionUtils {
 				shortMethodNames.add(value);
 			}
 		}
-		sb.append(StringUtils.join(shortMethodNames,","));
+		sb.append(StringUtils.join(shortMethodNames, ","));
 		sb.append(")");
 		return sb.toString();
 	}

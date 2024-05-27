@@ -8,9 +8,7 @@ import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
 import freemarker.template.*;
 
-import java.awt.*;
 import java.io.*;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;

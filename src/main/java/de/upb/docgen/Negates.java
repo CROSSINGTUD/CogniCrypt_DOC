@@ -1,13 +1,8 @@
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,34 +30,11 @@ public class Negates {
 
 	private static String getTemplateNegated() throws IOException {
 		String strD = Utils.getTemplatesTextString("Negation");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\Negation");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
 		return strD;
 	}
 
 	public ArrayList<String> getNegates(CrySLRule rule) throws IOException {
 		ArrayList<String> composedNegates = new ArrayList<>();
-
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		/*
-
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
-		 */
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
@@ -128,7 +100,7 @@ public class Negates {
 
 							StringSubstitutor sub = new StringSubstitutor(valuesMap);
 							String resolvedString = sub.replace(strRetOne);
-							//out.println(resolvedString);
+							// out.println(resolvedString);
 							composedNegates.add(resolvedString);
 							break;
 
@@ -141,9 +113,8 @@ public class Negates {
 			}
 
 		}
-		//out.close();
+		// out.close();
 		return composedNegates;
-
 
 	}
 

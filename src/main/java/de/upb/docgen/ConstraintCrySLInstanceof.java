@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
-import org.apache.commons.collections4.bag.SynchronizedSortedBag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -29,52 +28,15 @@ public class ConstraintCrySLInstanceof {
 	static PrintWriter out;
 
 	private static String getTemplateinstanceofLHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseLHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLinstanceofClauseLHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseLHS");
 	}
 
 	private static String getTemplateinstanceofRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseRHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLinstanceofClauseRHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseRHS");
 	}
 
 	public ArrayList<String> getInstanceof(CrySLRule rule) throws IOException {
 		ArrayList<String> composedInstaceOf = new ArrayList<>();
-		String cname = new String(rule.getClassName().replace(".", ","));
-		List<String> strArray = Arrays.asList(cname.split(","));
-		/*
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
-		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
@@ -83,54 +45,36 @@ public class ConstraintCrySLInstanceof {
 				CrySLConstraint leftConstraint = null;
 				List<ISLConstraint> allNodesLeft = null;
 				List<ISLConstraint> allLeftConstraints = new ArrayList<>();
-
 				CrySLConstraint rightConstraint = null;
 				List<ISLConstraint> allNodesRight = null;
 				List<ISLConstraint> allRightConstraints = new ArrayList<>();
-				String whopper = "";
-				String dopper = whopper;
-				System.out.println(dopper);
-
 				if (conCryslISL instanceof CrySLConstraint) {
-
-					if (((CrySLConstraint) conCryslISL).getLeft() instanceof CrySLConstraint) leftConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getLeft();
-					if (((CrySLConstraint) conCryslISL).getRight() instanceof CrySLConstraint) rightConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getRight();
-
+					if (((CrySLConstraint) conCryslISL).getLeft() instanceof CrySLConstraint)
+						leftConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getLeft();
+					if (((CrySLConstraint) conCryslISL).getRight() instanceof CrySLConstraint)
+						rightConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getRight();
 					if (leftConstraint != null) {
 						allNodesLeft = getAllLeafNodes(allLeftConstraints, leftConstraint);
 					}
-
 					if (rightConstraint != null) {
 						allNodesRight = getAllLeafNodes(allRightConstraints, rightConstraint);
 					}
-
-
-
-
 				}
-
-
-
 				String conCryslStr = conCryslISL.toString();
-
 				if (conCryslStr.startsWith("instance")) {
-
 					List<String> impSplitList = Arrays.asList(conCryslStr.split("implies"));
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("or"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
 					List<String> methods = FunctionUtils.getEventNamesKey(rule);
 					Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 					List<Entry<String, String>> dataTypes = rule.getObjects();
-
 					Map<String, String> DTMap = new LinkedHashMap<>();
 					for (Entry<String, String> dt : dataTypes) {
-						DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+						DTMap.put(dt.getKey(), dt.getValue());
 					}
-
 					String templatestringLHS = getTemplateinstanceofLHS();
 					String templatestringRHS = getTemplateinstanceofRHS();
 
-					String printout = "";
 					String resultmainstringLHS = "";
 					String resultmainstringRHS = "";
 
@@ -153,15 +97,15 @@ public class ConstraintCrySLInstanceof {
 
 							if (allNodesLeft == null) {
 								allNodesLeft = new ArrayList<>();
-								allNodesLeft.add(((CrySLConstraint)conCryslISL).getLeft());
+								allNodesLeft.add(((CrySLConstraint) conCryslISL).getLeft());
 							}
 							for (String methodStr : methods) {
-								String realLHS = ((CrySLObject)((CrySLPredicate)allNodesLeft.get(0)).getParameters().get(0)).getVarName();
-								String real = ((CrySLObject)((CrySLPredicate)allNodesLeft.get(0)).getParameters().get(1)).getVarName();
-								String LHSfirstStr = resLHSlist.get(0);
-								resLHSlist.set(0,realLHS);
-								resLHSlist.set(1,real);
-//iCH  brauche key
+								String realLHS = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
+										.get(0)).getVarName();
+								String real = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
+										.get(1)).getJavaType();
+								resLHSlist.set(0, realLHS);
+								resLHSlist.set(1, real);// if null dont add
 
 								if (methodStr.contains(realLHS)) {
 
@@ -234,18 +178,16 @@ public class ConstraintCrySLInstanceof {
 							String leftSidePredicateOrVCvarname = null;
 							if (currentConstraint instanceof CrySLPredicate) {
 								CrySLPredicate predicate = (CrySLPredicate) currentConstraint;
-								leftSidePredicateOrVCvarname = ((CrySLObject)predicate.getParameters().get(0)).getVarName();
-								// Your code specific to CrySLPredicate
+								leftSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
+										.getVarName();
 							} else if (currentConstraint instanceof CrySLValueConstraint) {
 								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) currentConstraint;
 								leftSidePredicateOrVCvarname = valueConstraint.getVarName();
 							} else {
-								// Handle other cases if needed
 								System.exit(255);
 							}
 
-
-							List<String> resLHSlistsecond = new ArrayList<>();
+							List<String> resLHSlistsecond;
 							List<String> finalpredmethodSecList = new ArrayList<>();
 							String joinedSec = null;
 
@@ -260,9 +202,7 @@ public class ConstraintCrySLInstanceof {
 
 							for (String methodStr : methods) {
 
-								String LHSfirstStr = leftSidePredicateOrVCvarname;
-
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(leftSidePredicateOrVCvarname)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -276,9 +216,7 @@ public class ConstraintCrySLInstanceof {
 
 										if (bracketExtractStr.contains(",")) {
 											String[] elements = bracketExtractStr.split(",");
-											for (int a1 = 0; a1 < elements.length; a1++) {
-												extractParamList.add(elements[a1]);
-											}
+											extractParamList.addAll(Arrays.asList(elements));
 										} else {
 											extractParamList.add(bracketExtractStr);
 										}
@@ -286,7 +224,7 @@ public class ConstraintCrySLInstanceof {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr).toString();
+												String value = DTMap.get(extractParamStr);
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -295,7 +233,7 @@ public class ConstraintCrySLInstanceof {
 
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(leftSidePredicateOrVCvarname));
 										resLHSlistsecond.add(posStr);
 
 										if (posInWordsMap.containsKey(posStr)) {
@@ -327,10 +265,8 @@ public class ConstraintCrySLInstanceof {
 
 					if (allNodesRight == null) {
 						allNodesRight = new ArrayList<>();
-						allNodesRight.add(((CrySLConstraint)conCryslISL).getRight());
+						allNodesRight.add(((CrySLConstraint) conCryslISL).getRight());
 					}
-
-
 
 					for (String RHSStr : RHSList) {
 
@@ -340,12 +276,12 @@ public class ConstraintCrySLInstanceof {
 						List<String> finalpredmethodRHSList = new ArrayList<>();
 						String joinedRHS = null;
 
-
 						for (String methodStr : methods) {
 							String rightSidePredicateOrVCvarname = null;
 							if (allNodesRight.get(0) instanceof CrySLPredicate) {
 								CrySLPredicate predicate = (CrySLPredicate) allNodesRight.get(0);
-								rightSidePredicateOrVCvarname = ((CrySLObject)predicate.getParameters().get(0)).getVarName();
+								rightSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
+										.getVarName();
 								// Your code specific to CrySLPredicate
 							} else if (allNodesRight.get(0) instanceof CrySLValueConstraint) {
 								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) allNodesRight.get(0);
@@ -356,9 +292,7 @@ public class ConstraintCrySLInstanceof {
 								System.exit(255);
 							}
 
-
 							String RHSfirstStr = rightSidePredicateOrVCvarname;
-
 
 							if (methodStr.contains(RHSfirstStr)) {
 
@@ -419,15 +353,11 @@ public class ConstraintCrySLInstanceof {
 
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						resultmainstringRHS = sub.replace(b);
+						composedInstaceOf.add(resultmainstringLHS + resultmainstringRHS);
 					}
-
-					printout = resultmainstringLHS + resultmainstringRHS;
-					composedInstaceOf.add(printout);
-					//out.println("" + printout);
 				}
 			}
 		}
-		//out.close();
 		return composedInstaceOf;
 	}
 
