@@ -14,6 +14,8 @@ import de.upb.docgen.writer.FreeMarkerWriter;
 import freemarker.template.*;
 import org.apache.commons.io.FileUtils;
 
+import javax.print.Doc;
+
 /**
  * @author Ritika Singh
  * @author Sven Feldmann
@@ -26,15 +28,16 @@ public class DocumentGeneratorMain {
 	public static void main(String[] args) throws IOException, TemplateException, CryptoAnalysisException {
 		// create singleton to access parsed flags from other classes
 		DocSettings docSettings = DocSettings.getInstance();
+		System.out.println("Parsing CLI Flags");
 		docSettings.parseSettingsFromCLI(args);
 
 		// read CryslRules from absolutePath provided by the user
-		//Map<File, CrySLRule> crules = CrySLReader.readRulesFromSourceFiles(docSettings.getRulesetPathDir());
+		System.out.println("Reading CrySL Rules");
 		List<CrySLRule> rules = ruleReader.readFromDirectory(new File(docSettings.getRulesetPathDir()));
 
 
 
-
+		System.out.println("Reading CrySL Rules Done");
 		ClassEventForb cef = new ClassEventForb();
 		ConstraintsVc valueconstraint = new ConstraintsVc();
 		ConstraintsPred predicateconstraint = new ConstraintsPred();
@@ -131,6 +134,7 @@ public class DocumentGeneratorMain {
 		Map<String, TreeNode<String>> ensToReq = PredicateTreeGenerator.buildDependencyTreeMap(onlyClassnamesEnsToReq);
 
 		// Freemarker Setup and create cognicryptdoc html pages
+		System.out.println("Setup Freemarker");
 		Configuration cfg = new Configuration(new Version(2, 3, 20));
 		FreeMarkerWriter.setupFreeMarker(cfg);
 		FreeMarkerWriter.createCogniCryptLayout(cfg);
@@ -140,6 +144,7 @@ public class DocumentGeneratorMain {
 				docSettings.isBooleanF(), cryslRuleList);
 		// copy CryslRulesFolder into generated Cognicrypt folder
 		// specifify this flag to distribute the documentation
+		System.out.println("CogniCryptDOC generated to: " + DocSettings.getInstance().getReportDirectory());
 		if (!docSettings.isBooleanF()) {
 			File source = new File(docSettings.getRulesetPathDir());
 			File dest = new File(docSettings.getReportDirectory() + File.separator + "rules");

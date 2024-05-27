@@ -1,1 +1,1 @@
-The ${position} parameter of the constructor ${methodName} should never have the type ${var3}.
+The <strong>${position}</strong> parameter of the constructor <strong>${methodName}</strong> should never have the type <strong>${var3}</strong>.

@@ -1,1 +1,1 @@
-The ${position} parameter of the constructor ${methodName} is ${verb} as ${nouns}.
+The <strong>${position}</strong> parameter of the constructor <strong>${methodName}</strong> is <strong>${verb}</strong> as <strong>${nouns}</strong>.

@@ -1,1 +1,1 @@
-The ${paraPosInWordValStr} parameter of the method ${paraMethNameMapValStr} is ${verb}.
+The <strong>${paraPosInWordValStr}</strong> parameter of the method <strong>${paraMethNameMapValStr}</strong> is <strong>${verb}</strong>.

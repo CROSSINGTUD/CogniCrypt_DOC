@@ -1,1 +1,1 @@
-The ${position} parameter of the method ${methodname} must assume one of these values ${var2}.
+The <strong>${position}</strong> parameter of the method <strong>${methodname}</strong> must assume one of these values <strong>${var2}</strong>.

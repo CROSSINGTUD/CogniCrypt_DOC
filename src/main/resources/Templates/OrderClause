@@ -1,4 +1,4 @@
 The methods should be called in the following order.
-${methodName+Cardinality}
+<strong>${methodName+Cardinality}</strong>
 
 The parameters have some constraints on them.

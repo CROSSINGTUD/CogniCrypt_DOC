@@ -1,2 +1,2 @@
-The length of the ${positionLHS} parameter of the method ${LHSMethod} should be greater than 
-the ${positionRHSOne} parameter of the method ${RHSOnemethodName}.
+The length of the <strong>${positionLHS}</strong> parameter of the method <strong>${LHSMethod}</strong> should be greater than 
+the <strong>${positionRHSOne}</strong> parameter of the method <strong>${RHSOnemethodName}</strong>.
