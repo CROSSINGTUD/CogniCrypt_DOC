@@ -1,1 +1,1 @@
-The return value of the method ${returnValMethod} is ${verb}.
+The return value of the method <strong>${returnValMethod}</strong> is <strong>${verb}</strong>.

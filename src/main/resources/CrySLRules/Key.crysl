@@ -4,10 +4,14 @@ OBJECTS
 	byte[] keyMaterial;
 
 EVENTS
-	ge: keyMaterial = getEncoded();
+	ge1: keyMaterial = getEncoded();
+	GetEnc := ge1;
 
 ORDER
-	ge*
+	GetEnc*
+
+REQUIRES
+	generatedKey[this, _] || generatedPubkey[this] || generatedPrivkey[this];
 	
 ENSURES
-	preparedKeyMaterial[keyMaterial] after ge;
+	preparedKeyMaterial[keyMaterial] after GetEnc;

@@ -6,15 +6,17 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
-import de.upb.docgen.crysl.CrySLReader;
-import de.upb.docgen.graphviz.StateMachineToGraphviz;
+import crypto.rules.CrySLRuleReader;
 import de.upb.docgen.utils.PredicateTreeGenerator;
 import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
 import de.upb.docgen.writer.FreeMarkerWriter;
 import freemarker.template.*;
+
+import javax.print.Doc;
 
 /**
  * @author Ritika Singh
@@ -23,12 +25,12 @@ import freemarker.template.*;
 
 public class DocumentGeneratorMain {
 
+	private static final CrySLRuleReader ruleReader = new CrySLRuleReader();
 
-	public static void main(String[] args) throws IOException, TemplateException {
-		//create singleton to access parsed flags from other classes
-		System.out.println("Starting the documentation generation.");
-		Map<File, CrySLRule> rules;
+	public static void main(String[] args) throws IOException, TemplateException, CryptoAnalysisException {
+		// create singleton to access parsed flags from other classes
 		DocSettings docSettings = DocSettings.getInstance();
+		System.out.println("Parsing CLI Flags");
 		docSettings.parseSettingsFromCLI(args);
 		//read CryslRules from absolutePath provided by the user
 		if (docSettings.getRulesetPathDir() != null) {
@@ -49,6 +51,13 @@ public class DocumentGeneratorMain {
 		}
 		//read CryslRules from absolutePath provided by the user
 
+		// read CryslRules from absolutePath provided by the user
+		System.out.println("Reading CrySL Rules");
+		List<CrySLRule> rules = ruleReader.readFromDirectory(new File(docSettings.getRulesetPathDir()));
+
+
+
+		System.out.println("Reading CrySL Rules Done");
 		ClassEventForb cef = new ClassEventForb();
 		ConstraintsVc valueconstraint = new ConstraintsVc();
 		ConstraintsPred predicateconstraint = new ConstraintsPred();
@@ -65,44 +74,46 @@ public class DocumentGeneratorMain {
 		Map<String, List<CrySLPredicate>> mapEnsures = new HashMap<>();
 		Map<String, List<CrySLPredicate>> mapRequires = new HashMap<>();
 
-		//generate 2 Maps with Ensures, Requires predicates
-		for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
-			CrySLRule rule = ruleEntry.getValue();
-			mapEnsures.put(rule.getClassName(),rule.getPredicates());
+		// generate 2 Maps with Ensures, Requires predicates
+		for (CrySLRule ruleEntry : rules) {
+			CrySLRule rule = ruleEntry;
+			mapEnsures.put(rule.getClassName(), rule.getPredicates());
 			mapRequires.put(rule.getClassName(), rule.getRequiredPredicates());
 		}
 
-		//iterate over every Crysl rule, create composedRule for every Rule
-		for (Map.Entry<File, CrySLRule> ruleEntry : rules.entrySet()) {
+		// iterate over every Crysl rule, create composedRule for every Rule
+		List<CrySLRule> cryslRuleList = new ArrayList<>();
+		for (CrySLRule ruleEntry : rules) {
 			ComposedRule composedRule = new ComposedRule();
-			CrySLRule rule = ruleEntry.getValue();
-
-			//Overview section
+			CrySLRule rule = ruleEntry;
+			// Overview section
 			String classname = rule.getClassName();
-			//fully qualified name
+			// fully qualified name
 			composedRule.setComposedClassName(classname);
-			//Only rule name necessary for ftl Template
+			// Only rule name necessary for ftl Template
 			composedRule.setOnlyRuleName(classname.substring(classname.lastIndexOf(".") + 1));
-			//Set classname sentence
+			// Set classname sentence
 			composedRule.setComposedFullClass(cef.getFullClassName(rule));
-			//Link to corresponding JavaDoc
+			// Link to corresponding JavaDoc
 			composedRule.setComposedLink(cef.getLink(rule));
 			composedRule.setOnlyLink(cef.getLinkOnly(rule));
 			composedRule.setNumberOfMethods(cef.getEventNumbers(rule));
 
-
-			//Order section
-			composedRule.setOrder(or.runOrder(rule, ruleEntry.getKey()));
+			// Order section
+			composedRule.setOrder(or.runOrder(rule));
 
 			//
 			composedRule.setValueConstraints(valueconstraint.getConstraintsVc(rule));
-			//create necessary Data structure to link required predicates of current crysl rule
-			Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap = Utils.mapPredicates(mapEnsures, mapRequires);
-			//Pairing Dependency only by class name
+			// create necessary Data structure to link required predicates of current crysl
+			// rule
+			Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap = Utils.mapPredicates(mapEnsures,
+					mapRequires);
+			// Pairing Dependency only by class name
 			Map<String, Set<String>> singleReqToEns = Utils.toOnlyClassNames(singleRuleEnsuresMap);
 			Set<String> ensuresForThisRule = singleReqToEns.get(composedRule.getComposedClassName());
-			composedRule.setConstrainedPredicates(predicateconstraint.getConstraintsPred(rule, ensuresForThisRule, singleRuleEnsuresMap));
-			//ConstraintsSection
+			composedRule.setConstrainedPredicates(
+					predicateconstraint.getConstraintsPred(rule, ensuresForThisRule, singleRuleEnsuresMap));
+			// ConstraintsSection
 			composedRule.setComparsionConstraints(comp.getConstriantsComp(rule));
 			composedRule.setConstrainedValueConstraints(cryslvc.getConCryslVC(rule));
 			composedRule.setNoCallToConstraints(nocall.getnoCalltoConstraint(rule));
@@ -120,16 +131,21 @@ public class DocumentGeneratorMain {
 			allConstraints.addAll(composedRule.getForbiddenMethods());
 			composedRule.setAllConstraints(allConstraints);
 
-			//Predicates Section
-			composedRule.setEnsuresThisPredicates(en.getEnsuresThis(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
+			// Predicates Section
+			composedRule
+					.setEnsuresThisPredicates(en.getEnsuresThis(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
 			composedRule.setEnsuresPredicates(entwo.getEnsures(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
 			composedRule.setNegatesPredicates(neg.getNegates(rule));
 			composedRuleList.add(composedRule);
+
+			cryslRuleList.add(rule);
 		}
 
-		//Necessary DataStructure to generate Requires and Ensures Tree
-		Map<String, List<Map<String, List<String>>>> ensuresToRequiresMap = Utils.mapPredicates(mapRequires, mapEnsures);
-		Map<String, List<Map<String, List<String>>>> requiresToEnsuresMap = Utils.mapPredicates(mapEnsures, mapRequires);
+		// Necessary DataStructure to generate Requires and Ensures Tree
+		Map<String, List<Map<String, List<String>>>> ensuresToRequiresMap = Utils.mapPredicates(mapRequires,
+				mapEnsures);
+		Map<String, List<Map<String, List<String>>>> requiresToEnsuresMap = Utils.mapPredicates(mapEnsures,
+				mapRequires);
 
 		Map<String, Set<String>> onlyClassnamesReqToEns = Utils.toOnlyClassNames(ensuresToRequiresMap);
 		Map<String, Set<String>> onlyClassnamesEnsToReq = Utils.toOnlyClassNames(requiresToEnsuresMap);
@@ -137,9 +153,8 @@ public class DocumentGeneratorMain {
 		Map<String, TreeNode<String>> reqToEns = PredicateTreeGenerator.buildDependencyTreeMap(onlyClassnamesReqToEns);
 		Map<String, TreeNode<String>> ensToReq = PredicateTreeGenerator.buildDependencyTreeMap(onlyClassnamesEnsToReq);
 
-
-		//Freemarker Setup and create cognicryptdoc html pages
-		System.out.println("Using FreeMarker to generate the html files of the documentation.");
+		// Freemarker Setup and create cognicryptdoc html pages
+		System.out.println("Setup Freemarker");
 		Configuration cfg = new Configuration(new Version(2, 3, 20));
 		FreeMarkerWriter.setupFreeMarker(cfg);
 		FreeMarkerWriter.createCogniCryptLayout(cfg);
@@ -157,11 +172,6 @@ public class DocumentGeneratorMain {
 		}
 		System.out.println("Generated the documentation to " + docSettings.getReportDirectory());
 
-
-
-
-
 	}
-
 
 }

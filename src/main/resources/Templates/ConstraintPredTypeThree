@@ -1,1 +1,1 @@
-The ${position} parameter of the method ${methodName} is never hard coded.
+The <strong>${position}</strong> parameter of the method <strong>${methodName}</strong> is never hard coded.

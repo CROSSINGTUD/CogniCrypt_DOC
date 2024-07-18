@@ -1,1 +1,1 @@
-then the ${positionRVC} parameter of either of the methods ${methodNameRVC} must assume one of these value(s) ${varRVC}.
+then the <strong>${positionRVC}</strong> parameter of either of the methods <strong>${methodNameRVC}</strong> must assume one of these value(s) <strong>${varRVC}</strong>.

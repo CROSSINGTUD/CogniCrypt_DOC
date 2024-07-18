@@ -12,6 +12,7 @@ import crypto.rules.CrySLMethod;
 import crypto.rules.CrySLRule;
 import crypto.rules.StateMachineGraph;
 import crypto.rules.TransitionEdge;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Ritika Singh
@@ -33,6 +34,89 @@ public class FunctionUtils {
 			}
 		}
 		return methodNames.stream().distinct().collect(Collectors.toList());
+	}
+
+	public static List<String> getEventNamesKey(CrySLRule rule) {
+		List<String> methodNames = new ArrayList<String>();
+		StateMachineGraph graph = rule.getUsagePattern();
+		List<TransitionEdge> edges = graph.getEdges();
+
+		for (TransitionEdge edge : edges) {
+			List<CrySLMethod> methods = edge.getLabel();
+
+			for (CrySLMethod method : methods) {
+				StringBuilder sb = new StringBuilder();
+				String methodName = method.getShortMethodName();
+				sb.append(methodName);
+				sb.append("(");
+				ArrayList<String> shortMehtodNames = new ArrayList<>();
+				for (Entry<String, String> entry : method.getParameters()) {
+					shortMehtodNames.add(entry.getKey());
+				}
+				sb.append(StringUtils.join(shortMehtodNames, ","));
+				sb.append(")");
+				methodNames.add(sb.toString());
+			}
+		}
+		return methodNames.stream().distinct().collect(Collectors.toList());
+	}
+
+	public static List<String> getEventNamesValue(CrySLRule rule) {
+		List<String> methodNames = new ArrayList<String>();
+		StateMachineGraph graph = rule.getUsagePattern();
+		List<TransitionEdge> edges = graph.getEdges();
+
+		for (TransitionEdge edge : edges) {
+			List<CrySLMethod> methods = edge.getLabel();
+
+			for (CrySLMethod method : methods) {
+				StringBuilder sb = new StringBuilder();
+				String methodName = method.getShortMethodName();
+				sb.append(methodName);
+				sb.append("(");
+				ArrayList<String> shortMehtodNames = new ArrayList<>();
+				for (Entry<String, String> entry : method.getParameters()) {
+					shortMehtodNames.add(entry.getValue());
+				}
+				sb.append(StringUtils.join(shortMehtodNames, ","));
+				sb.append(")");
+				methodNames.add(sb.toString());
+			}
+		}
+		return methodNames.stream().distinct().collect(Collectors.toList());
+	}
+
+	public static String getEventCrySLMethodKey(CrySLMethod method) {
+		StringBuilder sb = new StringBuilder();
+		String methodName = method.getShortMethodName();
+		sb.append(methodName);
+		sb.append("(");
+		ArrayList<String> shortMehtodNames = new ArrayList<>();
+		for (Entry<String, String> entry : method.getParameters()) {
+			shortMehtodNames.add(entry.getKey());
+		}
+		sb.append(StringUtils.join(shortMehtodNames, ","));
+		sb.append(")");
+		return sb.toString();
+	}
+
+	public static String getEventCrySLMethodValue(CrySLMethod method) {
+		StringBuilder sb = new StringBuilder();
+		String methodName = method.getShortMethodName();
+		sb.append(methodName);
+		sb.append("(");
+		ArrayList<String> shortMethodNames = new ArrayList<>();
+		for (Entry<String, String> entry : method.getParameters()) {
+			String value = entry.getValue();
+			if (value.equals("AnyType")) {
+				shortMethodNames.add("_");
+			} else {
+				shortMethodNames.add(value);
+			}
+		}
+		sb.append(StringUtils.join(shortMethodNames, ","));
+		sb.append(")");
+		return sb.toString();
 	}
 
 	public static Map<String, String> getPosWordMap(CrySLRule rule) {

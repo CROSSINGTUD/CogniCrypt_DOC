@@ -1,47 +1,36 @@
 SPEC javax.net.ssl.SSLEngine
 
 OBJECTS
-	java.lang.String[] ciphersuites;
+	java.lang.String[] cipherSuites;
 	java.lang.String[] protocols;
 
 EVENTS
+	ec1: setEnabledCipherSuites(cipherSuites);
+	EnableCipher := ec1;
 	
-	ec: setEnabledCipherSuites(ciphersuites);
-	ep: setEnabledProtocols(protocols);
+	ep1: setEnabledProtocols(protocols);
+	EnableProtocol := ep1;	
 
 ORDER
-	(ec,ep) | (ep,ec) 
+	(EnableCipher, EnableProtocol) | (EnableProtocol, EnableCipher) 
 
 CONSTRAINTS
-	elements(protocols) in {"TLSv1.2","TLSv1.1"};
-	elements(ciphersuites) in {"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-							"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-							"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-							"TLS_RSA_WITH_AES_256_GCM_SHA384",
-							"TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384",
-							"TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384",
-							"TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-							"TLS_DHE_DSS_WITH_AES_256_GCM_SHA384",
-							"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-							"TLS_RSA_WITH_AES_128_GCM_SHA256",
-							"TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256",
-							"TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",
-							"TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-							"TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",
-							"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-							"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-							"TLS_RSA_WITH_AES_256_CBC_SHA256",
-							"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
-							"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
-							"TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
-							"TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
-							"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-							"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-							"TLS_RSA_WITH_AES_128_CBC_SHA256",
-							"TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256",
-							"TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256",
-							"TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-							"TLS_DHE_DSS_WITH_AES_128_CBC_SHA256"};
+	elements(protocols) in {"TLSv1.2", "TLSv1.3"};
+	elements(protocols) in {"TLSv1.2"} => elements(cipherSuites) in {
+    		"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+    		"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+    		"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+    		"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    		"TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",
+    		"TLS_DHE_DSS_WITH_AES_256_GCM_SHA384",
+    		"TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+    		"TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+    		"TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256",
+    		"TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384",
+    		"TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",
+    		"TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384"};
+    elements(protocols) in {"TLSv1.3"} => elements(cipherSuites) in {"TLS_AES_128_GCM_SHA256", 
+			"TLS_AES_256_GCM_SHA384"};
 		
 ENSURES
 	generatedSSLEngine[this];

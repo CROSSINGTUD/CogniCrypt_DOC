@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * @author Sven Feldmann
- * Data class which stores all generated natural language sentences
+ *         Data class which stores all generated natural language sentences
  */
 
 public class ComposedRule {
@@ -30,7 +30,6 @@ public class ComposedRule {
     private String composedLink;
     private String onlyLink;
 
-
     public List<String> getAllConstraints() {
         return allConstraints;
     }
@@ -39,23 +38,33 @@ public class ComposedRule {
         this.allConstraints = allConstraints;
     }
 
-    public String getOnlyRuleName() { return onlyRuleName;}
+    public String getOnlyRuleName() {
+        return onlyRuleName;
+    }
 
-    public void setOnlyRuleName(String onlyRuleName) { this.onlyRuleName = onlyRuleName;}
+    public void setOnlyRuleName(String onlyRuleName) {
+        this.onlyRuleName = onlyRuleName;
+    }
 
-    public String getComposedFullClass() { return composedFullClass;}
+    public String getComposedFullClass() {
+        return composedFullClass;
+    }
 
-    public void setComposedFullClass(String composedFullClass) { this.composedFullClass = composedFullClass;}
+    public void setComposedFullClass(String composedFullClass) {
+        this.composedFullClass = composedFullClass;
+    }
 
-    public String getComposedLink() { return composedLink;}
+    public String getComposedLink() {
+        return composedLink;
+    }
 
-    public void setComposedLink(String composedLink) { this.composedLink = composedLink;}
-
+    public void setComposedLink(String composedLink) {
+        this.composedLink = composedLink;
+    }
 
     public String getComposedClassName() {
         return composedClassName;
     }
-
 
     public List<String> getForbiddenMethods() {
         return forbiddenMethods;

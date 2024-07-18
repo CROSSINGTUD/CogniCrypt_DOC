@@ -1,1 +1,1 @@
-The ${position} parameter of the constructor ${methodName} is ${var1}.
+The <strong>${position}</strong> parameter of the constructor <strong>${methodName}</strong> is <strong>${var1}</strong>.

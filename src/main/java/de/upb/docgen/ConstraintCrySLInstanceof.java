@@ -1,9 +1,5 @@
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -16,12 +12,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import crypto.rules.*;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import crypto.interfaces.ISLConstraint;
-import crypto.rules.CrySLRule;
 
 /**
  * @author Ritika Singh
@@ -32,79 +28,53 @@ public class ConstraintCrySLInstanceof {
 	static PrintWriter out;
 
 	private static String getTemplateinstanceofLHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseLHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLinstanceofClauseLHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseLHS");
 	}
 
 	private static String getTemplateinstanceofRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseRHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLinstanceofClauseRHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
-
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
+		return Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseRHS");
 	}
 
 	public ArrayList<String> getInstanceof(CrySLRule rule) throws IOException {
 		ArrayList<String> composedInstaceOf = new ArrayList<>();
-		String cname = rule.getClassName().replace(".", ",");
-		List<String> strArray = Arrays.asList(cname.split(","));
-		/*
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
-		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().contains("CrySLConstraint"))
+				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
 		if (constraintConList.size() > 0) {
-
 			for (ISLConstraint conCryslISL : constraintConList) {
-
+				CrySLConstraint leftConstraint = null;
+				List<ISLConstraint> allNodesLeft = null;
+				List<ISLConstraint> allLeftConstraints = new ArrayList<>();
+				CrySLConstraint rightConstraint = null;
+				List<ISLConstraint> allNodesRight = null;
+				List<ISLConstraint> allRightConstraints = new ArrayList<>();
+				if (conCryslISL instanceof CrySLConstraint) {
+					if (((CrySLConstraint) conCryslISL).getLeft() instanceof CrySLConstraint)
+						leftConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getLeft();
+					if (((CrySLConstraint) conCryslISL).getRight() instanceof CrySLConstraint)
+						rightConstraint = (CrySLConstraint) ((CrySLConstraint) conCryslISL).getRight();
+					if (leftConstraint != null) {
+						allNodesLeft = getAllLeafNodes(allLeftConstraints, leftConstraint);
+					}
+					if (rightConstraint != null) {
+						allNodesRight = getAllLeafNodes(allRightConstraints, rightConstraint);
+					}
+				}
 				String conCryslStr = conCryslISL.toString();
-
 				if (conCryslStr.startsWith("instance")) {
-
 					List<String> impSplitList = Arrays.asList(conCryslStr.split("implies"));
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("or"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
-					List<String> methods = FunctionUtils.getEventNames(rule);
+					List<String> methods = FunctionUtils.getEventNamesKey(rule);
 					Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 					List<Entry<String, String>> dataTypes = rule.getObjects();
-
 					Map<String, String> DTMap = new LinkedHashMap<>();
 					for (Entry<String, String> dt : dataTypes) {
-						DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+						DTMap.put(dt.getKey(), dt.getValue());
 					}
-
 					String templatestringLHS = getTemplateinstanceofLHS();
 					String templatestringRHS = getTemplateinstanceofRHS();
 
-					String printout = "";
 					String resultmainstringLHS = "";
 					String resultmainstringRHS = "";
 
@@ -125,11 +95,19 @@ public class ConstraintCrySLInstanceof {
 										Arrays.asList(a.replaceAll("VC:", "").replaceAll(",$", "").split(" - ")));
 							}
 
+							if (allNodesLeft == null) {
+								allNodesLeft = new ArrayList<>();
+								allNodesLeft.add(((CrySLConstraint) conCryslISL).getLeft());
+							}
 							for (String methodStr : methods) {
+								String realLHS = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
+										.get(0)).getVarName();
+								String real = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
+										.get(1)).getJavaType();
+								resLHSlist.set(0, realLHS);
+								resLHSlist.set(1, real);// if null dont add
 
-								String LHSfirstStr = resLHSlist.get(0);
-
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(realLHS)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -153,7 +131,7 @@ public class ConstraintCrySLInstanceof {
 										for (String extractParamStr : extractParamList) {
 											if (!DTMap.containsKey(extractParamStr)) {
 											} else {
-												String value = DTMap.get(extractParamStr);
+												String value = DTMap.get(extractParamStr).toString();
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
@@ -163,7 +141,7 @@ public class ConstraintCrySLInstanceof {
 
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(realLHS));
 										resLHSlist.add(posStr);
 
 										if (posInWordsMap.containsKey(posStr)) {
@@ -196,7 +174,20 @@ public class ConstraintCrySLInstanceof {
 							String d = " or";
 							String b = templatestringLHS;
 							String a = LHSList.get(i);
-							List<String> resLHSlistsecond = new ArrayList<>();
+							ISLConstraint currentConstraint = allNodesLeft.get(i);
+							String leftSidePredicateOrVCvarname = null;
+							if (currentConstraint instanceof CrySLPredicate) {
+								CrySLPredicate predicate = (CrySLPredicate) currentConstraint;
+								leftSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
+										.getVarName();
+							} else if (currentConstraint instanceof CrySLValueConstraint) {
+								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) currentConstraint;
+								leftSidePredicateOrVCvarname = valueConstraint.getVarName();
+							} else {
+								System.exit(255);
+							}
+
+							List<String> resLHSlistsecond;
 							List<String> finalpredmethodSecList = new ArrayList<>();
 							String joinedSec = null;
 
@@ -211,9 +202,7 @@ public class ConstraintCrySLInstanceof {
 
 							for (String methodStr : methods) {
 
-								String LHSfirstStr = resLHSlistsecond.get(0);
-
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(leftSidePredicateOrVCvarname)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -227,9 +216,7 @@ public class ConstraintCrySLInstanceof {
 
 										if (bracketExtractStr.contains(",")) {
 											String[] elements = bracketExtractStr.split(",");
-											for (int a1 = 0; a1 < elements.length; a1++) {
-												extractParamList.add(elements[a1]);
-											}
+											extractParamList.addAll(Arrays.asList(elements));
 										} else {
 											extractParamList.add(bracketExtractStr);
 										}
@@ -246,7 +233,7 @@ public class ConstraintCrySLInstanceof {
 
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(leftSidePredicateOrVCvarname));
 										resLHSlistsecond.add(posStr);
 
 										if (posInWordsMap.containsKey(posStr)) {
@@ -276,6 +263,11 @@ public class ConstraintCrySLInstanceof {
 
 					String b = templatestringRHS;
 
+					if (allNodesRight == null) {
+						allNodesRight = new ArrayList<>();
+						allNodesRight.add(((CrySLConstraint) conCryslISL).getRight());
+					}
+
 					for (String RHSStr : RHSList) {
 
 						List<String> resRHSList = new ArrayList<>();
@@ -285,7 +277,22 @@ public class ConstraintCrySLInstanceof {
 						String joinedRHS = null;
 
 						for (String methodStr : methods) {
-							String RHSfirstStr = resRHSList.get(0);
+							String rightSidePredicateOrVCvarname = null;
+							if (allNodesRight.get(0) instanceof CrySLPredicate) {
+								CrySLPredicate predicate = (CrySLPredicate) allNodesRight.get(0);
+								rightSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
+										.getVarName();
+								// Your code specific to CrySLPredicate
+							} else if (allNodesRight.get(0) instanceof CrySLValueConstraint) {
+								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) allNodesRight.get(0);
+								rightSidePredicateOrVCvarname = valueConstraint.getVarName();
+								// Your code specific to CrySLValueConstraint
+							} else {
+								// Handle other cases if needed
+								System.exit(255);
+							}
+
+							String RHSfirstStr = rightSidePredicateOrVCvarname;
 
 							if (methodStr.contains(RHSfirstStr)) {
 
@@ -311,7 +318,7 @@ public class ConstraintCrySLInstanceof {
 									for (String extractParamStr : extractParamList) {
 										if (!DTMap.containsKey(extractParamStr)) {
 										} else {
-											String value = DTMap.get(extractParamStr);
+											String value = DTMap.get(extractParamStr).toString();
 											m = m.replaceFirst(extractParamStr, value);
 										}
 									}
@@ -346,15 +353,48 @@ public class ConstraintCrySLInstanceof {
 
 						StringSubstitutor sub = new StringSubstitutor(valuesMap);
 						resultmainstringRHS = sub.replace(b);
+						composedInstaceOf.add(resultmainstringLHS + resultmainstringRHS);
 					}
-
-					printout = resultmainstringLHS + resultmainstringRHS;
-					composedInstaceOf.add(printout);
-					//out.println("" + printout);
 				}
 			}
 		}
-		//out.close();
 		return composedInstaceOf;
+	}
+
+	public List<ISLConstraint> getAllLeafNodes(List<ISLConstraint> leafNodes, ISLConstraint node) {
+		collectLeafNodes(node, leafNodes);
+		return leafNodes;
+	}
+
+	// Helper method to recursively collect leaf nodes
+	private void collectLeafNodes(ISLConstraint node, List<ISLConstraint> leafNodes) {
+		if (node instanceof CrySLConstraint) {
+			CrySLConstraint crySLNode = (CrySLConstraint) node;
+			ISLConstraint left = crySLNode.getLeft();
+			ISLConstraint right = crySLNode.getRight();
+
+			if (left == null && right == null) {
+				// This node is a leaf node
+				leafNodes.add(node);
+			} else {
+				// Recursively explore left and right nodes, checking for leaf nodes
+				if (left != null) {
+					if (left instanceof CrySLConstraint) {
+						collectLeafNodes((CrySLConstraint) left, leafNodes);
+					} else {
+						// Handle if left is a leaf node (CrySLValueConstraint or CrySLPredicate)
+						leafNodes.add(left);
+					}
+				}
+				if (right != null) {
+					if (right instanceof CrySLConstraint) {
+						collectLeafNodes((CrySLConstraint) right, leafNodes);
+					} else {
+						// Handle if right is a leaf node (CrySLValueConstraint or CrySLPredicate)
+						leafNodes.add(right);
+					}
+				}
+			}
+		}
 	}
 }

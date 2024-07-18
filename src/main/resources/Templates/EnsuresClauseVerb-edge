@@ -1,1 +1,1 @@
-The instance of the class has been ${verb} after ${edgeName}.
+The instance of the class has been <strong>${verb}</strong> after <strong>${edgeName}</strong>.

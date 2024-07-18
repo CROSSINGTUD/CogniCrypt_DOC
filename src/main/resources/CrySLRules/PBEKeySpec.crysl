@@ -4,18 +4,21 @@ OBJECTS
 	char[] password;
 	byte[] salt;
 	int iterationCount;
-	int keylength; 
+	int keyLength; 
 	
 FORBIDDEN
-	PBEKeySpec(char[]) => con;
-	PBEKeySpec(char[],byte[],int) => con;
+	PBEKeySpec(char[]) => Con;
+	PBEKeySpec(char[],byte[],int) => Con;
 	
 EVENTS
-	con: PBEKeySpec(password, salt, iterationCount, keylength);
-	clear: clearPassword();
+	c1: PBEKeySpec(password, salt, iterationCount, keyLength);
+	Con := c1;
+	
+	cp1: clearPassword();
+	ClearPass := cp1;
 	
 ORDER
- 	con,  clear
+	Con, ClearPass
  	
 CONSTRAINTS
 	iterationCount >= 10000;
@@ -26,7 +29,7 @@ REQUIRES
 	randomized[salt];	
 
 ENSURES
-	speccedKey[this, keylength] after con;
+	speccedKey[this, keyLength] after Con;
 
 NEGATES
-	speccedKey[this, _] after clear;
+	speccedKey[this, _] after ClearPass;

@@ -1,1 +1,1 @@
-The instance of the class has been ${verb} as ${noun} after ${edName}.
+The instance of the class has been <strong>${verb}</strong> as <strong>${noun}</strong> after <strong>${edName}</strong>.

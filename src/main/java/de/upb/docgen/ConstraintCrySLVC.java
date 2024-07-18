@@ -1,9 +1,5 @@
 package de.upb.docgen;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -16,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import crypto.rules.CrySLConstraint;
+import crypto.rules.CrySLValueConstraint;
 import de.upb.docgen.utils.Utils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -31,54 +29,19 @@ public class ConstraintCrySLVC {
 	static PrintWriter out;
 
 	private static String getTemplateVCLHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCClauseLHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCClauseLHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCClauseLHS");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	private static String getTemplateVCRHS() throws IOException {
-		String strD = Utils.getTemplatesTextString("ConstraintCrySLVCClauseRHS");
-		/*
-		File file = new File(".\\src\\main\\resources\\Templates\\ConstraintCrySLVCClauseRHS");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String strLine = "";
-		String strD = "";
+		return Utils.getTemplatesTextString("ConstraintCrySLVCClauseRHS");
 
-		while ((strLine = br.readLine()) != null) {
-			strD += strLine;
-			strLine = br.readLine();
-		}
-		br.close();
-
-		 */
-		return strD;
 	}
 
 	public ArrayList<String> getConCryslVC(CrySLRule rule) throws IOException {
 		ArrayList<String> composedConsraintsValueConstraints = new ArrayList<>();
-		String cname = rule.getClassName().replace(".", ",");
-		List<String> strArray = Arrays.asList(cname.split(","));
-		String classnamecheck = strArray.get((strArray.size()) - 1);
-		/*
-		String path = "./Output/" + classnamecheck + "_doc.txt";
-		out = new PrintWriter(new FileWriter(path, true));
-
-		 */
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
-				.filter(e -> e.getClass().getSimpleName().contains("CrySLConstraint")
+				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint")
 						&& !e.toString().contains("enc"))
 				.collect(Collectors.toList());
 
@@ -97,14 +60,48 @@ public class ConstraintCrySLVC {
 					List<Entry<String, String>> dataTypes = rule.getObjects();
 					Map<String, String> DTMap = new LinkedHashMap<>();
 					for (Entry<String, String> dt : dataTypes) {
-						DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
+						DTMap.put(dt.getKey(), FunctionUtils.getDataType(rule, dt.getKey()));
 					}
 
 					List<String> impSplitList = Arrays.asList(conCryslStr.split("implies"));
 					List<String> LHSList = Arrays.asList(impSplitList.get(0).split("and"));
 					List<String> RHSList = Arrays.asList(impSplitList.get(1));
 
-					List<String> methods = FunctionUtils.getEventNames(rule);
+					CrySLConstraint crySLConstraint = null;
+					if (conCryslISL instanceof CrySLConstraint)
+						crySLConstraint = (CrySLConstraint) conCryslISL;
+					CrySLValueConstraint leftParam = null;
+					if (crySLConstraint.getLeft() instanceof CrySLValueConstraint) {
+						leftParam = (CrySLValueConstraint) crySLConstraint.getLeft();
+
+					} else {
+						continue;
+					}
+					if (conCryslISL instanceof CrySLConstraint)
+						crySLConstraint = (CrySLConstraint) conCryslISL;
+					CrySLValueConstraint rightParam = null;
+					if (crySLConstraint.getRight() instanceof CrySLValueConstraint) {
+						rightParam = (CrySLValueConstraint) crySLConstraint.getRight();
+
+					} else {
+						continue;
+					}
+					// CrySLValueConstraint rightParam = (CrySLValueConstraint)
+					// crySLConstraint.getRight();
+
+					List<String> realLeft = new ArrayList<>();
+					realLeft.add(leftParam.getVarName());
+					for (String s : leftParam.getValueRange()) {
+						realLeft.add(s);
+					}
+					// resLHSlist = leftCryslConstraint.var.varname,left.valuerange
+					List<String> realRight = new ArrayList<>();
+					realRight.add(rightParam.getVarName());
+					for (String s : rightParam.getValueRange()) {
+						realRight.add(s);
+					}
+
+					List<String> methods = FunctionUtils.getEventNamesKey(rule);
 					Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 					String templatestringLHS = getTemplateVCLHS();
 					String templatestringRHS = getTemplateVCRHS();
@@ -125,9 +122,8 @@ public class ConstraintCrySLVC {
 							String joined = null;
 
 							for (String methodStr : methods) {
-								String LHSfirstStr = resLHSList.get(0);
 
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(realLeft.get(0))) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -141,9 +137,7 @@ public class ConstraintCrySLVC {
 
 										if (bracketExtractStr.contains(",")) {
 											String[] elements = bracketExtractStr.split(",");
-											for (int a1 = 0; a1 < elements.length; a1++) {
-												extractParamList.add(elements[a1]);
-											}
+											extractParamList.addAll(Arrays.asList(elements));
 										} else {
 											extractParamList.add(bracketExtractStr);
 										}
@@ -160,7 +154,7 @@ public class ConstraintCrySLVC {
 										joined = String.join(", ", finalpredmethodList);
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
-										String posStr = String.valueOf(strList.indexOf(LHSfirstStr));
+										String posStr = String.valueOf(strList.indexOf(realLeft.get(0)));
 
 										resLHSList.add(posStr);
 
@@ -198,15 +192,14 @@ public class ConstraintCrySLVC {
 							List<String> finalpredmethodList = new ArrayList<>();
 							String joinedSec = null;
 
-							List<String> resLHSlistsecond = new ArrayList<>();
-							resLHSlistsecond = new ArrayList<>(Arrays.asList(a.replaceAll("\\(.*\\)", "")
+							List<String> resLHSlistsecond = new ArrayList<>(Arrays.asList(a.replaceAll("\\(.*\\)", "")
 									.replaceAll("VC:", "").replaceAll(",$", " ").split(" - ")));
 
 							for (String methodStr : methods) {
 								String LHSfirstStr = resLHSlistsecond.get(0);
-								String posStr = null;
+								String posStr;
 
-								if (methodStr.contains(LHSfirstStr)) {
+								if (methodStr.contains(realLeft.get(0))) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -279,10 +272,10 @@ public class ConstraintCrySLVC {
 								.replaceAll("VC:", "").replaceAll(",$", " ").split(" - ")));
 
 						for (String methodStr : methods) {
-							String RHSfirstStr = resRHSList.get(0);
-							String posStr = null;
+							// String RHSfirstStr = resRHSList.get(0);
+							String posStr;
 
-							if (methodStr.contains(RHSfirstStr)) {
+							if (methodStr.contains(realRight.get(0))) {
 
 								List<String> methList = new ArrayList<>();
 								methList.add(methodStr);
@@ -306,7 +299,7 @@ public class ConstraintCrySLVC {
 									for (String extractParamStr : extractParamList) {
 										if (!DTMap.containsKey(extractParamStr)) {
 										} else {
-											String value = DTMap.get(extractParamStr);
+											String value = DTMap.get(extractParamStr).toString();
 											m = m.replaceFirst(extractParamStr, value);
 										}
 									}
@@ -316,7 +309,7 @@ public class ConstraintCrySLVC {
 
 									String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 									List<String> strList = Arrays.asList(mStr.split(" "));
-									posStr = String.valueOf(strList.indexOf(RHSfirstStr));
+									posStr = String.valueOf(strList.indexOf(realRight.get(0)));
 									resRHSList.add(posStr);
 
 									if (posInWordsMap.containsKey(posStr)) {
@@ -343,11 +336,9 @@ public class ConstraintCrySLVC {
 					}
 					printout = resultmainstringLHS + resultmainstringRHS;
 					composedConsraintsValueConstraints.add(printout);
-					//out.println("" + printout);
 				}
 			}
 		}
-		//out.close();
 		return composedConsraintsValueConstraints;
 	}
 }
