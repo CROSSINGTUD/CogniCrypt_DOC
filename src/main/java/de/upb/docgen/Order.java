@@ -17,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import crypto.exceptions.CryptoAnalysisException;
+import de.upb.docgen.crysl.CrySLReader;
 import org.apache.commons.lang3.StringUtils;
 
 import crypto.rules.CrySLRule;
@@ -66,7 +68,19 @@ public class Order {
 		Properties properties = new Properties();
 
 		try {
-			File fileone = new File(DocSettings.getInstance().getLangTemplatesPath() + "/symbol.properties");
+			File fileone = null;
+
+			if (DocSettings.getInstance().getRulesetPathDir() != null) {
+				fileone = new File(DocSettings.getInstance().getLangTemplatesPath() + "/symbol.properties");
+
+			} else {
+				fileone = CrySLReader.readSymbolPropertiesFromJar();
+			}
+
+
+
+
+
 			FileInputStream fileInput = new FileInputStream(fileone);
 			properties.load(fileInput);
 			fileInput.close();
@@ -314,10 +328,24 @@ public class Order {
 	}
 
 
-	public List<String> runOrder(CrySLRule file) throws IOException {
-		String filePath = DocSettings.getInstance().getRulesetPathDir();
-		filePath += File.separator + file.getClassName().substring(file.getClassName().lastIndexOf(".") + 1) + ".crysl";
-		Map<String, List<String>> fileContent = readCryslFile(filePath);
+	public List<String> runOrder(CrySLRule file) throws IOException, CryptoAnalysisException {
+
+
+		File rule = null;
+		Map<String, List<String>> fileContent = null;
+
+		if (DocSettings.getInstance().getRulesetPathDir() != null) {
+			String filePath = DocSettings.getInstance().getRulesetPathDir();
+			filePath += File.separator + file.getClassName().substring(file.getClassName().lastIndexOf(".") + 1) + ".crysl";
+			fileContent = readCryslFile(filePath);
+
+		} else {
+			rule = CrySLReader.readRuleFromJarFile(file.getClassName().substring(file.getClassName().lastIndexOf(".") + 1));
+			fileContent = readCryslFile(rule.getPath());
+		}
+		//String filePath = DocSettings.getInstance().getRulesetPathDir();
+		//filePath += File.separator + file.getClassName().substring(file.getClassName().lastIndexOf(".") + 1) + ".crysl";
+		//Map<String, List<String>> fileContent = readCryslFile(filePath);
 		List<String> objectList = fileContent.get("OBJECTS");
 
 		for (String pair : objectList) {

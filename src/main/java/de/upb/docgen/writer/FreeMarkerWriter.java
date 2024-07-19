@@ -1,7 +1,9 @@
 package de.upb.docgen.writer;
 
+import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLRule;
 import de.upb.docgen.*;
+import de.upb.docgen.crysl.CrySLReader;
 import de.upb.docgen.graphviz.StateMachineToGraphviz;
 import de.upb.docgen.utils.TemplateAbsolutePathLoader;
 import de.upb.docgen.utils.TreeNode;
@@ -32,7 +34,13 @@ public class FreeMarkerWriter {
         Map<String, Object> input = new HashMap<String, Object>();
         input.put("title", "Sidebar");
         input.put("rules", composedRuleList);
-        Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "sidebar.ftl"));
+        Template template = null;
+        if (DocSettings.getInstance().getRulesetPathDir() != null) {
+            template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/" + "sidebar.ftl"));
+        } else {
+            template = cfg.getTemplate(CrySLReader.readFTLFromJar("sidebar.ftl").getPath());
+
+        }
         // 2.3. Generate the output
         try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"navbar.html"))) {
             template.process(input, fileWriter);
@@ -52,7 +60,7 @@ public class FreeMarkerWriter {
      * @throws IOException
      * @throws TemplateException
      */
-    public static void createSinglePage(List<ComposedRule> composedRuleList, Configuration cfg, Map<String, TreeNode<String>> reqToEns, Map<String, TreeNode<String>> ensToReq, boolean a, boolean b, boolean c, boolean d, boolean e, boolean f, List<CrySLRule> crySLRules) throws IOException, TemplateException {
+    public static void createSinglePage(List<ComposedRule> composedRuleList, Configuration cfg, Map<String, TreeNode<String>> reqToEns, Map<String, TreeNode<String>> ensToReq, boolean a, boolean b, boolean c, boolean d, boolean e, boolean f, List<CrySLRule> crySLRules) throws IOException, TemplateException, CryptoAnalysisException {
         for (int i = 0; i < composedRuleList.size(); i++) {
             ComposedRule rule = composedRuleList.get(i);
             Map<String, Object> input = new HashMap<String, Object>();
@@ -64,8 +72,12 @@ public class FreeMarkerWriter {
             input.put("ensures", rootEns); // ensures tree parsed by the template
 
             // necessary input for the template to load absolute path from crysl rule which can be displayed
-            input.put("pathToRules", Utils.pathForTemplates("file://" + DocSettings.getInstance().getRulesetPathDir()));
-            // Set flags
+            if (DocSettings.getInstance().getRulesetPathDir() != null) {
+                input.put("pathToRules", Utils.pathForTemplates("file://" + DocSettings.getInstance().getRulesetPathDir()));
+            } else {
+                input.put("pathToRules", Utils.pathForTemplates("file://" + CrySLReader.readRuleFromJarFile(composedRuleList.get(i).getOnlyRuleName()).getPath()));
+            }
+                // Set flags
             input.put("booleanA", a); // To show StateMachineGraph
             input.put("booleanB", b); // To show Help Button
             input.put("booleanC", c);
@@ -76,7 +88,12 @@ public class FreeMarkerWriter {
             input.put("stateMachine", StateMachineToGraphviz.toGraphviz(crySLRules.get(i).getUsagePattern()));
 
             // 2.2. Get the template
-            Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/" + "singleclass.ftl"));
+            Template template = null;
+            if (DocSettings.getInstance().getRulesetPathDir() != null) {
+                template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/" + "singleclass.ftl"));
+            } else {
+                template = cfg.getTemplate(CrySLReader.readFTLFromJar("singleclass.ftl").getPath());
+            }
 
             // create composedRules directory where single pages are stored
             new File(DocSettings.getInstance().getReportDirectory() + "/" + "composedRules/").mkdir();
@@ -88,10 +105,10 @@ public class FreeMarkerWriter {
     }
 
 
-        /**
-         * sets freemarker settings
-         * @param cfg
-         */
+    /**
+     * sets freemarker settings
+     * @param cfg
+     */
     public static void setupFreeMarker(Configuration cfg) {
         // setup freemarker to load absolute paths
         cfg.setTemplateLoader(new TemplateAbsolutePathLoader());
@@ -109,7 +126,7 @@ public class FreeMarkerWriter {
      */
     public static void createCogniCryptLayout(Configuration cfg) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
-        
+
         if (!Files.exists(Paths.get(DocSettings.getInstance().getReportDirectory()))) {
             try {
                 // Attempt to create the directory
@@ -121,13 +138,24 @@ public class FreeMarkerWriter {
         } else {
             System.out.println("Directory already exists.");
         }
-        Template frontpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "frontpage.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
-            frontpageTemplate.process(input, fileWriter);
-        }
-        Template rootpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "rootpage.ftl"));
-        try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"rootpage.html"))) {
-            rootpageTemplate.process(input, fileWriter);
+        if (DocSettings.getInstance().getRulesetPathDir() != null) {
+            Template frontpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "frontpage.ftl"));
+            try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
+                frontpageTemplate.process(input, fileWriter);
+            }
+            Template rootpageTemplate = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "rootpage.ftl"));
+            try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"rootpage.html"))) {
+                rootpageTemplate.process(input, fileWriter);
+            }
+        } else {
+            Template frontpageTemplate = cfg.getTemplate(CrySLReader.readFTLFromJar("frontpage.ftl").getPath());
+            try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"frontpage.html"))) {
+                frontpageTemplate.process(input, fileWriter);
+            }
+            Template rootpageTemplate = cfg.getTemplate(CrySLReader.readFTLFromJar("rootpage.ftl").getPath());
+            try (Writer fileWriter = new FileWriter(new File(DocSettings.getInstance().getReportDirectory() + File.separator+"rootpage.html"))) {
+                rootpageTemplate.process(input, fileWriter);
+            }
         }
     }
 }

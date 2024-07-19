@@ -8,13 +8,10 @@ import crypto.rules.TransitionEdge;
 import de.upb.docgen.ComposedRule;
 import de.upb.docgen.DocSettings;
 import de.upb.docgen.Order;
-import de.upb.docgen.crysl.CrySLReader;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -22,7 +19,14 @@ import java.util.*;
  */
 
 public class Utils {
-
+	public static File getFileFromResources(String fileName) {
+		URL resource = Utils.class.getResource(fileName);
+		if (resource == null) {
+			throw new IllegalArgumentException("File could not be found!");
+		} else {
+			return new File(resource.getFile());
+		}
+	}
 
 	public static String replaceLast(String string, String toReplace, String replacement) {
 		int pos = string.lastIndexOf(toReplace);
@@ -184,7 +188,9 @@ public class Utils {
 		return strD + "\n";
 	}
 
-
+	public static String pathForTemplates(String path) {
+		return path.replaceAll("\\\\","/");
+	}
 
 	public static File extract(String filePath) {
 		try {
@@ -208,7 +214,6 @@ public class Utils {
 			return null;
 		}
 	}
-
 
 
 }
