@@ -31,6 +31,12 @@ public class FreeMarkerWriter {
     public static void createSidebar(List<ComposedRule> composedRuleList, Configuration cfg ) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
         input.put("title", "Sidebar");
+        Collections.sort(composedRuleList, new Comparator<ComposedRule>() {
+            @Override
+            public int compare(ComposedRule o1, ComposedRule o2) {
+                return o1.getComposedFullClass().compareTo(o2.getComposedFullClass());
+            }
+        });
         input.put("rules", composedRuleList);
         Template template = cfg.getTemplate(Utils.pathForTemplates(DocSettings.getInstance().getFtlTemplatesPath() + "/"+ "sidebar.ftl"));
         // 2.3. Generate the output
