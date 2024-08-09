@@ -7,6 +7,7 @@ import crypto.rules.StateNode;
 import crypto.rules.TransitionEdge;
 import de.upb.docgen.ComposedRule;
 import de.upb.docgen.DocSettings;
+import de.upb.docgen.Order;
 
 import java.io.*;
 import java.net.URL;
@@ -143,7 +144,16 @@ public class Utils {
 
 
 	public static char[] getTemplatesText(String templateName) throws IOException {
-		File file = new File(DocSettings.getInstance().getLangTemplatesPath()+"\\"+templateName);
+		File file;
+		String pathToLangTemplates;
+		if (DocSettings.getInstance().getLangTemplatesPath() == null) {
+			pathToLangTemplates = Order.class.getResource("/Templates").getPath();
+			String folderName = pathToLangTemplates.substring(pathToLangTemplates.lastIndexOf("/") + 1);
+			file = Utils.extract(folderName + "/" + templateName);
+		} else {
+			pathToLangTemplates = DocSettings.getInstance().getLangTemplatesPath();
+			file = new File(pathToLangTemplates+ "/" + templateName);
+		}
 		StringBuilder stringBuffer = new StringBuilder();
 		Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
 		char[] buff = new char[500];
@@ -156,7 +166,16 @@ public class Utils {
 	}
 
 	public static String getTemplatesTextString(String templateName) throws IOException {
-		File file = new File(DocSettings.getInstance().getLangTemplatesPath()+"\\"+templateName);
+		File file;
+		String pathToLangTemplates;
+		if (DocSettings.getInstance().getLangTemplatesPath() == null) {
+			pathToLangTemplates = Order.class.getResource("/Templates").getPath();
+			String folderName = pathToLangTemplates.substring(pathToLangTemplates.lastIndexOf("/") + 1);
+			file = Utils.extract(folderName + "/" + templateName);
+		} else {
+			pathToLangTemplates = DocSettings.getInstance().getLangTemplatesPath();
+			file = new File(pathToLangTemplates+ "/" + templateName);
+		}
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String strLine = "";
 		String strD = "";
@@ -173,7 +192,28 @@ public class Utils {
 		return path.replaceAll("\\\\","/");
 	}
 
-
+	public static File extract(String filePath) {
+		try {
+			File f = File.createTempFile(filePath, null);
+			f.deleteOnExit();
+			FileOutputStream resourceOS = new FileOutputStream(f);
+			byte[] byteArray = new byte[1024];
+			int i;
+			InputStream classIS = Utils.class.getClassLoader().getResourceAsStream(filePath);
+//While the input stream has bytes
+			while ((i = classIS.read(byteArray)) > 0) {
+//Write the bytes to the output stream
+				resourceOS.write(byteArray, 0, i);
+			}
+//Close streams to prevent errors
+			classIS.close();
+			resourceOS.close();
+			return f;
+		} catch (Exception e) {
+			System.out.println("Error during the file creation process from jar: " + e.getMessage());
+			return null;
+		}
+	}
 
 
 }

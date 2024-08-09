@@ -118,7 +118,7 @@ public class DocSettings {
                 case "--rulesdir":
                     setRulesetPathDir(settings[i + 1]);
                     i++;
-                    mandatorySettings++;
+              //      mandatorySettings++;
                     break;
                 case "--reportpath":
                     setReportDirectory(settings[i + 1]);
@@ -128,12 +128,12 @@ public class DocSettings {
                 case "--ftltemplatespath":
                     setFTLTemplatesPath(settings[i + 1]);
                     i++;
-                    mandatorySettings++;
+                //    mandatorySettings++;
                     break;
                 case "--langtemplatespath":
                     setLangTemplatesPath(settings[i + 1]);
                     i++;
-                    mandatorySettings++;
+                   // mandatorySettings++;
                     break;
                 case "--booleana":
                     setBooleanA(false);
@@ -161,7 +161,7 @@ public class DocSettings {
                     System.exit(255);
             }
         }
-        if (mandatorySettings != 4) {
+        if (mandatorySettings != 1) {
             showErrorMessage();
             System.exit(255);
         }

@@ -416,8 +416,8 @@
         <p class="pre" style="white-space: pre-line;">The CrySL rule on <a target="_blank" rel="noopener noreferrer"
                                                                            href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
         </p>
-        <iframe src=<#if booleanF>"${pathToRules}/${rule.onlyRuleName}.crysl"<#else>"../rules/${rule.onlyRuleName}.crysl"</#if>
-        onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));'
+        <iframe src="../rules/${rule.onlyRuleName}.crysl"
+        onload='(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));'
         style="height:100%;width:100%;border:none;overflow:hidden;"></iframe>
     </div>
 </#if>

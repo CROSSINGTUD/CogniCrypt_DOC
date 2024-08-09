@@ -1,20 +1,24 @@
 package de.upb.docgen;
 
-import java.io.*;
-import java.util.*;
-
 import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLPredicate;
 import crypto.rules.CrySLRule;
 import crypto.rules.CrySLRuleReader;
+import de.upb.docgen.crysl.CrySLReader;
 import de.upb.docgen.utils.PredicateTreeGenerator;
 import de.upb.docgen.utils.TreeNode;
 import de.upb.docgen.utils.Utils;
 import de.upb.docgen.writer.FreeMarkerWriter;
-import freemarker.template.*;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
+import freemarker.template.Version;
 import org.apache.commons.io.FileUtils;
 
-import javax.print.Doc;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 /**
  * @author Ritika Singh
@@ -33,7 +37,14 @@ public class DocumentGeneratorMain {
 
 		// read CryslRules from absolutePath provided by the user
 		System.out.println("Reading CrySL Rules");
-		List<CrySLRule> rules = ruleReader.readFromDirectory(new File(docSettings.getRulesetPathDir()));
+
+
+		List<CrySLRule> rules = null;
+		if (docSettings.getRulesetPathDir() != null) {
+			rules = ruleReader.readFromDirectory(new File(docSettings.getRulesetPathDir()));
+		} else {
+			rules = CrySLReader.readRulesFromJar();
+		}
 
 
 
@@ -146,12 +157,44 @@ public class DocumentGeneratorMain {
 		// specifify this flag to distribute the documentation
 		System.out.println("CogniCryptDOC generated to: " + DocSettings.getInstance().getReportDirectory());
 		if (!docSettings.isBooleanF()) {
-			File source = new File(docSettings.getRulesetPathDir());
+			boolean readFromJar = false;
+			File source = null;
+			if (DocSettings.getInstance().getRulesetPathDir() != null) {
+				 source = new File(docSettings.getRulesetPathDir());
+			} else {
+				readFromJar = true;
+				source = new File("tempRulesDir");
+				if (!source.exists()) {
+					source.mkdir();
+				}
+
+				// Read each rule and save it in the temporary directory
+				for (CrySLRule rule : rules) {
+					File ruleFile = CrySLReader.readRuleFromJarFile(rule.getClassName().substring(rule.getClassName().lastIndexOf(".") + 1));
+					if (ruleFile != null && ruleFile.exists()) {
+						try {
+							// Copy each rule file into the temporary directory
+							Files.copy(ruleFile.toPath(), new File(source, ruleFile.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
 			File dest = new File(docSettings.getReportDirectory() + File.separator + "rules");
 			try {
 				FileUtils.copyDirectory(source, dest);
 			} catch (IOException e) {
 				e.printStackTrace();
+			} finally {
+				// Cleanup the temporary directory
+				if (readFromJar) {
+					try {
+						FileUtils.deleteDirectory(source);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 
