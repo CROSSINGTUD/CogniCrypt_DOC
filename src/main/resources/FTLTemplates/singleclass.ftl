@@ -93,6 +93,20 @@
             outline: none;
         }
 
+        .toggle-icon {
+            cursor: pointer;
+            margin-right: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            width: 15px; /* Adjust width for alignment */
+            text-align: center; /* Center align the + or - */
+        }
+
+        .tree-node a {
+            cursor: pointer;
+        }
+
 
         .collapsible {
             background-color: #777;
@@ -342,9 +356,14 @@
             <ul class="tree">
                 <#macro reqTree treenode>
                     <li>
-                        <span> <a href="${treenode.data}.html">${treenode.data}</a></span>
                         <#if treenode.children?has_content>
-                            <ul>
+                            <span class="toggle-icon" onclick="toggleNode(this)">+</span>
+                        </#if>
+                        <span class="tree-node">
+                    <a href="${treenode.data}.html">${treenode.data}</a>
+                </span>
+                        <#if treenode.children?has_content>
+                            <ul style="display:none;">
                                 <#list treenode.children as child>
                                     <@reqTree child />
                                 </#list>
@@ -373,9 +392,14 @@
             <ul class="tree">
                 <#macro ensTree treenode>
                     <li>
-                        <span> <a href="${treenode.data}.html">${treenode.data}</a> </span>
                         <#if treenode.children?has_content>
-                            <ul>
+                        <span class="toggle-icon" onclick="toggleNode(this)">+</span>
+                        </#if>
+                        <span class="tree-node">
+                    <a href="${treenode.data}.html">${treenode.data}</a>
+                </span>
+                        <#if treenode.children?has_content>
+                            <ul style="display:none;">
                                 <#list treenode.children as child>
                                     <@ensTree child />
                                 </#list>
@@ -467,6 +491,34 @@
             }
         }
         window.toggleAll = window.toggleAll === 0 ? 1 : 0;
+    }
+
+    function toggleNode(element) {
+        // Get the UL containing the child nodes
+        var childUl = element.nextElementSibling.nextElementSibling;
+
+        // Toggle the visibility of the child UL
+        if (childUl) {
+            if (childUl.style.display === "none") {
+                childUl.style.display = "block";
+                element.textContent = "-"; // Change to minus when expanded
+            } else {
+                childUl.style.display = "none";
+                element.textContent = "+"; // Change to plus when collapsed
+            }
+        }
+    }
+
+    window.onload = function() {
+        var treeNodes = document.querySelectorAll('.tree > li > ul');
+        treeNodes.forEach(function(ul) {
+            ul.style.display = 'none';
+        });
+
+        var toggleIcons = document.querySelectorAll('.tree li .toggle-icon');
+        toggleIcons.forEach(function(icon) {
+            icon.textContent = "+"; // Set all initial icons to plus
+        });
     }
 
     function toggle() {
