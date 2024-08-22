@@ -13,11 +13,9 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import crypto.cryslhandler.CrySLModelReader;
 import crypto.exceptions.CryptoAnalysisException;
 import crypto.rules.CrySLRule;
 import crypto.rules.CrySLRuleReader;
-import de.upb.docgen.DocSettings;
 import de.upb.docgen.utils.Utils;
 
 /**
@@ -57,23 +55,23 @@ if (docSettings.getRulesetPathDir() != null) {
 		if(jarFile.isFile()) {  // Run with JAR file
 			final JarFile jar = new JarFile(jarFile);
 			final Enumeration<JarEntry> entries = jar.entries(); //gives ALL entries in jar
-			try {
-				while (entries.hasMoreElements()) {
+			while (entries.hasMoreElements()) {
+				try {
 					final JarEntry name = entries.nextElement();
 					if (name.getName().endsWith(".crysl")) { //only handle crysl files
 						File extractedRule = Utils.extract(name.getName());  //Create a temporary crysl file
 						String shortend = extractedRule.getName().substring(0, extractedRule.getName().indexOf("crysl") + "crysl".length()); //CrySL Rule name without temp file ending
 						Files.move(extractedRule.toPath(), Paths.get(shortend), StandardCopyOption.REPLACE_EXISTING);
 						File renamedTempFile = (Paths.get(shortend).toFile());
-						System.out.println(renamedTempFile.getPath());
 						CrySLRule rule = cryslmodelreader.readFromSourceFile(renamedTempFile); //Renaming allows the file to be read by the CrySLModelReader
 						renamedTempFile.deleteOnExit(); //Removes the temp CrySL file after jvm is finished
 						rules.add(rule);
 
 					}
+				} catch (CryptoAnalysisException ex ) {
+					System.err.println("Error processing: " + " - " + ex.getMessage());
 				}
-			} catch (CryptoAnalysisException ex) {
-				
+
 			}
 			jar.close();
 
@@ -84,15 +82,18 @@ if (docSettings.getRulesetPathDir() != null) {
 				try {
 					final File apps = new File(url.toURI());
 					for (File file : apps.listFiles()) {
-						rules.add(cryslmodelreader.readFromSourceFile(file));
-
+						try {
+							rules.add(cryslmodelreader.readFromSourceFile(file));
+						} catch (CryptoAnalysisException ex) {
+							System.err.println("Error processing file: " + file.getName() + " - " + ex.getMessage());
+						}
 					}
-				} catch (URISyntaxException | CryptoAnalysisException ex) {
-
+				} catch (URISyntaxException ex) {
+					System.err.println("URI syntax error: " + ex.getMessage());
 				}
 			}
 		}
-		return rules;
+			return rules;
 
 
 	}
@@ -103,8 +104,6 @@ if (docSettings.getRulesetPathDir() != null) {
 		final String path = "CrySLRules";
 		final CodeSource codeSource = CrySLReader.class.getProtectionDomain().getCodeSource();
 		final File jarFile = new File(codeSource.getLocation().getPath());
-		CrySLRuleReader cryslModelReader = new CrySLRuleReader();
-
 		if (jarFile.isFile()) {  // Run with JAR file
 			try (JarFile jar = new JarFile(jarFile)) {
 				final Enumeration<JarEntry> entries = jar.entries(); // gives ALL entries in jar
@@ -115,7 +114,6 @@ if (docSettings.getRulesetPathDir() != null) {
 						String shortName = extractedRule.getName().substring(0, extractedRule.getName().indexOf("crysl") + "crysl".length()); // CrySL Rule name without temp file ending
 						Files.move(extractedRule.toPath(), Paths.get(shortName), StandardCopyOption.REPLACE_EXISTING);
 						File renamedTempFile = (Paths.get(shortName).toFile());
-						CrySLRule rule = cryslModelReader.readFromSourceFile(renamedTempFile); // Renaming allows the file to be read by the CrySLModelReader
 						renamedTempFile.deleteOnExit(); // Removes the temp CrySL file after JVM is finished
 						return renamedTempFile;
 					}
@@ -155,7 +153,6 @@ if (docSettings.getRulesetPathDir() != null) {
 						String shortName = extractedRule.getName().substring(0, extractedRule.getName().indexOf("properties") + "properties".length()); // CrySL Rule name without temp file ending
 						Files.move(extractedRule.toPath(), Paths.get(shortName), StandardCopyOption.REPLACE_EXISTING);
 						File renamedTempFile = (Paths.get(shortName).toFile());
-						//CrySLRule rule = cryslModelReader.readFromSourceFile(renamedTempFile); // Renaming allows the file to be read by the CrySLModelReader
 						renamedTempFile.deleteOnExit(); // Removes the temp CrySL file after JVM is finished
 						return renamedTempFile;
 					}
@@ -196,7 +193,6 @@ if (docSettings.getRulesetPathDir() != null) {
 					String shortend = extractedRule.getName().substring(0,extractedRule.getName().indexOf("ftl")+"ftl".length()); //CrySL Rule name without temp file ending
 					Files.move(extractedRule.toPath(), Paths.get(shortend), StandardCopyOption.REPLACE_EXISTING);
 					File renamedTempFile = (Paths.get(shortend).toFile());
-					//CrySLRule rule = cryslmodelreader.readFromSourceFile(renamedTempFile); //Renaming allows the file to be read by the CrySLModelReader
 					renamedTempFile.deleteOnExit(); //Removes the temp CrySL file after jvm is finished
 					return renamedTempFile;
 
