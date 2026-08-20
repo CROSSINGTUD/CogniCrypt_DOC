@@ -1,0 +1,14 @@
+# Core
+numpy
+requests
+python-dotenv
+pypdf
+
+# LLM / embeddings
+openai
+
+# Vector index (imported as `faiss`)
+faiss-cpu
+
+# Tests
+pytest

@@ -31,28 +31,53 @@ public class Ensures {
 
 	static PrintWriter out;
 
+	/**
+	 * Template for verb-only ensures with an edge context.
+	 */
 	private static String getTemplateverbedge() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseVerb-edge");
 	}
 
+	/**
+	 * Template for verb+noun ensures with an edge context.
+	 */
 	private static String getTemplateverbnounedge() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edge");
 	}
 
+	/**
+	 * Template for verb+noun ensures without an edge context.
+	 */
 	private static String getTemplateverbnoun() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun");
 	}
 
+	/**
+	 * Template for an unconditional predicate whose name is a single word, i.e. it has a
+	 * verb but no noun and no triggering edge.
+	 */
+	private static String getTemplateverb() throws IOException {
+		return Utils.getTemplatesTextString("EnsuresClauseVerb");
+	}
+
+	/**
+	 * Template for constructor-specific verb+noun ensures with an edge context.
+	 */
 	private static String getTemplateverbnounedgeCon() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseVerb-noun-edgeCons");
 	}
 
+	/**
+	 * Build ensures sentences for predicates that involve "this".
+	 * Handles conditional predicates tied to edges as well as unconditional predicates.
+	 */
 	public ArrayList<String> getEnsuresThis(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap)
 			throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
 		List<Entry<String, String>> dataTypes = rule.getObjects();
 		Map<String, String> DTMap = new LinkedHashMap<>();
 
+		// Map type -> variable name for parameter substitution.
 		for (Entry<String, String> dt : dataTypes) {
 			DTMap.put(dt.getValue(), dt.getKey());
 		}
@@ -64,6 +89,7 @@ public class Ensures {
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
 
+		// Select non-negated predicates that refer to "this".
 		List<CrySLPredicate> predsThisList = rule.getPredicates().stream()
 				.filter(e -> e.toString().contains("this") && !e.toString().contains("!"))
 				.collect(Collectors.toList());
@@ -81,6 +107,7 @@ public class Ensures {
 
 				if (elementStr instanceof CrySLCondPredicate) {
 
+					// Conditional predicate: tied to specific state-machine transitions.
 					CrySLCondPredicate conPred = (CrySLCondPredicate) elementStr;
 
 					for (TransitionEdge edge : edges) {
@@ -94,35 +121,6 @@ public class Ensures {
 
 							}
 
-							/*
-							 * for (String methodlistStr : predmethodThisNamesList) {
-							 * List<String> extractParamList = new ArrayList<>();
-							 * int startIndex = methodlistStr.indexOf("(");
-							 * int endIndex = methodlistStr.indexOf(")");
-							 * String bracketExtractStr = methodlistStr.substring(startIndex + 1, endIndex);
-							 * 
-							 * if (bracketExtractStr.contains(",")) {
-							 * String[] elements = bracketExtractStr.split(",");
-							 * for (int a = 0; a < elements.length; a++) {
-							 * extractParamList.add(elements[a]);
-							 * }
-							 * } else {
-							 * extractParamList.add(bracketExtractStr);
-							 * }
-							 * 
-							 * for (String extractParamStr : extractParamList) {
-							 * if (!DTMap.containsKey(extractParamStr)) {
-							 * } else {
-							 * String value = DTMap.get(extractParamStr).toString();
-							 * methodlistStr = methodlistStr.replace(extractParamStr, value);
-							 * }
-							 * }
-							 * 
-							 * finalpredmethodThisNamesList.add(methodlistStr);
-							 * joined = String.join(" or ", finalpredmethodThisNamesList);
-							 * //System.out.println(joined);
-							 * }
-							 */
 							joined = String.join(" or ", predmethodThisNamesList);
 							List<String> msplit = Arrays.asList(joined.split("\\("));
 
@@ -178,8 +176,20 @@ public class Ensures {
 					}
 				} else {
 
+					// Unconditional predicate: no edge/context needed.
 					if (verbOrNounList.size() == 1) {
+						// Single-word predicate name: verb only, no noun. This used to
+						// compute the verb and then discard it, silently omitting the
+						// guarantee from the generated Predicates section.
 						verb = verbOrNounList.get(0);
+
+						String verbOnly = getTemplateverb();
+						Map<String, String> valuesMap = new HashMap<String, String>();
+						valuesMap.put("verb", toHoverLink(rule, stringListMap, verb, predTNameStr));
+
+						StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						String resolvedString = sub.replace(verbOnly);
+						composedEnsures.add(resolvedString);
 
 					} else {
 						verb = verbOrNounList.get(0);
@@ -203,6 +213,9 @@ public class Ensures {
 		return composedEnsures;
 	}
 
+	/**
+	 * Wrap a noun with a tooltip that links to classes requiring the predicate.
+	 */
 	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word,
 			String predicate) {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
@@ -219,6 +232,9 @@ public class Ensures {
 		return word;
 	}
 
+	/**
+	 * Wrap a noun (based on predicate name) with a tooltip of requiring classes.
+	 */
 	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap,
 			String word) {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
@@ -236,6 +252,9 @@ public class Ensures {
 		return word;
 	}
 
+	/**
+	 * Build HTML links for classes that require a given predicate.
+	 */
 	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
 		StringBuilder sb = new StringBuilder();
 		for (Map<String, List<String>> map : maps) {

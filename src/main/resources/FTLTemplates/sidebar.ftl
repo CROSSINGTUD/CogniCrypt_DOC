@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>${title}</title>
@@ -55,7 +56,10 @@
 </head>
 
 <body style="background-color: #f1f1f1">
-<div><a href="frontpage.html" style="font-size:20px">CogniCrypt<sub>DOC</sub></a></div>
+<div style="display:flex; gap:12px; align-items:baseline;">
+    <a href="frontpage.html" style="font-size:20px">CrySL<sub>DOC</sub></a>
+    <a href="crysl.html" style="font-size:14px">CrySL Language</a>
+</div>
 <input type="text" id="search" onkeyup="filterFunction()" placeholder="Search Classes" title="Type in a class"
        style="font-size: 16px; margin-top: 10px">
 <ul id="classes">

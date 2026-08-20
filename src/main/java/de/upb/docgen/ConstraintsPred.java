@@ -25,38 +25,67 @@ public class ConstraintsPred {
 
     static PrintWriter out;
 
+    /**
+     * Load template for predicate type one (non-constructor form).
+     */
     private static char[] getTemplatePredOne() throws IOException {
         return Utils.getTemplatesText("ConstraintPredTypeOne");
     }
 
+    /**
+     * Load template for predicate type two (non-constructor form).
+     */
     private static char[] getTemplatePredTwo() throws IOException {
         return Utils.getTemplatesText("ConstraintPredTypeTwo");
     }
 
+    /**
+     * Load template for predicate type three (non-constructor form).
+     */
     private static char[] getTemplatePredThree() throws IOException {
         return Utils.getTemplatesText("ConstraintPredTypeThree");
     }
 
+    /**
+     * Load template for predicate type four (non-constructor form).
+     */
     private static char[] getTemplatePredFour() throws IOException {
         return Utils.getTemplatesText("ConstraintPredTypeFour");
     }
 
+    /**
+     * Load template for predicate type one (constructor form).
+     */
     private static char[] getTemplatePred1Con() throws IOException {
         return Utils.getTemplatesText("ConstraintPredType1Con");
     }
 
+    /**
+     * Load template for predicate type two (constructor form).
+     */
     private static char[] getTemplatePred2Con() throws IOException {
         return Utils.getTemplatesText("ConstraintPredType2Con");
     }
 
+    /**
+     * Load template for predicate type three (constructor form).
+     */
     private static char[] getTemplatePred3Con() throws IOException {
         return Utils.getTemplatesText("ConstraintPredType3Con");
     }
 
+    /**
+     * Load template for predicate type four (constructor form).
+     */
     private static char[] getTemplatePred4Con() throws IOException {
         return Utils.getTemplatesText("ConstraintPredType4Con");
     }
 
+    /**
+     * Build formatted predicate-constraint sentences for a rule.
+     * Maps predicate parameters to method signatures/positions and renders
+     * the appropriate template, including tooltip links to ensuring classes.
+     */
     public ArrayList<String> getConstraintsPred(CrySLRule rule, Set<String> ensuresForThis,
             Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap) throws IOException {
         ArrayList<String> composedConstraintsPredicates = new ArrayList<>();
@@ -69,6 +98,7 @@ public class ConstraintsPred {
             DTMap.put(dt.getKey(), dt.getValue());
         }
         String classnamecheck = rule.getClassName().substring(rule.getClassName().lastIndexOf('.') + 1);
+        // Only positive CrySL predicates (no negation) are handled here.
         List<ISLConstraint> constraintPredList = rule.getConstraints().stream()
                 .filter(e -> e.getClass().getSimpleName().contains("CrySLPredicate") && !e.toString().contains("!"))
                 .collect(Collectors.toList());
@@ -97,9 +127,15 @@ public class ConstraintsPred {
 
                 List<String> resList = new ArrayList<>();
 
-                int iterationCount = 0;
-                for (String methodStr : methodsList) {
+                // methodsList and valueList are strictly parallel (same edge/method
+                // traversal, parameter names vs. types), so the type signature must be
+                // taken at the CURRENT method's index. The previous code used a counter
+                // of matches found so far, which silently pulled an unrelated method's
+                // signature whenever a predicate matched non-contiguous methods.
+                for (int methodIndex = 0; methodIndex < methodsList.size(); methodIndex++) {
+                    String methodStr = methodsList.get(methodIndex);
 
+                    // Find the exact parameter name match within the method signature.
                     String escapedPredicate = "\\b" + predicate + "\\b";
                     Pattern p = Pattern.compile(escapedPredicate, Pattern.CASE_INSENSITIVE);
                     Matcher mt = p.matcher(methodStr);
@@ -123,19 +159,23 @@ public class ConstraintsPred {
                                 extractParamList.add(bracketExtractStr);
                             }
 
+                            // Substitute parameter placeholders with their resolved types.
                             for (String extractParamStr : extractParamList) {
                                 if (extractParamStr.equals("_"))
                                     continue;
                                 String value = DTMap.get(extractParamStr);
-                                m = m.replace(extractParamStr, value);
+                                if (value != null) {
+                                    m = m.replace(extractParamStr, value);
+                                }
                             }
 
                             String methStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
                             List<String> splitMethList = Arrays.asList(methStr.split(" "));
                             String posStr = String.valueOf(splitMethList.indexOf(predicate));
-                            var2MethNameMap.put(predicate, replaceAnyType(valueList.get(iterationCount)));
+                            if (methodIndex < valueList.size()) {
+                                var2MethNameMap.put(predicate, replaceAnyType(valueList.get(methodIndex)));
+                            }
                             var2paraPosMap.put(predicate, posStr);
-                            iterationCount++;
                         }
                     }
                 }
@@ -164,6 +204,7 @@ public class ConstraintsPred {
                     }
                 }
 
+                // Compose position|method entries to be rendered later.
                 for (int i = 0; i < positionOfParameterList.size(); i++) {
                     resList.add(positionOfParameterList.get(i) + "|" + methodList.get(i));
                 }
@@ -177,6 +218,7 @@ public class ConstraintsPred {
 
                     List<String> msplit = Arrays.asList(ls.get(1).split("\\("));
 
+                    // CamelCase predicate names are split into verb + noun phrase.
                     if (crySLPredicateType.matches(camelCasePattern)) {
 
                         String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(crySLPredicateType),
@@ -248,6 +290,7 @@ public class ConstraintsPred {
                         }
 
                     } else {
+                        // Non-camel-case predicates are rendered directly with tooltip links.
                         List<Map<String, List<String>>> ensuresOfThisClassWithVariableName = singleRuleEnsuresMap
                                 .get(rule.getClassName());
                         for (Map<String, List<String>> maps : ensuresOfThisClassWithVariableName) {
@@ -289,6 +332,9 @@ public class ConstraintsPred {
         return composedConstraintsPredicates;
     }
 
+    /**
+     * Build HTML links for all classes that ensure a given predicate.
+     */
     private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1) {
         StringBuilder sb = new StringBuilder();
         for (Map<String, List<String>> map : maps) {
@@ -301,6 +347,9 @@ public class ConstraintsPred {
         return sb.toString();
     }
 
+    /**
+     * Replace AnyType with '_' in display output.
+     */
     private String replaceAnyType(String inputString) {
         if (inputString.contains("AnyType")) {
             return inputString.replace("AnyType", "_");

@@ -27,14 +27,24 @@ public class ConstraintCrySLInstanceof {
 
 	static PrintWriter out;
 
+	/**
+	 * Load the template for the instanceof constraint LHS.
+	 */
 	private static String getTemplateinstanceofLHS() throws IOException {
 		return Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseLHS");
 	}
 
+	/**
+	 * Load the template for the instanceof constraint RHS.
+	 */
 	private static String getTemplateinstanceofRHS() throws IOException {
 		return Utils.getTemplatesTextString("ConstraintCrySLinstanceofClauseRHS");
 	}
 
+	/**
+	 * Build formatted instanceof constraints for a rule by mapping predicate
+	 * parameters back to method signatures and positions.
+	 */
 	public ArrayList<String> getInstanceof(CrySLRule rule) throws IOException {
 		ArrayList<String> composedInstaceOf = new ArrayList<>();
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
@@ -84,8 +94,7 @@ public class ConstraintCrySLInstanceof {
 
 							String a = LHSList.get(i);
 							List<String> resLHSlist = new ArrayList<>();
-							List<String> finalpredmethodList = new ArrayList<>();
-							String joined = null;
+							Map<String, List<String>> methodsByPosition = new LinkedHashMap<>();
 
 							if (a.contains("(") && a.contains(")")) {
 								String result = StringUtils.substringBetween(a, "(", ")");
@@ -99,15 +108,36 @@ public class ConstraintCrySLInstanceof {
 								allNodesLeft = new ArrayList<>();
 								allNodesLeft.add(((CrySLConstraint) conCryslISL).getLeft());
 							}
-							for (String methodStr : methods) {
-								String realLHS = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
-										.get(0)).getVarName();
-								String real = ((CrySLObject) ((CrySLPredicate) allNodesLeft.get(0)).getParameters()
-										.get(1)).getJavaType();
-								resLHSlist.set(0, realLHS);
-								resLHSlist.set(1, real);// if null dont add
+							// The first LHS leaf is not necessarily a predicate - a bare value
+							// constraint is equally valid, and is what the i >= 1 branch below
+							// already handles. Casting blindly threw ClassCastException here.
+							ISLConstraint firstLeftNode = allNodesLeft.isEmpty() ? null : allNodesLeft.get(0);
+							String realLHS = null;
+							String real = null;
+							if (firstLeftNode instanceof CrySLPredicate) {
+								CrySLPredicate lhsPredicate = (CrySLPredicate) firstLeftNode;
+								if (!lhsPredicate.getParameters().isEmpty()
+										&& lhsPredicate.getParameters().get(0) instanceof CrySLObject) {
+									realLHS = ((CrySLObject) lhsPredicate.getParameters().get(0)).getVarName();
+								}
+								if (lhsPredicate.getParameters().size() > 1
+										&& lhsPredicate.getParameters().get(1) instanceof CrySLObject) {
+									real = ((CrySLObject) lhsPredicate.getParameters().get(1)).getJavaType();
+								}
+							} else if (firstLeftNode instanceof CrySLValueConstraint) {
+								realLHS = ((CrySLValueConstraint) firstLeftNode).getVarName();
+							}
 
-								if (methodStr.contains(realLHS)) {
+							for (String methodStr : methods) {
+								if (realLHS == null) {
+									break; // nothing to match on; keep the text-derived values
+								}
+								if (real != null && resLHSlist.size() > 1) {
+									resLHSlist.set(0, realLHS);
+									resLHSlist.set(1, real);
+								}
+
+								if (FunctionUtils.hasParameterNamed(methodStr, realLHS)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -136,38 +166,33 @@ public class ConstraintCrySLInstanceof {
 											}
 										}
 
-										finalpredmethodList.add(m);
-										joined = String.join(", ", finalpredmethodList);
-
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
 										String posStr = String.valueOf(strList.indexOf(realLHS));
-										resLHSlist.add(posStr);
+										String posWord = posInWordsMap.getOrDefault(posStr, posStr);
 
-										if (posInWordsMap.containsKey(posStr)) {
-											String posinwords = posInWordsMap.get(posStr);
-											Collections.replaceAll(resLHSlist, posStr, posinwords);
-											break;
-										}
+										// See ConstraintCrySLVC: "either of the methods" implies a
+										// single shared position, so only methods where the variable
+										// sits at the same position may share a clause.
+										methodsByPosition.computeIfAbsent(posWord, k -> new ArrayList<>()).add(m);
 									}
 								}
 							}
 
-							resLHSlist.add(joined);
-
-							String varinstLHS = resLHSlist.get(1);
-							String positioninstLHS = resLHSlist.get(2);
-							String methodinstLHS = resLHSlist.get(resLHSlist.size() - 1);
-
+							String varinstLHS = stripNullVarName(resLHSlist.get(1));
 							String b = templatestringLHS;
 
-							Map<String, String> valuesMap = new HashMap<String, String>();
-							valuesMap.put("positioni", positioninstLHS);
-							valuesMap.put("methodnamei", methodinstLHS);
-							valuesMap.put("vari1", varinstLHS);
+							List<String> positionClauses = new ArrayList<>();
+							for (Map.Entry<String, List<String>> group : methodsByPosition.entrySet()) {
+								Map<String, String> valuesMap = new HashMap<String, String>();
+								valuesMap.put("positioni", group.getKey());
+								valuesMap.put("methodnamei", String.join(", ", group.getValue()));
+								valuesMap.put("vari1", varinstLHS);
 
-							StringSubstitutor sub = new StringSubstitutor(valuesMap);
-							resultmainstringLHS = sub.replace(b);
+								StringSubstitutor sub = new StringSubstitutor(valuesMap);
+								positionClauses.add(sub.replace(b));
+							}
+							resultmainstringLHS = String.join(" or ", positionClauses);
 
 						} else {
 
@@ -184,12 +209,15 @@ public class ConstraintCrySLInstanceof {
 								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) currentConstraint;
 								leftSidePredicateOrVCvarname = valueConstraint.getVarName();
 							} else {
-								System.exit(255);
+								// Skip this clause rather than killing the JVM: an unexpected leaf type is a
+								// reason to omit one sentence, not to abort the whole 51-rule run.
+								System.err.println("[WARN] Skipping instanceOf clause for " + rule.getClassName()
+									+ ": unsupported left-hand constraint type " + currentConstraint.getClass().getSimpleName());
+								continue;
 							}
 
 							List<String> resLHSlistsecond;
-							List<String> finalpredmethodSecList = new ArrayList<>();
-							String joinedSec = null;
+							Map<String, List<String>> methodsByPositionSec = new LinkedHashMap<>();
 
 							if (a.contains("(") && a.contains(")")) {
 								String result = StringUtils.substringBetween(a, "(", ")");
@@ -202,7 +230,7 @@ public class ConstraintCrySLInstanceof {
 
 							for (String methodStr : methods) {
 
-								if (methodStr.contains(leftSidePredicateOrVCvarname)) {
+								if (FunctionUtils.hasParameterNamed(methodStr, leftSidePredicateOrVCvarname)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -228,36 +256,29 @@ public class ConstraintCrySLInstanceof {
 												m = m.replaceFirst(extractParamStr, value);
 											}
 										}
-										finalpredmethodSecList.add(m);
-										joinedSec = String.join(", ", finalpredmethodSecList);
-
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
 										String posStr = String.valueOf(strList.indexOf(leftSidePredicateOrVCvarname));
-										resLHSlistsecond.add(posStr);
+										String posWord = posInWordsMap.getOrDefault(posStr, posStr);
 
-										if (posInWordsMap.containsKey(posStr)) {
-											String posinwords = posInWordsMap.get(posStr);
-											Collections.replaceAll(resLHSlistsecond, posStr, posinwords);
-											break;
-										}
+										methodsByPositionSec.computeIfAbsent(posWord, k -> new ArrayList<>()).add(m);
 									}
 								}
 							}
 
-							resLHSlistsecond.add(joinedSec);
+							String varinstLHS2 = stripNullVarName(resLHSlistsecond.get(1));
 
-							String varinstLHS2 = resLHSlistsecond.get(1);
-							String positioninstLHS2 = resLHSlistsecond.get(2);
-							String methodinstLHS2 = resLHSlistsecond.get(resLHSlistsecond.size() - 1);
+							List<String> positionClausesSec = new ArrayList<>();
+							for (Map.Entry<String, List<String>> group : methodsByPositionSec.entrySet()) {
+								Map<String, String> valuesMap = new HashMap<String, String>();
+								valuesMap.put("positioni", group.getKey());
+								valuesMap.put("methodnamei", String.join(", ", group.getValue()));
+								valuesMap.put("vari1", varinstLHS2);
 
-							Map<String, String> valuesMap = new HashMap<String, String>();
-							valuesMap.put("positioni", positioninstLHS2);
-							valuesMap.put("methodnamei", methodinstLHS2);
-							valuesMap.put("vari1", varinstLHS2);
-
-							StringSubstitutor sub = new StringSubstitutor(valuesMap);
-							resultmainstringLHS += d + " " + sub.replace(b);
+								StringSubstitutor sub = new StringSubstitutor(valuesMap);
+								positionClausesSec.add(sub.replace(b));
+							}
+							resultmainstringLHS += d + " " + String.join(" or ", positionClausesSec);
 						}
 					}
 
@@ -273,28 +294,29 @@ public class ConstraintCrySLInstanceof {
 						List<String> resRHSList = new ArrayList<>();
 						resRHSList = new ArrayList<>(Arrays.asList(RHSStr.replaceAll("\\(.*\\)", "")
 								.replaceAll("VC:", "").replaceAll(",$", "").split(" - ")));
-						List<String> finalpredmethodRHSList = new ArrayList<>();
-						String joinedRHS = null;
+						Map<String, List<String>> methodsByPositionRHS = new LinkedHashMap<>();
+
+						// Loop-invariant: derived from allNodesRight, not from the method being examined.
+						String rightSidePredicateOrVCvarname = null;
+						if (allNodesRight.get(0) instanceof CrySLPredicate) {
+							CrySLPredicate predicate = (CrySLPredicate) allNodesRight.get(0);
+							rightSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0)).getVarName();
+						} else if (allNodesRight.get(0) instanceof CrySLValueConstraint) {
+							CrySLValueConstraint valueConstraint = (CrySLValueConstraint) allNodesRight.get(0);
+							rightSidePredicateOrVCvarname = valueConstraint.getVarName();
+						} else {
+							// Skip this constraint rather than killing the JVM.
+							System.err.println("[WARN] Skipping instanceOf clause for " + rule.getClassName()
+								+ ": unsupported right-hand constraint type "
+								+ allNodesRight.get(0).getClass().getSimpleName());
+							continue;
+						}
+
+						String RHSfirstStr = rightSidePredicateOrVCvarname;
 
 						for (String methodStr : methods) {
-							String rightSidePredicateOrVCvarname = null;
-							if (allNodesRight.get(0) instanceof CrySLPredicate) {
-								CrySLPredicate predicate = (CrySLPredicate) allNodesRight.get(0);
-								rightSidePredicateOrVCvarname = ((CrySLObject) predicate.getParameters().get(0))
-										.getVarName();
-								// Your code specific to CrySLPredicate
-							} else if (allNodesRight.get(0) instanceof CrySLValueConstraint) {
-								CrySLValueConstraint valueConstraint = (CrySLValueConstraint) allNodesRight.get(0);
-								rightSidePredicateOrVCvarname = valueConstraint.getVarName();
-								// Your code specific to CrySLValueConstraint
-							} else {
-								// Handle other cases if needed
-								System.exit(255);
-							}
 
-							String RHSfirstStr = rightSidePredicateOrVCvarname;
-
-							if (methodStr.contains(RHSfirstStr)) {
+							if (FunctionUtils.hasParameterNamed(methodStr, RHSfirstStr)) {
 
 								List<String> methList = new ArrayList<>();
 								methList.add(methodStr);
@@ -323,36 +345,32 @@ public class ConstraintCrySLInstanceof {
 										}
 									}
 
-									finalpredmethodRHSList.add(m);
-									joinedRHS = String.join(", ", finalpredmethodRHSList);
 									String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 									List<String> strList = Arrays.asList(mStr.split(" "));
 									String posStr = String.valueOf(strList.indexOf(RHSfirstStr));
-									resRHSList.add(posStr);
+									String posWord = posInWordsMap.getOrDefault(posStr, posStr);
 
-									if (posInWordsMap.containsKey(posStr)) {
-
-										String posinwords = posInWordsMap.get(posStr);
-										Collections.replaceAll(resRHSList, posStr, posinwords);
-										break;
-									}
+									// Group by position: "either of the methods" implies one shared
+									// position, so a method where the variable sits elsewhere gets its
+									// own clause instead of being merged under the first match's position.
+									methodsByPositionRHS.computeIfAbsent(posWord, k -> new ArrayList<>()).add(m);
 								}
 							}
 						}
 
-						resRHSList.add(joinedRHS);
+						String varinstRHS = stripNullVarName(resRHSList.get(1));
 
-						String varinstRHS = resRHSList.get(1);
-						String positioninstRHS = resRHSList.get(2);
-						String methodinstRHS = resRHSList.get(resRHSList.size() - 1);
+						List<String> positionClausesRHS = new ArrayList<>();
+						for (Map.Entry<String, List<String>> group : methodsByPositionRHS.entrySet()) {
+							Map<String, String> valuesMap = new HashMap<String, String>();
+							valuesMap.put("positions", group.getKey());
+							valuesMap.put("methodnames", String.join(", ", group.getValue()));
+							valuesMap.put("vars2", varinstRHS);
 
-						Map<String, String> valuesMap = new HashMap<String, String>();
-						valuesMap.put("positions", positioninstRHS);
-						valuesMap.put("methodnames", methodinstRHS);
-						valuesMap.put("vars2", varinstRHS);
-
-						StringSubstitutor sub = new StringSubstitutor(valuesMap);
-						resultmainstringRHS = sub.replace(b);
+							StringSubstitutor sub = new StringSubstitutor(valuesMap);
+							positionClausesRHS.add(sub.replace(b));
+						}
+						resultmainstringRHS = String.join(" or ", positionClausesRHS);
 						composedInstaceOf.add(resultmainstringLHS + resultmainstringRHS);
 					}
 				}
@@ -361,12 +379,33 @@ public class ConstraintCrySLInstanceof {
 		return composedInstaceOf;
 	}
 
+	/**
+	 * Strip the trailing "null" that CrySLObject.toString() appends for a type-only
+	 * argument. instanceOf[key, java.security.PrivateKey] carries its type as a
+	 * CrySLObject with no variable name, and toString() renders javaType + " " +
+	 * varName - so the rendered sentence read "is of type java.security.PrivateKey null".
+	 */
+	private static String stripNullVarName(String typeToken) {
+		if (typeToken == null) {
+			return null;
+		}
+		if (typeToken.endsWith(" null")) {
+			return typeToken.substring(0, typeToken.length() - " null".length());
+		}
+		return typeToken;
+	}
+
+	/**
+	 * Collect all leaf constraints in a constraint tree (predicates or value constraints).
+	 */
 	public List<ISLConstraint> getAllLeafNodes(List<ISLConstraint> leafNodes, ISLConstraint node) {
 		collectLeafNodes(node, leafNodes);
 		return leafNodes;
 	}
 
-	// Helper method to recursively collect leaf nodes
+	/**
+	 * Recursively traverse a constraint tree and accumulate leaf nodes.
+	 */
 	private void collectLeafNodes(ISLConstraint node, List<ISLConstraint> leafNodes) {
 		if (node instanceof CrySLConstraint) {
 			CrySLConstraint crySLNode = (CrySLConstraint) node;

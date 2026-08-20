@@ -11,6 +11,6 @@
     </style>
 </head>
 <body style="background-color: #f1f1f1">
-<h1><a href="frontpage.html">CogniCryptDOC</a></h1>
+<h1><a href="frontpage.html">CrySLDOC</a></h1>
 </body>
 </html>

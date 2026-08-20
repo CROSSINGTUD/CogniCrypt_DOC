@@ -25,14 +25,25 @@ import crypto.rules.CrySLRule;
  */
 
 public class ConstraintsVc {
+    /**
+     * Load the default value-constraint template for non-constructor methods.
+     */
     private static char[] getTemplateVC() throws IOException {
         return Utils.getTemplatesText("ConstraintsVcClause");
     }
 
+    /**
+     * Load the value-constraint template used for constructor-like methods.
+     */
     private static char[] getTemplateVCCon() throws IOException {
         return Utils.getTemplatesText("ConstraintsVcClauseCon");
     }
 
+    /**
+     * Build formatted value-constraint sentences for a rule.
+     * Extracts CrySL value constraints, maps them to method parameters,
+     * and renders the appropriate template for each occurrence.
+     */
     public ArrayList<String> getConstraintsVc(CrySLRule rule) throws IOException {
         ArrayList<String> composedConstraints = new ArrayList<>();
         Map<String, String> constraintVCMap;
@@ -46,6 +57,7 @@ public class ConstraintsVc {
         String classnamecheck = rule.getClassName().substring(rule.getClassName().lastIndexOf('.') + 1);
         String paraConVCMapValStr;
         String paraPosInWordValStr;
+        // Filter only value constraints from the rule.
         List<ISLConstraint> constraintVCList = rule.getConstraints().stream()
                 .filter(e -> e.getClass().getSimpleName().contains("CrySLValueConstraint"))
                 .collect(Collectors.toList());
@@ -56,6 +68,7 @@ public class ConstraintsVc {
             for (ISLConstraint valueConstraint : constraintVCList) {
                 firstConVCList.add(((CrySLValueConstraint) valueConstraint).getVar().getVarName());
             }
+            // Map each constrained parameter to its allowed values.
             Map<String, String> parameterAndValuesToAssumeList = new HashMap<>();
             constraintVCList.stream()
                     .filter(constraint -> constraint instanceof CrySLValueConstraint)
@@ -66,9 +79,10 @@ public class ConstraintsVc {
                         parameterAndValuesToAssumeList.put(key, value);
                     });
             constraintVCMap = parameterAndValuesToAssumeList;
+            // Match constrained parameters to the methods they appear in and their position.
             for (String firstConVCStr : firstConVCList) {
                 for (String methodStr : methodsList) {
-                    if (methodStr.contains(firstConVCStr)) {
+                    if (FunctionUtils.hasParameterNamed(methodStr, firstConVCStr)) {
                         List<String> methList = new ArrayList<>();
                         methList.add(methodStr);
                         for (String m : methList) {
@@ -85,8 +99,12 @@ public class ConstraintsVc {
                             for (String extractParamStr : extractParamList) {
                                 if (extractParamStr.equals("_"))
                                     continue;
+                                // Only declared OBJECTS resolve to a type; anything else is
+                                // left as-is rather than passed as a null replacement.
                                 String value = DTMap.get(extractParamStr);
-                                m = m.replace(extractParamStr, value);
+                                if (value != null) {
+                                    m = m.replace(extractParamStr, value);
+                                }
                             }
                             String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
                             List<String> strList = Arrays.asList(mStr.split(" "));
@@ -129,6 +147,7 @@ public class ConstraintsVc {
                     resList.add(sb.toString());
                 }
             }
+            // Render each constraint using the correct template variant.
             for (String fl : resList) {
                 String l1 = fl;
                 List<String> ls = Arrays.asList(l1.split("\\|"));

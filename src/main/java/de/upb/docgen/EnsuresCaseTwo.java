@@ -28,6 +28,9 @@ public class EnsuresCaseTwo {
 
 	static PrintWriter out;
 
+	/**
+	 * Map return-value variables to the method names that produce them.
+	 */
 	private static Map<String, String> getReturnValues(CrySLRule rule) {
 		Map<String, String> retValMap = new LinkedHashMap<>();
 
@@ -58,41 +61,70 @@ public class EnsuresCaseTwo {
 		return retValMap;
 	}
 
+	/**
+	 * Template for conditional ensures with return value: verb + method.
+	 */
 	private static String getTemplateReturnValueOne() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbmeth");
 	}
 
+	/**
+	 * Template for conditional ensures with return value: verb + noun + method.
+	 */
 	private static String getTemplateReturnValueTwo() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnounmeth");
 	}
 
+	/**
+	 * Template for unconditional ensures with return value: verb.
+	 */
 	private static String getTemplateReturnValueThree() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verb");
 	}
 
+	/**
+	 * Template for unconditional ensures with return value: verb + noun.
+	 */
 	private static String getTemplateReturnValueFour() throws IOException {
 		return Utils.getTemplatesTextString("EnsuresClauseReturnVal_verbnoun");
 	}
 
+	/**
+	 * Template for conditional ensures without return value: verb + method.
+	 */
 	private static String getTemplateOne() throws IOException {
 		return Utils.getTemplatesTextString("Ensures-thisNA-verbmeth");
 
 	}
 
+	/**
+	 * Template for conditional ensures without return value: verb + noun + method.
+	 */
 	private static String getTemplateTwo() throws IOException {
 		String strDSix = Utils.getTemplatesTextString("Ensures-thisNA-verbnounmeth");
 		return strDSix;
 	}
 
+	/**
+	 * Template for unconditional ensures without return value: verb.
+	 */
 	private static String getTemplateThree() throws IOException {
 		return Utils.getTemplatesTextString("Ensures-thisNA-verb");
 
 	}
 
+	/**
+	 * Template for unconditional ensures without return value: verb + noun.
+	 */
 	private static String getTemplateFour() throws IOException {
 		return Utils.getTemplatesTextString("Ensures-thisNA-verbnoun");
 	}
 
+	/**
+	 * Build ensures sentences for predicates that do NOT involve "this".
+	 * Handles both return-value predicates and parameter predicates, with
+	 * optional conditional edges and tooltip links to requiring classes.
+	 */
 	public ArrayList<String> getEnsures(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap)
 			throws IOException {
 		ArrayList<String> composedEnsures = new ArrayList<>();
@@ -119,6 +151,7 @@ public class EnsuresCaseTwo {
 
 			String paramStr = ((CrySLObject) elementN.getParameters().get(0)).getVarName();
 			if (retTypeMap.containsKey(paramStr)) {
+				// Branch: predicate applies to a returned value.
 
 				String returnValMethod = retTypeMap.get(paramStr);
 
@@ -211,12 +244,13 @@ public class EnsuresCaseTwo {
 			}
 
 			else {
-
-				Map<String, String> paraMethNameMap = new LinkedHashMap<>();
-				Map<String, String> paraPosMap = new LinkedHashMap<>();
-				String paraPosMapValStr = null;
-				String paraPosInWordValStr = null;
-				String paraMethNameMapValStr = null;
+				// Branch: predicate applies to a method parameter (non-return).
+				// One entry per matching method. These were LinkedHashMaps keyed by the
+				// predicate's parameter, so every match overwrote the previous one and
+				// only the last survived - the sibling ConstraintsPred keeps every match
+				// and emits one sentence each, which is what this now does too.
+				List<String> matchedPositions = new ArrayList<>();
+				List<String> matchedMethodNames = new ArrayList<>();
 
 				for (String methodStr : methodsNameList) {
 					String result = StringUtils.substringBetween(methodStr, "(", ")");
@@ -228,7 +262,7 @@ public class EnsuresCaseTwo {
 							List<String> strList = Arrays.asList(mStr.split(" "));
 							String posStr = String.valueOf(strList.indexOf(paramStr));
 
-							paraPosMap.put(paramStr, posStr);
+							matchedPositions.add(posStr);
 
 							String m = methodStr;
 							List<String> extractParamList = new ArrayList<>();
@@ -270,20 +304,16 @@ public class EnsuresCaseTwo {
 								}
 							}
 
-							paraMethNameMap.put(paramStr, m);
+							matchedMethodNames.add(m);
 							break;
 						}
 					}
 				}
 
-				if (paraMethNameMap.containsKey(paramStr) && paraPosMap.containsKey(paramStr)) {
-					paraPosMapValStr = paraPosMap.get(paramStr);
-					paraMethNameMapValStr = paraMethNameMap.get(paramStr);
-				}
-
-				if (posInWordsMap.containsKey(paraPosMapValStr)) {
-					paraPosInWordValStr = posInWordsMap.get(paraPosMapValStr);
-				}
+				for (int matchIndex = 0; matchIndex < matchedMethodNames.size(); matchIndex++) {
+				String paraPosMapValStr = matchedPositions.get(matchIndex);
+				String paraMethNameMapValStr = matchedMethodNames.get(matchIndex);
+				String paraPosInWordValStr = posInWordsMap.getOrDefault(paraPosMapValStr, paraPosMapValStr);
 
 				String predNameStr = elementN.getPredName().toString();
 				String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(predNameStr), ' ');
@@ -299,61 +329,15 @@ public class EnsuresCaseTwo {
 
 						if (conPred.getConditionalMethods().contains(edge.to()) && !edge.to().equals(edge.from())) {
 
-							List<String> predmethodNames = new ArrayList<String>();
 							List<String> finalpredmethodNamesList = new ArrayList<>();
 							List<CrySLMethod> methods = edge.getLabel();
 
+							// Same helper the analogous branch above uses: hand-rolled splitting
+							// on "."/" " mangled every multi-parameter method name.
 							for (CrySLMethod method : methods) {
-								String[] preM = method.toString().replace(".", ",").split(",");
-								predmethodNames.add(preM[preM.length - 1].replace(";", "").replaceAll("\\( ", "\\(")
-										.replaceAll(" ", ","));
+								finalpredmethodNamesList.add(FunctionUtils.getEventCrySLMethodValue(method));
 							}
-
-							for (String methodlistStr : predmethodNames) {
-								List<String> extractParamList = new ArrayList<>();
-
-								int startIndex = methodlistStr.indexOf("(");
-								int endIndex = methodlistStr.indexOf(")");
-								String bracketExtractStr = methodlistStr.substring(startIndex + 1, endIndex);
-
-								if (bracketExtractStr.contains(",")) {
-									String[] elements = bracketExtractStr.split(",");
-									for (int a = 0; a < elements.length; a++) {
-										extractParamList.add(elements[a]);
-									}
-								} else {
-									extractParamList.add(bracketExtractStr);
-								}
-
-								for (String extractParamStr : extractParamList) {
-
-									if (!DTMap.containsKey(extractParamStr)) {
-
-									} else {
-
-										int startInd = 0;
-										int endInd = 0;
-										String value = DTMap.get(extractParamStr).toString();
-
-										Pattern word = Pattern.compile(escapeString(extractParamStr));
-										Matcher match = word.matcher(methodlistStr);
-
-										while (match.find()) {
-											startInd = match.start();
-											endInd = match.end() - 1;
-										}
-										String strDiv = methodlistStr.substring(startInd, endInd + 1);
-										if (strDiv.equals(extractParamStr)) {
-											StringBuilder sDB = new StringBuilder(methodlistStr);
-											sDB.replace(startInd, endInd + 1, value);
-											methodlistStr = sDB.toString();
-										}
-									}
-								}
-
-								finalpredmethodNamesList.add(methodlistStr);
-								joined = String.join(", ", finalpredmethodNamesList);
-							}
+							joined = String.join(", ", finalpredmethodNamesList);
 							if (verbOrNounList.size() == 1) {
 								verb = verbOrNounList.get(0);
 
@@ -420,12 +404,16 @@ public class EnsuresCaseTwo {
 
 					}
 				}
+				} // end per-match loop
 			}
 		}
 		// out.close();
 		return composedEnsures;
 	}
 
+	/**
+	 * Wrap a word with a tooltip linking to classes that require the predicate.
+	 */
 	private String toHoverLink(CrySLRule rule, Map<String, List<Map<String, List<String>>>> stringListMap, String word,
 			String predicate) {
 		List<Map<String, List<String>>> requiresOfClasses = stringListMap.get(rule.getClassName());
@@ -443,6 +431,9 @@ public class EnsuresCaseTwo {
 		return word;
 	}
 
+	/**
+	 * Build HTML links for classes that require a given predicate.
+	 */
 	private String htmlLinksClass(List<Map<String, List<String>>> maps, String var1, String predicate) {
 		StringBuilder sb = new StringBuilder();
 		for (Map<String, List<String>> map : maps) {
@@ -455,6 +446,9 @@ public class EnsuresCaseTwo {
 		return sb.toString();
 	}
 
+	/**
+	 * Escape square brackets for safe regex matching.
+	 */
 	private String escapeString(String inputString) {
 		// Check if the input string contains square brackets
 		if (inputString.contains("[") || inputString.contains("]")) {
