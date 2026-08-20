@@ -1,5 +1,7 @@
 import hashlib
+import io
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,7 +41,9 @@ class EmbeddingIndex:
         - ids length matches row count.
         - empty embedding sets are represented as a valid "no-index" state.
         """
-        embeddings = np.asarray(embeddings, dtype="float32")
+        # copy(): normalize_L2 below works in place, and callers persist the array
+        # they passed in as the cached vectors.
+        embeddings = np.array(embeddings, dtype="float32", copy=True)
         if embeddings.ndim != 2:
             raise ValueError("Embeddings must be a 2D float32 array.")
         if len(ids) != embeddings.shape[0]:
@@ -75,14 +79,17 @@ class EmbeddingIndex:
             raise ValueError("Query vector must be 1D or 2D.")
         if q.shape[1] != self.index.d:
             raise ValueError(f"Query dimension {q.shape[1]} does not match index dimension {self.index.d}.")
+        q = np.array(q, dtype="float32", copy=True)
         faiss.normalize_L2(q)
         top_k = min(k, len(self.ids))
         D, I = self.index.search(q, top_k)
-        return [
-            (self.ids[i], float(D[0][j]))
-            for j, i in enumerate(I[0])
-            if i != -1 and i < len(self.ids)
-        ]
+        # Flatten across query rows: a batched 2D query previously returned row 0 only.
+        results: List[Tuple[str, float]] = []
+        for row in range(I.shape[0]):
+            for col, i in enumerate(I[row]):
+                if i != -1 and i < len(self.ids):
+                    results.append((self.ids[i], float(D[row][col])))
+        return results
 
 
 # Extract text from all pages of a PDF (best effort).
@@ -119,7 +126,13 @@ def _chunk_text(text: str, max_chars=1800, overlap=300) -> List[str]:
             merged.append(c)
         else:
             tail = merged[-1][-overlap:]
-            merged.append((tail + "\n" + c)[:max_chars])
+            # Trim the overlap, not the chunk: slicing the concatenation dropped
+            # the tail of every non-first chunk from the corpus.
+            budget = max_chars - len(c) - 1
+            if budget <= 0:
+                merged.append(c[:max_chars])
+            else:
+                merged.append(tail[-budget:] + "\n" + c)
     return merged
 
 
@@ -194,8 +207,29 @@ def load_cached_index(vec_p: Path, ids_p: Path, chunks_p: Path) -> Optional[Tupl
         return None
 
 
+def _atomic_write_bytes(target: Path, payload: bytes) -> None:
+    """Write via a temp file in the same directory, then rename into place."""
+    tmp = target.with_name(target.name + ".tmp")
+    try:
+        tmp.write_bytes(payload)
+        os.replace(tmp, target)
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
 def save_cached_index(vec_p: Path, ids_p: Path, chunks_p: Path, embeddings: np.ndarray, chunks: List[DocChunk]) -> None:
-    """Persist vectors, chunk ids, and chunk payloads as the canonical cache triplet."""
-    np.save(vec_p, embeddings)
-    ids_p.write_text(json.dumps([c.id for c in chunks]), encoding="utf-8")
-    chunks_p.write_text(json.dumps([c.__dict__ for c in chunks]), encoding="utf-8")
+    """
+    Persist vectors, chunk ids, and chunk payloads as the canonical cache triplet.
+
+    Each file is written atomically, so a concurrent or interrupted writer cannot
+    leave behind a mismatched triplet that still passes the load-time length checks.
+    """
+    buffer = io.BytesIO()
+    np.save(buffer, embeddings)
+    _atomic_write_bytes(vec_p, buffer.getvalue())
+    _atomic_write_bytes(ids_p, json.dumps([c.id for c in chunks]).encode("utf-8"))
+    _atomic_write_bytes(chunks_p, json.dumps([c.__dict__ for c in chunks]).encode("utf-8"))

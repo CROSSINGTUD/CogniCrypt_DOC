@@ -135,6 +135,32 @@ public class FunctionUtils {
 	}
 
 	/**
+	 * True if {@code variableName} is exactly one of the parameters of a rendered method
+	 * signature such as {@code getInstance(algorithm,provider)}.
+	 *
+	 * <p>Call sites previously used {@code methodStr.contains(variableName)}, which matches
+	 * on any substring: an object named {@code preInput} matched {@code update(preInputByte)}.
+	 * The position is then computed by an exact {@code indexOf}, which does not match, so the
+	 * pair silently produced a position of -1. This predicate agrees with that computation.
+	 */
+	public static boolean hasParameterNamed(String methodSignature, String variableName) {
+		if (methodSignature == null || variableName == null || variableName.isEmpty()) {
+			return false;
+		}
+		int open = methodSignature.indexOf('(');
+		int close = methodSignature.lastIndexOf(')');
+		if (open < 0 || close < open) {
+			return false;
+		}
+		for (String parameter : methodSignature.substring(open + 1, close).split(",")) {
+			if (parameter.trim().equals(variableName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Map numeric parameter positions to human-readable words.
 	 */
 	public static Map<String, String> getPosWordMap(CrySLRule rule) {

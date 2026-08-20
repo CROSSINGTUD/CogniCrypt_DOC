@@ -245,11 +245,12 @@ public class EnsuresCaseTwo {
 
 			else {
 				// Branch: predicate applies to a method parameter (non-return).
-				Map<String, String> paraMethNameMap = new LinkedHashMap<>();
-				Map<String, String> paraPosMap = new LinkedHashMap<>();
-				String paraPosMapValStr = null;
-				String paraPosInWordValStr = null;
-				String paraMethNameMapValStr = null;
+				// One entry per matching method. These were LinkedHashMaps keyed by the
+				// predicate's parameter, so every match overwrote the previous one and
+				// only the last survived - the sibling ConstraintsPred keeps every match
+				// and emits one sentence each, which is what this now does too.
+				List<String> matchedPositions = new ArrayList<>();
+				List<String> matchedMethodNames = new ArrayList<>();
 
 				for (String methodStr : methodsNameList) {
 					String result = StringUtils.substringBetween(methodStr, "(", ")");
@@ -261,7 +262,7 @@ public class EnsuresCaseTwo {
 							List<String> strList = Arrays.asList(mStr.split(" "));
 							String posStr = String.valueOf(strList.indexOf(paramStr));
 
-							paraPosMap.put(paramStr, posStr);
+							matchedPositions.add(posStr);
 
 							String m = methodStr;
 							List<String> extractParamList = new ArrayList<>();
@@ -303,20 +304,16 @@ public class EnsuresCaseTwo {
 								}
 							}
 
-							paraMethNameMap.put(paramStr, m);
+							matchedMethodNames.add(m);
 							break;
 						}
 					}
 				}
 
-				if (paraMethNameMap.containsKey(paramStr) && paraPosMap.containsKey(paramStr)) {
-					paraPosMapValStr = paraPosMap.get(paramStr);
-					paraMethNameMapValStr = paraMethNameMap.get(paramStr);
-				}
-
-				if (posInWordsMap.containsKey(paraPosMapValStr)) {
-					paraPosInWordValStr = posInWordsMap.get(paraPosMapValStr);
-				}
+				for (int matchIndex = 0; matchIndex < matchedMethodNames.size(); matchIndex++) {
+				String paraPosMapValStr = matchedPositions.get(matchIndex);
+				String paraMethNameMapValStr = matchedMethodNames.get(matchIndex);
+				String paraPosInWordValStr = posInWordsMap.getOrDefault(paraPosMapValStr, paraPosMapValStr);
 
 				String predNameStr = elementN.getPredName().toString();
 				String str = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(predNameStr), ' ');
@@ -332,61 +329,15 @@ public class EnsuresCaseTwo {
 
 						if (conPred.getConditionalMethods().contains(edge.to()) && !edge.to().equals(edge.from())) {
 
-							List<String> predmethodNames = new ArrayList<String>();
 							List<String> finalpredmethodNamesList = new ArrayList<>();
 							List<CrySLMethod> methods = edge.getLabel();
 
+							// Same helper the analogous branch above uses: hand-rolled splitting
+							// on "."/" " mangled every multi-parameter method name.
 							for (CrySLMethod method : methods) {
-								String[] preM = method.toString().replace(".", ",").split(",");
-								predmethodNames.add(preM[preM.length - 1].replace(";", "").replaceAll("\\( ", "\\(")
-										.replaceAll(" ", ","));
+								finalpredmethodNamesList.add(FunctionUtils.getEventCrySLMethodValue(method));
 							}
-
-							for (String methodlistStr : predmethodNames) {
-								List<String> extractParamList = new ArrayList<>();
-
-								int startIndex = methodlistStr.indexOf("(");
-								int endIndex = methodlistStr.indexOf(")");
-								String bracketExtractStr = methodlistStr.substring(startIndex + 1, endIndex);
-
-								if (bracketExtractStr.contains(",")) {
-									String[] elements = bracketExtractStr.split(",");
-									for (int a = 0; a < elements.length; a++) {
-										extractParamList.add(elements[a]);
-									}
-								} else {
-									extractParamList.add(bracketExtractStr);
-								}
-
-								for (String extractParamStr : extractParamList) {
-
-									if (!DTMap.containsKey(extractParamStr)) {
-
-									} else {
-
-										int startInd = 0;
-										int endInd = 0;
-										String value = DTMap.get(extractParamStr).toString();
-
-										Pattern word = Pattern.compile(escapeString(extractParamStr));
-										Matcher match = word.matcher(methodlistStr);
-
-										while (match.find()) {
-											startInd = match.start();
-											endInd = match.end() - 1;
-										}
-										String strDiv = methodlistStr.substring(startInd, endInd + 1);
-										if (strDiv.equals(extractParamStr)) {
-											StringBuilder sDB = new StringBuilder(methodlistStr);
-											sDB.replace(startInd, endInd + 1, value);
-											methodlistStr = sDB.toString();
-										}
-									}
-								}
-
-								finalpredmethodNamesList.add(methodlistStr);
-								joined = String.join(", ", finalpredmethodNamesList);
-							}
+							joined = String.join(", ", finalpredmethodNamesList);
 							if (verbOrNounList.size() == 1) {
 								verb = verbOrNounList.get(0);
 
@@ -453,6 +404,7 @@ public class EnsuresCaseTwo {
 
 					}
 				}
+				} // end per-match loop
 			}
 		}
 		// out.close();

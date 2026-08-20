@@ -7,10 +7,12 @@ import numpy as np
 from openai import OpenAI
 
 from paper_index import build_pdf_index
+from utils.llm_env import client_kwargs
 from utils.writer_core import (
     WriterCLIConfig,
     build_explanation_prompt,
     build_system_messages,
+    extract_completion_text,
     process_rule_core,
     run_writer_main,
 )
@@ -89,8 +91,14 @@ def make_rag_context(
     # 3) Embed and search through the shared abstraction.
     # Using `idx.search(...)` aligns OpenAI and gateway adapters on one retrieval contract:
     # both receive ordered `(chunk_id, score)` hits from EmbeddingIndex.
-    qvec = _embed_texts(client, [query_text], model=emb_model)[0]
-    hits = idx.search(qvec, k)
+    # RAG is best-effort: degrade to no context rather than aborting the whole run
+    # (the index build step already follows this contract).
+    try:
+        qvec = _embed_texts(client, [query_text], model=emb_model)[0]
+        hits = idx.search(qvec, k)
+    except Exception as exc:
+        print(f"[WARN] RAG retrieval failed, continuing without context: {exc}", file=sys.stderr)
+        return ""
 
     # 4) Build tagged snippets; normalize common PDF ligatures for safer display
     def _normalize_pdf_text(s: str) -> str:
@@ -165,7 +173,7 @@ def generate_explanation(
         max_tokens=4000,
         # No stop sequence to avoid accidental truncation on ``` blocks
     )
-    return resp.choices[0].message.content
+    return extract_completion_text(resp)
 
 
 # Orchestrate a single rule's explanation generation pipeline.
@@ -213,7 +221,7 @@ def main():
     run_writer_main(
         rules_dir=RULES_DIR,
         cli_config=cli_config,
-        init_client_fn=lambda: OpenAI(api_key=os.getenv("OPENAI_API_KEY")),
+        init_client_fn=lambda: OpenAI(api_key=os.getenv("OPENAI_API_KEY"), **client_kwargs()),
         build_pdf_index_fn=build_pdf_index,
         process_rule_fn=process_rule,
     )

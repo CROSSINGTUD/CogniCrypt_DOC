@@ -4,13 +4,9 @@ import com.google.gson.*;
 import crypto.interfaces.ICrySLPredicateParameter;
 import crypto.rules.CrySLCondPredicate;
 import crypto.rules.CrySLPredicate;
-import crypto.rules.StateNode;
-import crypto.rules.TransitionEdge;
-import de.upb.docgen.ComposedRule;
 import de.upb.docgen.DocSettings;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -253,71 +249,8 @@ public class Utils {
         o.add(key, rebuilt);
     }
 
-//    /* =================== Convenience runner =================== */
-//    public static void mainSanitizerSecure(String[] args) throws Exception {
-//        Path base = Paths.get("llm");
-//        Path in = base.resolve("temp_rule_English.json");
-//        Path out = base.resolve("clean_keypair_rule.json");
-//        String result = sanitizeRuleFileSecure(in, out, base);
-//        System.out.println("Secure sanitized JSON written: " + out + " (" + result.length() + " chars)");
-//    }
-
-    /**
-     * Resolve a resource from the classpath, extracting it if packaged in a JAR.
-     */
-    public static File getFileFromResources(String fileName) {
-        if (fileName == null || fileName.isBlank()) {
-            throw new IllegalArgumentException("fileName must not be null/blank");
-        }
-
-        String normalized = fileName.startsWith("/") ? fileName : ("/" + fileName);
-        URL resource = Utils.class.getResource(normalized);
-        if (resource == null) {
-            throw new IllegalArgumentException("File could not be found in resources: " + fileName);
-        }
-
-        // Dev-mode (resources on disk)
-        if ("file".equalsIgnoreCase(resource.getProtocol())) {
-            try {
-                return new File(resource.toURI());
-            } catch (Exception e) {
-                // fallback (should be rare)
-                return new File(resource.getFile());
-            }
-        }
 
 
-        // Packaged (jar:, etc.) -> extract safely
-        String classpathPath = normalized.substring(1); // remove leading '/'
-        return extract(classpathPath);
-    }
-
-    /**
-     * Replace the last occurrence of a token in a string.
-     */
-	public static String replaceLast(String string, String toReplace, String replacement) {
-		int pos = string.lastIndexOf(toReplace);
-		if (pos > -1) {
-			return string.substring(0, pos)
-					+ replacement
-					+ string.substring(pos + toReplace.length());
-		} else {
-			return string;
-		}
-	}
-
-    /**
-     * Return outgoing transitions for a node, excluding self-loops and a specific target.
-     */
-	public static List<TransitionEdge> getOutgoingEdges(Collection<TransitionEdge> collection, final StateNode curNode, final StateNode notTo) {
-		final List<TransitionEdge> outgoingEdges = new ArrayList<>();
-		for (final TransitionEdge comp : collection) {
-			if (comp.getLeft().equals(curNode) && !(comp.getRight().equals(curNode) || comp.getRight().equals(notTo))) {
-				outgoingEdges.add(comp);
-			}
-		}
-		return outgoingEdges;
-	}
 
 	/**
 	 * Extracts predicate dependencies by class name (deduplicated).
@@ -342,32 +275,6 @@ public class Utils {
 		return onlyClassNamesMap;
 	}
 
-    /**
-     * Build a mapping of constrained predicates to the rules that ensure them.
-     */
-	public static Map<String, Set<String>> getConstraintPredicateAndVarnameMap(List<ComposedRule> composedRuleList, Map<String, List<CrySLPredicate>> mapEnsures) {
-		Map<String, Set<String>> RuleMappedToEnsures = new HashMap<>();
-		for (ComposedRule rule : composedRuleList) {
-			List<String> requiredPredicates = rule.getConstrainedPredicates();
-			Set<String> valuesToAdd = new HashSet<>();
-			String temp ="";
-			for (String rp : requiredPredicates) {
-				String predicateName = rp.substring(rp.lastIndexOf(' ') + 1).trim();
-				String predicated = predicateName.substring(0, predicateName.length()-1);
-				temp = predicated;
-				for (Map.Entry<String, List<CrySLPredicate>> entry : mapEnsures.entrySet()) {
-					List<CrySLPredicate> rulePredicate = entry.getValue();
-					for (CrySLPredicate singlePredicate : rulePredicate) {
-						if (singlePredicate.getPredName().contains(predicated) && !Objects.equals(rule.getComposedClassName(), entry.getKey())) {
-							valuesToAdd.add(entry.getKey()   + "-" + temp);
-						}
-					}
-				}
-			}
-			RuleMappedToEnsures.put(rule.getComposedClassName(),valuesToAdd);
-		}
-		return RuleMappedToEnsures;
-	}
 
 
 	/**
@@ -448,6 +355,75 @@ public class Utils {
         }
     }
 
+
+    /**
+     * Condense a code-generation failure into one short, path-free line fit for publication.
+     *
+     * <p>The raw exception carries the sidecar's entire stdout - a Python traceback, the
+     * shaped CrySL contract dump, and absolute paths from the build machine. That belongs in
+     * the codegen failure report, not embedded in a page where a code example should be.
+     */
+    public static String summarizeGenerationFailure(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "generation failed";
+        }
+        String flat = stripBuildPaths(raw.replaceAll("\\s+", " ").trim());
+
+        Matcher repairs = Pattern.compile("Still not compilable after (\\d+) repair attempts").matcher(flat);
+        if (repairs.find()) {
+            String summary = "did not compile after " + repairs.group(1) + " repair attempts";
+            String firstError = firstCompilerError(flat);
+            return firstError == null ? summary : summary + " - first error: " + firstError;
+        }
+
+        Matcher runtimeError = Pattern.compile("RuntimeError: (.+)").matcher(flat);
+        if (runtimeError.find()) {
+            return capForDisplay(runtimeError.group(1));
+        }
+
+        Matcher exitCode = Pattern.compile("exited with code (\\d+)").matcher(flat);
+        if (exitCode.find()) {
+            return "the generator exited with code " + exitCode.group(1);
+        }
+
+        return capForDisplay(flat);
+    }
+
+    private static String firstCompilerError(String flat) {
+        Matcher m = Pattern.compile("error: (.+?)(?= \\S*\\.java:| Note: | \\d+ errors?\\b|$)").matcher(flat);
+        return m.find() ? capForDisplay(m.group(1)) : null;
+    }
+
+    /** Remove absolute filesystem paths so generated pages do not expose the build machine. */
+    private static String stripBuildPaths(String text) {
+        String cleaned = text.replaceAll("(?:/[^\\s:]+)+/([A-Za-z0-9_$.-]+\\.java)", "$1");
+        return cleaned.replaceAll("(?:/home|/Users|/tmp|/var/folders)/\\S*", "<path>");
+    }
+
+    private static String capForDisplay(String text) {
+        String trimmed = text.trim();
+        return trimmed.length() <= 160 ? trimmed : trimmed.substring(0, 157).trim() + "...";
+    }
+
+    /**
+     * True if a cached LLM explanation is a placeholder rather than a real answer.
+     *
+     * <p>Shared by both cache layers on purpose. {@code LLMService} uses it to decide
+     * whether to skip the Python call, and {@code DocumentGeneratorMain} uses it to decide
+     * whether to reuse the file. Those two decisions must agree: if only the second checked,
+     * a placeholder would still short-circuit the LLM call and then be rewritten with itself.
+     */
+    public static boolean isRetryableExplanationPlaceholder(String content) {
+        if (content == null) {
+            return true;
+        }
+        String txt = content.trim();
+        if (txt.isEmpty()) {
+            return true;
+        }
+        return txt.equals("LLM explanations disabled by flag.")
+                || (txt.startsWith("No explanation generated for ") && txt.endsWith(")."));
+    }
 
     /**
      * Normalize file paths for FreeMarker template loading.

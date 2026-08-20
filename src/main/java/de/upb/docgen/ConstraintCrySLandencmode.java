@@ -146,7 +146,7 @@ public class ConstraintCrySLandencmode {
 								CrySLObject CrySLObject = (CrySLObject) LeftValueConstraint.getVar();
 								String varname = CrySLObject.getVarName();
 
-								if (methodStr.contains(varname)) {
+								if (FunctionUtils.hasParameterNamed(methodStr, varname)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -232,7 +232,7 @@ public class ConstraintCrySLandencmode {
 							for (String methodStr : methods) {
 								String LHSfirstStr = resLHSlistsecond.get(0);
 
-								if (methodStr.contains(LHSfirstStr)) {
+								if (FunctionUtils.hasParameterNamed(methodStr, LHSfirstStr)) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -358,8 +358,15 @@ public class ConstraintCrySLandencmode {
 								for (String extractParamStr : extractParamList) {
 
 									String[] parts = extractParamStr.trim().split(" ");
-									String value = DTMap.get(parts[1]);
-									tempStr = tempStr.replace(extractParamStr, value);
+									if (parts.length == 0 || parts[0].isEmpty()) {
+										continue;
+									}
+									// "<type> <name>" is the usual shape, but a bare token is possible.
+									String lookupKey = parts.length > 1 ? parts[1] : parts[0];
+									String value = DTMap.get(lookupKey);
+									if (value != null) {
+										tempStr = tempStr.replace(extractParamStr, value);
+									}
 								}
 								fList.add(tempStr.replaceAll("\\[", "").replaceAll("\\]", ""));
 								joinedMethods = String.join("", fList);
@@ -410,8 +417,10 @@ public class ConstraintCrySLandencmode {
 
 									for (String extractParamStr : extractParamList) {
 										if (!extractParamStr.isEmpty()) {
-											String value = DTMap.get(extractParamStr).toString();
-											tempStr = tempStr.replace(extractParamStr, value);
+											String value = DTMap.get(extractParamStr);
+											if (value != null) {
+												tempStr = tempStr.replace(extractParamStr, value);
+											}
 										}
 									}
 

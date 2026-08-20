@@ -148,7 +148,7 @@ These are switch flags (pass the flag to toggle behavior):
 - `--booleanB` hide help button
 - `--booleanC` hide dependency tree sections
 - `--booleanD` hide CrySL rule section
-- `--booleanE` legacy toggle (currently no visible effect in templates)
+- `--booleanE` turn off Graphviz state-machine generation (no DOT is emitted and the graph section is omitted)
 - `--booleanF` copy CrySL rules into `<reportPath>/rules/`
 - `--booleanG` use fully qualified method labels in state machine edges
 
@@ -159,6 +159,45 @@ These are switch flags (pass the flag to toggle behavior):
 - `--llm-explanations=<on|off|true|false|1|0>`
 - `--llm-examples=<on|off|true|false|1|0>`
 - `--llm-backend=<openai|gateway>`
+
+## Environment Variables
+
+These are read directly by the code and are not exposed as CLI flags. All are optional;
+the defaults are what a normal run uses.
+
+### Secure-example compile gate
+
+Generated secure examples are compiled with `javac` before being published, and are
+regenerated if they fail. These control that gate.
+
+| Variable | Default | Effect |
+|---|---|---|
+| `CRYSLDOC_COMPILE_CHECK` | `1` | Set to `0` to **skip the compile check entirely**. Generated code is then published without ever being compiled — the gate is the only thing preventing broken examples from reaching the documentation, so turn it off deliberately or not at all. |
+| `CRYSLDOC_MAX_REPAIRS` | `7` | Repair rounds attempted when an example fails to compile. Each round is another chat completion, so this is the main lever on API cost per failing rule. |
+| `CRYSLDOC_COMPILE_CLASSPATH` | *(empty)* | Extra classpath entries for `javac`, separated by the platform path separator. The gate otherwise compiles against the JDK alone, so a rule documenting a non-JDK type needs its jar here — `javax.servlet.http.Cookie` is the one bundled rule in that position. `run_crysldoc.sh` sets this automatically. |
+| `CRYSLDOC_COMPILE_USE_RUNTIME_CLASSPATH` | unset | Set to `1` to compile against this project's own full dependency tree instead of the JDK. Weakens the check — an example can then compile here but not for a reader — and exists only as an escape hatch. |
+| `CRYSLDOC_JAVAC_REQUIRED` | `1` | Set to `0` to continue when no `javac` is found rather than failing. |
+| `CRYSLDOC_COMPILE_STRICT` | `0` | Set to `1` to treat a missing compiler as a hard error even when `CRYSLDOC_JAVAC_REQUIRED=0`. |
+| `JAVAC_BIN` | resolved from `java.home` | Explicit path to `javac`, for CI images where it is not alongside `java`. |
+
+### Timeouts and retries
+
+| Variable | Default | Effect |
+|---|---|---|
+| `CRYSLDOC_LLM_EXPLANATION_TIMEOUT_SECONDS` | `300` | Wall-clock ceiling for one explanation sidecar call. |
+| `CRYSLDOC_LLM_EXAMPLE_TIMEOUT_SECONDS` | `900` | Ceiling for one example call. Larger because a secure example may run the compile-and-repair loop, which is several completions plus several `javac` invocations. |
+| `LLM_MAX_RETRIES` | `4` | Client-side retries on transient API errors (429, 5xx). |
+| `LLM_TIMEOUT_SECONDS` | `90` | Per-request client timeout. |
+| `GATEWAY_RPM` | `10` | Request-rate ceiling for the gateway backend, enforced across processes. |
+
+### Diagnostics
+
+| Variable | Default | Effect |
+|---|---|---|
+| `CRYSLDOC_DEBUG` | unset | Set to `1` to print the shaped CrySL contract sent to the model, per rule, on stderr. |
+
+Model and credential variables (`OPENAI_API_KEY`, `GATEWAY_API_KEY`, `OPENAI_CHAT_MODEL`,
+and so on) belong in `llm/.env` — see [LLM Setup](#llm-setup-optional).
 
 ## Example Commands
 Disable all LLM features:

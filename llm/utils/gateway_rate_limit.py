@@ -1,10 +1,12 @@
 import json
 import os
+import re
 import sys
 import time
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import Callable, List, TypeVar
 
 
 DEFAULT_GATEWAY_RPM = 10
@@ -116,3 +118,52 @@ def wait_for_gateway_slot(operation: str = "request") -> None:
             file=sys.stderr,
         )
         time.sleep(wait_seconds)
+
+
+_RESET_AT_RE = re.compile(r"Limit resets at:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s*UTC")
+
+T = TypeVar("T")
+
+
+def _seconds_until_reset(message: str, max_wait_seconds: float) -> "float | None":
+    """Parse the gateway's own '... Limit resets at: <UTC time> ...' out of a 429 body."""
+    match = _RESET_AT_RE.search(message or "")
+    if not match:
+        return None
+    try:
+        reset_at = datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+    wait_seconds = (reset_at - datetime.now(timezone.utc)).total_seconds() + 3.0  # small buffer
+    if wait_seconds <= 0:
+        return None
+    return min(wait_seconds, max_wait_seconds)
+
+
+def call_with_concurrency_backoff(fn: Callable[[], T], operation: str = "request",
+                                    max_wait_seconds: float = 180.0) -> T:
+    """
+    Call `fn()` (a zero-arg gateway request). `wait_for_gateway_slot` paces how many NEW
+    requests we start per minute, but the UPB gateway separately caps concurrent in-flight
+    requests per API key ("max_parallel_requests"), and under load that cap can be reached
+    even with our own pacing respected - the shared account has other traffic on it too.
+    The 429 body names exactly when a slot frees ("Limit resets at: <UTC time>"), but the
+    OpenAI SDK's own retry backoff is a few seconds - far short of that. Parse it and wait
+    the real amount once, then retry; a second failure is left to the caller's existing
+    per-call handling (log + skip), same as every other gateway failure in this pipeline.
+    """
+    try:
+        return fn()
+    except Exception as exc:
+        if getattr(exc, "status_code", None) != 429:
+            raise
+        wait_seconds = _seconds_until_reset(str(exc), max_wait_seconds)
+        if wait_seconds is None:
+            raise
+        print(
+            f"[INFO] Gateway concurrency limit (max_parallel_requests) hit before {operation}; "
+            f"waiting {wait_seconds:.0f}s for a slot to free up.",
+            file=sys.stderr,
+        )
+        time.sleep(wait_seconds)
+        return fn()

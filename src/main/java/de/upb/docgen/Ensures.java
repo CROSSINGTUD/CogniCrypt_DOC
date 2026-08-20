@@ -53,6 +53,14 @@ public class Ensures {
 	}
 
 	/**
+	 * Template for an unconditional predicate whose name is a single word, i.e. it has a
+	 * verb but no noun and no triggering edge.
+	 */
+	private static String getTemplateverb() throws IOException {
+		return Utils.getTemplatesTextString("EnsuresClauseVerb");
+	}
+
+	/**
 	 * Template for constructor-specific verb+noun ensures with an edge context.
 	 */
 	private static String getTemplateverbnounedgeCon() throws IOException {
@@ -170,7 +178,18 @@ public class Ensures {
 
 					// Unconditional predicate: no edge/context needed.
 					if (verbOrNounList.size() == 1) {
+						// Single-word predicate name: verb only, no noun. This used to
+						// compute the verb and then discard it, silently omitting the
+						// guarantee from the generated Predicates section.
 						verb = verbOrNounList.get(0);
+
+						String verbOnly = getTemplateverb();
+						Map<String, String> valuesMap = new HashMap<String, String>();
+						valuesMap.put("verb", toHoverLink(rule, stringListMap, verb, predTNameStr));
+
+						StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						String resolvedString = sub.replace(verbOnly);
+						composedEnsures.add(resolvedString);
 
 					} else {
 						verb = verbOrNounList.get(0);

@@ -16,6 +16,7 @@ public class ComposedRule {
     private String composedFullClass;
     private String composedLink;
     private String onlyLink;
+    private String javaDocUrl;
 
     // Sections rendered in the HTML.
     private List<String> forbiddenMethods;
@@ -35,7 +36,9 @@ public class ComposedRule {
     private List<String> allConstraints;
 
     // LLM augmentation and raw rule text.
-    private Map<String, String> llmExplanation;
+    // Initialised so getLlmExplanation() is never null: FreeMarkerWriter calls .get(...)
+    // on it directly for four languages, with no guard.
+    private Map<String, String> llmExplanation = new HashMap<>();
     private String cryslRuleText;
     private String secureExample;
     private String insecureExample;
@@ -389,6 +392,14 @@ public class ComposedRule {
     /**
      * Set the JavaDoc path-only link.
      */
+    public String getJavaDocUrl() {
+        return javaDocUrl;
+    }
+
+    public void setJavaDocUrl(String javaDocUrl) {
+        this.javaDocUrl = javaDocUrl;
+    }
+
     public void setOnlyLink(String onlyLink) {
         this.onlyLink = onlyLink;
     }

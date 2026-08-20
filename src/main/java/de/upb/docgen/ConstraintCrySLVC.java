@@ -133,12 +133,11 @@ public class ConstraintCrySLVC {
 							List<String> resLHSList = new ArrayList<>();
 							resLHSList = new ArrayList<>(Arrays.asList(a.replaceAll("\\(.*\\)", "")
 									.replaceAll("VC:", "").replaceAll(",$", " ").split(" - ")));
-							List<String> finalpredmethodList = new ArrayList<>();
-							String joined = null;
+							Map<String, List<String>> methodsByPosition = new LinkedHashMap<>();
 
 							for (String methodStr : methods) {
 
-								if (methodStr.contains(realLeft.get(0))) {
+								if (FunctionUtils.hasParameterNamed(methodStr, realLeft.get(0))) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -165,37 +164,35 @@ public class ConstraintCrySLVC {
 											}
 										}
 
-										finalpredmethodList.add(m);
-										joined = String.join(", ", finalpredmethodList);
 										String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
 										List<String> strList = Arrays.asList(mStr.split(" "));
 										String posStr = String.valueOf(strList.indexOf(realLeft.get(0)));
+										String posWord = posInWordsMap.getOrDefault(posStr, posStr);
 
-										resLHSList.add(posStr);
-
-										if (posInWordsMap.containsKey(posStr)) {
-
-											String posinwords = posInWordsMap.get(posStr);
-											Collections.replaceAll(resLHSList, posStr, posinwords);
-										}
+										// Group by position. The template says "either of the
+										// methods", i.e. one shared position for the whole list,
+										// so methods where the variable sits at a DIFFERENT
+										// position must not be merged into the same clause -
+										// previously they were, under the first match's position.
+										methodsByPosition.computeIfAbsent(posWord, k -> new ArrayList<>()).add(m);
 									}
 								}
 							}
 
-							resLHSList.add(joined);
-
 							String varlhsone = resLHSList.get(1);
-							String poslhsone = resLHSList.get(2);
-							String methlhsone = resLHSList.get(resLHSList.size() - 1);
 							String b = templatestringLHS;
 
-							Map<String, String> valuesMap = new HashMap<String, String>();
-							valuesMap.put("positionVC", poslhsone);
-							valuesMap.put("methodNameVC", methlhsone);
-							valuesMap.put("varVC", varlhsone);
+							List<String> positionClauses = new ArrayList<>();
+							for (Map.Entry<String, List<String>> group : methodsByPosition.entrySet()) {
+								Map<String, String> valuesMap = new HashMap<String, String>();
+								valuesMap.put("positionVC", group.getKey());
+								valuesMap.put("methodNameVC", String.join(", ", group.getValue()));
+								valuesMap.put("varVC", varlhsone);
 
-							StringSubstitutor sub = new StringSubstitutor(valuesMap);
-							resultmainstringLHS = sub.replace(b);
+								StringSubstitutor sub = new StringSubstitutor(valuesMap);
+								positionClauses.add(sub.replace(b));
+							}
+							resultmainstringLHS = String.join(" or ", positionClauses);
 						}
 						// next
 						else {
@@ -214,7 +211,7 @@ public class ConstraintCrySLVC {
 								String LHSfirstStr = resLHSlistsecond.get(0);
 								String posStr;
 
-								if (methodStr.contains(realLeft.get(0))) {
+								if (FunctionUtils.hasParameterNamed(methodStr, realLeft.get(0))) {
 
 									List<String> methList = new ArrayList<>();
 									methList.add(methodStr);
@@ -291,7 +288,7 @@ public class ConstraintCrySLVC {
 							// String RHSfirstStr = resRHSList.get(0);
 							String posStr;
 
-							if (methodStr.contains(realRight.get(0))) {
+							if (FunctionUtils.hasParameterNamed(methodStr, realRight.get(0))) {
 
 								List<String> methList = new ArrayList<>();
 								methList.add(methodStr);

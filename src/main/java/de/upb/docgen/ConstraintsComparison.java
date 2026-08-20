@@ -105,6 +105,30 @@ public class ConstraintsComparison {
     /**
      * Template for constructor length-based >= constraints.
      */
+    private static char[] getTemplateCompGreaterNum() throws IOException {
+        return Utils.getTemplatesText("CompConstraint_greaternum");
+    }
+
+    private static char[] getTemplateCompGreaterNumCon() throws IOException {
+        return Utils.getTemplatesText("CompConstraint_greaternumCon");
+    }
+
+    private static char[] getTemplateCompLessNum() throws IOException {
+        return Utils.getTemplatesText("CompConstraint_lessnum");
+    }
+
+    private static char[] getTemplateCompLessNumCon() throws IOException {
+        return Utils.getTemplatesText("CompConstraint_lessnumCon");
+    }
+
+    private static char[] getTemplateCompNotEqualNum() throws IOException {
+        return Utils.getTemplatesText("CompConstraint_notequalnum");
+    }
+
+    private static char[] getTemplateCompNotEqualNumCon() throws IOException {
+        return Utils.getTemplatesText("CompConstraint_notequalnumCon");
+    }
+
     private static char[] getTemplateCompCons1() throws IOException {
         return Utils.getTemplatesText("CompConstraint_lengthgreaterequalCon");
     }
@@ -556,29 +580,29 @@ public class ConstraintsComparison {
                         }
                     }
 
-                    for (int index = 0; index < splitCompListTwo.size(); index++) {
+                    // Split on the comparison operator. The detection is independent of any
+                    // index, so it runs once; an unrecognised operator used to reach
+                    // subList(0, -1) and throw IllegalArgumentException.
+                    int indexOp = -1;
+                    if (splitCompListTwo.contains(">")) {
+                        indexOp = splitCompListTwo.indexOf(">");
+                    } else if (splitCompListTwo.contains("<")) {
+                        indexOp = splitCompListTwo.indexOf("<");
+                    } else if (splitCompListTwo.contains(">=")) {
+                        indexOp = splitCompListTwo.indexOf(">=");
+                    } else if (splitCompListTwo.contains("!=")) {
+                        indexOp = splitCompListTwo.indexOf("!=");
+                    }
 
-                        if (splitCompListTwo.contains(">")) {
+                    if (indexOp < 0) {
+                        continue;
+                    }
 
-                            int indexOp = splitCompListTwo.indexOf(">");
-                            subListLHS = splitCompListTwo.subList(0, indexOp);
-                            subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
+                    subListLHS = splitCompListTwo.subList(0, indexOp);
+                    subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
 
-                        } else if (splitCompListTwo.contains("<")) {
-
-                            int indexOp = splitCompListTwo.indexOf("<");
-                            subListLHS = splitCompListTwo.subList(0, indexOp);
-                            subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
-                        } else if (splitCompListTwo.contains(">=")) {
-
-                            int indexOp = splitCompListTwo.indexOf(">=");
-                            subListLHS = splitCompListTwo.subList(0, indexOp);
-                            subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
-                        } else {
-                            int indexOp = splitCompListTwo.indexOf("!=");
-                            subListLHS = splitCompListTwo.subList(0, indexOp);
-                            subListRHS = splitCompListTwo.subList(indexOp, splitCompListTwo.size());
-                        }
+                    if (subListLHS.isEmpty() || subListRHS.size() < 2) {
+                        continue;
                     }
 
                     String paramLhsStr = subListLHS.get(0);
@@ -618,8 +642,9 @@ public class ConstraintsComparison {
                     String paramRhsAphaStr = null;
                     String paramRhsAphaPosStr;
 
-                    // checks for numbers
-                    if (subListRHS.get(1).matches(".*[0-9].*")) {
+                    // A numeric literal is entirely numeric; "contains a digit" also
+                    // matched ordinary parameter names such as iv2 or key1.
+                    if (subListRHS.get(1).matches("-?\\d+(\\.\\d+)?")) {
                         paramRhsNumStr = subListRHS.get(1);
                     } else {
                         paramRhsAphaStr = subListRHS.get(1);
@@ -708,30 +733,29 @@ public class ConstraintsComparison {
                             String methLhs = Lhselement.get(1);
                             List<String> msplit = Arrays.asList(methLhs.split("\\("));
 
-                            if ((symbolStr.equals(">=") || symbolStr.equals(">")) && paramRhsNumStr != null) {
+                            if (paramRhsNumStr != null) {
 
-                                if (msplit.get(0).contains(classnamecheck)) {
+                                boolean isConstructor = msplit.get(0).contains(classnamecheck);
+                                // Previously only >= and > rendered (and > borrowed the >=
+                                // wording); < and != disappeared from the documentation.
+                                char[] numericTemplate = null;
+                                if (symbolStr.equals(">=")) {
+                                    numericTemplate = isConstructor ? getTemplateCompCons2() : getTemplateCompFour();
+                                } else if (symbolStr.equals(">")) {
+                                    numericTemplate = isConstructor ? getTemplateCompGreaterNumCon() : getTemplateCompGreaterNum();
+                                } else if (symbolStr.equals("<")) {
+                                    numericTemplate = isConstructor ? getTemplateCompLessNumCon() : getTemplateCompLessNum();
+                                } else if (symbolStr.equals("!=")) {
+                                    numericTemplate = isConstructor ? getTemplateCompNotEqualNumCon() : getTemplateCompNotEqualNum();
+                                }
 
-                                    char[] strFour = getTemplateCompCons2();
+                                if (numericTemplate != null) {
                                     Map<String, String> valuesMap = new HashMap<String, String>();
                                     valuesMap.put("paramLhsPosWordStr", posLhs);
                                     valuesMap.put("paramLhsMethStr", methLhs);
                                     valuesMap.put("paramRhsNumStr", paramRhsNumStr);
                                     StringSubstitutor sub = new StringSubstitutor(valuesMap);
-                                    String resolvedString = sub.replace(strFour);
-                                    composedComparsionConstraint.add(resolvedString);
-
-                                } else {
-
-                                    char[] strFour = getTemplateCompFour();
-                                    Map<String, String> valuesMap = new HashMap<String, String>();
-                                    valuesMap.put("paramLhsPosWordStr", posLhs);
-                                    valuesMap.put("paramLhsMethStr", methLhs);
-                                    valuesMap.put("paramRhsNumStr", paramRhsNumStr);
-                                    StringSubstitutor sub = new StringSubstitutor(valuesMap);
-                                    String resolvedString = sub.replace(strFour);
-                                    composedComparsionConstraint.add(resolvedString);
-
+                                    composedComparsionConstraint.add(sub.replace(numericTemplate));
                                 }
                             }
                         }

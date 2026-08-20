@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,9 +26,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.CRC32;
 
 
 /**
@@ -85,6 +88,11 @@ private static Path cachedTempDir = null;
 				String prefix = CRYSL_RULES_DIR + "/";
 				Path rulesTmpDir = getOrCreateTempDir().resolve(CRYSL_RULES_DIR);
 				Files.createDirectories(rulesTmpDir);
+				// Registered before the files it will contain, so reverse-registration-order
+				// deleteOnExit deletes them first and this (now-empty) directory second -
+				// otherwise the directory itself was never scheduled for deletion and was
+				// left behind after every clean, successful, packaged-JAR run.
+				rulesTmpDir.toFile().deleteOnExit();
 
 				while (entries.hasMoreElements()) {
 					JarEntry entry = entries.nextElement();
@@ -95,15 +103,7 @@ private static Path cachedTempDir = null;
 						// This mirrors filesystem loading semantics more closely than flattened names.
 						String fileName = Paths.get(name).getFileName().toString();
 						Path out = rulesTmpDir.resolve(fileName);
-						if (!Files.exists(out)) {
-							try (InputStream in = jar.getInputStream(entry)) {
-								if (in == null) {
-									throw new IOException("Resource stream was null for: " + name);
-								}
-								Files.copy(in, out, StandardCopyOption.REPLACE_EXISTING);
-							}
-							out.toFile().deleteOnExit();
-						}
+						extractIfStale(jar, entry, out);
 						File extracted = out.toFile();
 						ruleFiles.add(extracted);
 						displayNames.put(extracted, name);
@@ -291,20 +291,58 @@ private static Path cachedTempDir = null;
 		Path tmpDir = getOrCreateTempDir();
 		String safeName = resourcePath.replace('/', '_').replace('\\', '_');
 		Path out = tmpDir.resolve(safeName);
+		extractIfStale(jar, entry, out);
+		return out.toFile();
+	}
 
-		if (Files.exists(out)) {
-			return out.toFile();
+	/**
+	 * Extract a JAR entry to {@code out}, but only when {@code out} doesn't already hold
+	 * an up-to-date copy - reusing an existing file is gated on matching size/CRC against
+	 * the JAR entry, not merely on the path existing, so a rebuilt JAR with edited
+	 * resource content can't silently keep serving a stale extraction from a prior run.
+	 * The write goes through a sibling temp file and an atomic move so a concurrent
+	 * reader on the same path never observes a partially-written file.
+	 */
+	private static void extractIfStale(JarFile jar, JarEntry entry, Path out) throws IOException {
+		if (Files.exists(out) && !isStale(out, entry)) {
+			return;
 		}
 
+		Path tmp = out.resolveSibling(out.getFileName().toString() + "." + UUID.randomUUID() + ".tmp");
 		try (InputStream in = jar.getInputStream(entry)) {
 			if (in == null) {
-				throw new IOException("Resource stream was null for: " + resourcePath);
+				throw new IOException("Resource stream was null for: " + entry.getName());
 			}
-			Files.copy(in, out, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
 		}
-
+		try {
+			try {
+				Files.move(tmp, out, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+			} catch (AtomicMoveNotSupportedException e) {
+				Files.move(tmp, out, StandardCopyOption.REPLACE_EXISTING);
+			}
+		} finally {
+			Files.deleteIfExists(tmp);
+		}
 		out.toFile().deleteOnExit();
-		return out.toFile();
+	}
+
+	private static boolean isStale(Path existing, JarEntry entry) throws IOException {
+		long entrySize = entry.getSize();
+		if (entrySize >= 0 && Files.size(existing) != entrySize) {
+			return true;
+		}
+		long entryCrc = entry.getCrc();
+		if (entryCrc >= 0 && computeCrc32(existing) != entryCrc) {
+			return true;
+		}
+		return false;
+	}
+
+	private static long computeCrc32(Path file) throws IOException {
+		CRC32 crc = new CRC32();
+		crc.update(Files.readAllBytes(file));
+		return crc.getValue();
 	}
 
 	private static Path getOrCreateTempDir() throws IOException {

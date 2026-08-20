@@ -32,14 +32,12 @@ public class FreeMarkerWriter {
     public static void createSidebar(List<ComposedRule> composedRuleList, Configuration cfg ) throws IOException, TemplateException {
         Map<String, Object> input = new HashMap<String, Object>();
         input.put("title", "Sidebar");
-        // Sort entries for stable navigation ordering.
-        Collections.sort(composedRuleList, new Comparator<ComposedRule>() {
-            @Override
-            public int compare(ComposedRule o1, ComposedRule o2) {
-                return o1.getComposedFullClass().compareTo(o2.getComposedFullClass());
-            }
-        });
-        input.put("rules", composedRuleList);
+        // Sort a COPY for stable navigation ordering. Sorting the caller's list in place
+        // silently broke the index alignment that createSinglePage depends on, which put
+        // the wrong state-machine diagram on nearly every page.
+        List<ComposedRule> sortedForSidebar = new ArrayList<>(composedRuleList);
+        sortedForSidebar.sort(Comparator.comparing(ComposedRule::getComposedFullClass));
+        input.put("rules", sortedForSidebar);
         Template template;
         String ftlDir = DocSettings.getInstance().getFtlTemplatesPath();
 
@@ -77,10 +75,20 @@ public class FreeMarkerWriter {
         File composedRulesDir = new File(reportDir, "composedRules");
         Files.createDirectories(composedRulesDir.toPath());
 
+        // Pair rules by class name rather than by list position. The previous code relied
+        // on composedRuleList and crySLRules staying index-aligned, an invariant nothing
+        // enforced and any reordering upstream silently violated.
+        Map<String, CrySLRule> cryslRuleByClassName = new HashMap<>();
+        for (CrySLRule cryslRule : crySLRules) {
+            cryslRuleByClassName.putIfAbsent(cryslRule.getClassName(), cryslRule);
+        }
+
         for (int i = 0; i < composedRuleList.size(); i++) {
             ComposedRule rule = composedRuleList.get(i);
             Map<String, Object> input = new HashMap<String, Object>();
-            input.put("title", "class");
+            // The class name, not the literal "class": this is the browser tab label,
+            // the bookmark name, and what the frameset shows for the content pane.
+            input.put("title", rule.getComposedClassName());
             input.put("rule", rule);
 //            Map<String, String> llmExplanation = rule.getLlmExplanation();
             // LLM explanations passed explicitly for the template to render.
@@ -114,8 +122,19 @@ public class FreeMarkerWriter {
             input.put("booleanE", e);
             input.put("booleanF", f);
 
+            // Which LLM backend produced the explanations/examples on this page.
+            input.put("llmBackend", DocSettings.getInstance().getLlmBackend());
+
             // Render the state machine to Graphviz DOT for client-side visualization.
-            input.put("stateMachine", StateMachineToGraphviz.toGraphviz(crySLRules.get(i).getUsagePattern()));
+            // booleanE turns Graphviz generation off, as the CLI help has always claimed.
+            CrySLRule cryslRuleForPage = cryslRuleByClassName.get(rule.getComposedClassName());
+            if (cryslRuleForPage == null) {
+                System.err.println("[WARN] No CrySL rule found for " + rule.getComposedClassName()
+                        + "; omitting its state machine diagram.");
+            }
+            input.put("stateMachine", (e && cryslRuleForPage != null)
+                    ? StateMachineToGraphviz.toGraphviz(cryslRuleForPage.getUsagePattern())
+                    : "");
 
             // 2.2. Get the template
             Template template;

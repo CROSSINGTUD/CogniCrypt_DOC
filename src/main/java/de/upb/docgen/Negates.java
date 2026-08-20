@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import de.upb.docgen.utils.Utils;
@@ -46,16 +44,13 @@ public class Negates {
 
 		StateMachineGraph smg = rule.getUsagePattern();
 		List<TransitionEdge> edges = smg.getEdges();
-		List<Entry<String, String>> dataTypes = rule.getObjects();
-		Map<String, String> DTMap = new LinkedHashMap<>();
-		// Map type -> variable name for parameter substitution in method labels.
-		for (Entry<String, String> dt : dataTypes) {
-			DTMap.put(dt.getValue(), FunctionUtils.getDataType(rule, dt.getValue()));
-		}
 		String negjoined = "";
 
-		// Select only negated predicates that refer to "this".
-		List<CrySLPredicate> predNegatesList = rule.getPredicates().stream()
+		// Select only negated predicates that refer to "this". NEGATES-block predicates
+		// are parsed into rule.getNegatedPredicates(), a list disjoint from
+		// rule.getPredicates() (which is exclusively ENSURES-sourced) - reading the
+		// latter meant this method always returned empty, for every rule.
+		List<CrySLPredicate> predNegatesList = rule.getNegatedPredicates().stream()
 				.filter(e -> e.toString().contains("this") && e.toString().contains("!")).collect(Collectors.toList());
 
 		if (predNegatesList.size() > 0) {
@@ -71,41 +66,16 @@ public class Negates {
 
 						if (conPred.getConditionalMethods().contains(edge.to()) && !edge.to().equals(edge.from())) {
 
-							List<String> predmethodNames = new ArrayList<String>();
 							List<String> finalpredmethodNamesList = new ArrayList<>();
 							List<CrySLMethod> methods = edge.getLabel();
 
+							// Render as name(paramTypes) via the shared helper: the previous
+							// hand-rolled string surgery mangled every parameterized method
+							// and then dereferenced a null type lookup.
 							for (CrySLMethod method : methods) {
-								String[] preM = method.toString().replace(".", ",").split(",");
-								predmethodNames.add(preM[preM.length - 1].replace(";", "").replaceAll("\\( ", "\\(")
-										.replaceAll(" ", ","));
+								finalpredmethodNamesList.add(FunctionUtils.getEventCrySLMethodValue(method));
 							}
-							// Substitute parameter types into method labels and join with commas.
-							for (String tempStr : predmethodNames) {
-								List<String> extractParamList = new ArrayList<>();
-								int startIndex = tempStr.indexOf("(");
-								int endIndex = tempStr.indexOf(")");
-								String bracketExtractStr = tempStr.substring(startIndex + 1, endIndex);
-
-								if (bracketExtractStr.contains(",")) {
-
-									String[] elements = bracketExtractStr.split(",");
-									for (int a = 0; a < elements.length; a++) {
-										extractParamList.add(elements[a]);
-									}
-								} else {
-									extractParamList.add(bracketExtractStr);
-								}
-
-								for (String extractParamStr : extractParamList) {
-									if (!extractParamStr.isEmpty()) {
-										String value = DTMap.get(extractParamStr).toString();
-										tempStr = tempStr.replace(extractParamStr, value);
-									}
-								}
-								finalpredmethodNamesList.add(tempStr);
-								negjoined = String.join(", ", finalpredmethodNamesList);
-							}
+							negjoined = String.join(", ", finalpredmethodNamesList);
 							// Render the negation sentence once per matching edge.
 							String strRetOne = getTemplateNegated();
 							Map<String, String> valuesMap = new HashMap<String, String>();

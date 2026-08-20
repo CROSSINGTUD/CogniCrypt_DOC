@@ -12,8 +12,9 @@ from shutil import which
 import numpy as np
 from openai import OpenAI
 
-from utils.gateway_rate_limit import wait_for_gateway_slot
+from utils.gateway_rate_limit import call_with_concurrency_backoff, wait_for_gateway_slot
 from utils.llm_env import (
+    client_kwargs,
     get_gateway_base_url,
     get_gateway_chat_model,
     get_openai_chat_model,
@@ -83,10 +84,10 @@ def _require_env(var_name: str) -> str:
 
 def _build_client_for_backend(backend: str) -> OpenAI:
     if backend == "openai":
-        return OpenAI(api_key=_require_env("OPENAI_API_KEY"))
+        return OpenAI(api_key=_require_env("OPENAI_API_KEY"), **client_kwargs())
     api_key = _require_env("GATEWAY_API_KEY")
     base_url = get_gateway_base_url()
-    return OpenAI(api_key=api_key, base_url=base_url)
+    return OpenAI(api_key=api_key, base_url=base_url, **client_kwargs())
 
 
 def _resolve_models_for_backend(backend: str, chat_model_arg: Optional[str], emb_model_arg: Optional[str]) -> Tuple[str, str]:
@@ -585,7 +586,9 @@ def load_crysl_primer(
 
         for q in topic_queries:
             _maybe_throttle_gateway(backend, "embeddings")
-            q_emb = client.embeddings.create(model=emb_model, input=q).data[0].embedding
+            q_emb = call_with_concurrency_backoff(
+                lambda: client.embeddings.create(model=emb_model, input=q), "embeddings"
+            ).data[0].embedding
             candidates = retrieve_top_k(idx, chunks, q_emb, k=8, per_chunk_max=900)
 
             best = None
@@ -818,12 +821,13 @@ def normalize_known_api_mistakes(java_code: str) -> str:
         java_code,
     )
 
-    # Common invalid TrustAnchor overload hallucination.
-    java_code = re.sub(
-        r"new\s+TrustAnchor\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*,\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
-        r"new TrustAnchor(\1, (byte[]) null)",
-        java_code,
-    )
+    # NOTE: a rewrite of two-argument TrustAnchor construction used to live here. It was
+    # removed because TrustAnchor(X509Certificate, byte[]) is a real constructor, so the
+    # rewrite silently replaced a caller's genuine nameConstraints argument with
+    # "(byte[]) null" - dropping a PKIX security control from otherwise correct code. It
+    # also failed to repair the hallucination it targeted: TrustAnchor(String, byte[])
+    # does not exist either. The compile-and-repair loop handles such mistakes without
+    # risking correct code.
 
     # Frequent over-specific checked catches in constructor-only snippets.
     java_code = re.sub(
@@ -857,9 +861,15 @@ def auto_import_patch(llm_text: str) -> str:
 
     needed = []
     for sym, fq in IMPORT_WHITELIST.items():
-        # Match "Arrays." but not "java.util.Arrays."
-        if re.search(rf"(?<![\w.]){re.escape(sym)}\s*\.", java_code):
-            needed.append(f"import {fq};")
+        # Match a bare use of the simple name ("catch (GeneralSecurityException e)")
+        # as well as member access ("Arrays."), but never "java.util.Arrays".
+        if not re.search(rf"(?<![\w.]){re.escape(sym)}(?![\w])", java_code):
+            continue
+        # Respect an import the model already chose for this simple name; adding a
+        # second import of the same simple name would not compile.
+        if re.search(rf"^\s*import\s+[\w.]*\.{re.escape(sym)}\s*;\s*$", java_code, re.MULTILINE):
+            continue
+        needed.append(f"import {fq};")
 
     if not needed:
         return _rewrap_fenced_java(java_code, had_fence)
@@ -895,6 +905,21 @@ def auto_import_patch(llm_text: str) -> str:
     patched = normalize_known_api_mistakes(patched)
     return _rewrap_fenced_java(patched, had_fence)
 
+def _completion_text(response) -> str:
+    """
+    Assistant text from a chat completion, or "" when the model returned nothing.
+
+    A refused or safety-filtered completion has `message.content is None`, which
+    used to raise AttributeError on `.strip()`.
+    """
+    choices = getattr(response, "choices", None) or []
+    if not choices:
+        return ""
+    message = getattr(choices[0], "message", None)
+    content = getattr(message, "content", None) if message is not None else None
+    return content.strip() if content else ""
+
+
 # Resolve javac binary (with optional CI override).
 def _javac_cmd() -> Optional[str]:
     # Allow overriding in CI
@@ -918,12 +943,20 @@ def compile_java(java_code: str, compile_classpath: Optional[str], java_release:
         if compile_classpath and compile_classpath.strip():
             cmd = [javac, "--release", str(java_release).strip(), "-cp", compile_classpath.strip(), str(src)]
 
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=20,
-        )
+        try:
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=20,
+            )
+        except subprocess.TimeoutExpired:
+            # Report as an ordinary compile failure so the repair loop and the
+            # hard gate handle it, instead of crashing the generator.
+            return False, "javac timed out after 20s."
+        except OSError as exc:
+            return False, f"javac could not be executed: {exc}"
+
         if proc.returncode == 0:
             return True, ""
         return False, (proc.stderr or proc.stdout or "").strip()
@@ -1002,9 +1035,12 @@ def process_rule(
 
     crysl_summary = shape_crysl_contract(crysl_summary)
 
-    print("\n[debug] ===== SHAPED CRYSL CONTRACT START =====", file=sys.stderr)
-    print(crysl_summary, file=sys.stderr)
-    print("[debug] ===== SHAPED CRYSL CONTRACT END =====\n", file=sys.stderr)
+    # Behind a flag: stderr is merged into the captured output, so this dump was being
+    # embedded verbatim in failure messages (and, before that was fixed, in the pages).
+    if os.getenv("CRYSLDOC_DEBUG", "").strip() == "1":
+        print("\n[debug] ===== SHAPED CRYSL CONTRACT START =====", file=sys.stderr)
+        print(crysl_summary, file=sys.stderr)
+        print("[debug] ===== SHAPED CRYSL CONTRACT END =====\n", file=sys.stderr)
 
     # --- Dependency context (bounded) ---
     dep_order_constraints, dep_map_constraints = collect_dependency_constraints(class_name, preferred_langs)
@@ -1045,14 +1081,25 @@ def process_rule(
     ]
 
     _maybe_throttle_gateway(backend, "chat.completions")
-    response = client.chat.completions.create(
-        model=resolved_model,
-        messages=system_messages + [{"role": "user", "content": prompt}],
-        temperature=0.0,
-        max_tokens=2000,
-    )
+    try:
+        response = call_with_concurrency_backoff(
+            lambda: client.chat.completions.create(
+                model=resolved_model,
+                messages=system_messages + [{"role": "user", "content": prompt}],
+                temperature=0.0,
+                max_tokens=2000,
+            ),
+            "chat.completions",
+        )
+    except Exception as exc:
+        raise RuntimeError(f"[ERROR] Secure example request failed: {exc}") from exc
 
-    raw = response.choices[0].message.content.strip()
+    raw = _completion_text(response)
+    if not raw:
+        raise RuntimeError(
+            "[ERROR] The model returned no content for the secure example "
+            "(refused, filtered, or empty completion)."
+        )
 
     # 1) deterministic post-pass (imports + class-name normalize)
     patched = auto_import_patch(raw)
@@ -1097,14 +1144,24 @@ def process_rule(
             )
 
             _maybe_throttle_gateway(backend, "chat.completions")
-            repair_resp = client.chat.completions.create(
-                model=resolved_model,
-                messages=system_messages + [{"role": "user", "content": repair_prompt}],
-                temperature=0.0,
-                max_tokens=2000,
-            )
+            try:
+                repair_resp = call_with_concurrency_backoff(
+                    lambda: client.chat.completions.create(
+                        model=resolved_model,
+                        messages=system_messages + [{"role": "user", "content": repair_prompt}],
+                        temperature=0.0,
+                        max_tokens=2000,
+                    ),
+                    "chat.completions",
+                )
+            except Exception as exc:
+                err = f"repair request failed: {exc}"
+                continue
 
-            repaired_raw = repair_resp.choices[0].message.content.strip()
+            repaired_raw = _completion_text(repair_resp)
+            if not repaired_raw:
+                err = "the model returned no content for the repair attempt."
+                continue
             repaired_patched = auto_import_patch(repaired_raw)
             repaired_java, _ = _extract_fenced_java(repaired_patched)
             repaired_java = normalize_known_api_mistakes(repaired_java)

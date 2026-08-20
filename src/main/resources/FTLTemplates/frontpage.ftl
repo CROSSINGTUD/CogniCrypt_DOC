@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>frontpage</title>
-</head>
 <style>
 
     * {
@@ -47,6 +46,7 @@
     }
 
 </style>
+</head>
 <body style="background-color: #f1f1f1">
 <div class="frontpage">
     <div class="section">
@@ -63,7 +63,7 @@
     <div class="section">
         <h2>Getting Help</h2>
         <p style="margin-top:10px;">
-            Read <a href="crysl.html">How CrySL works</a> first to understand CrySL.
+            Every section of a class page has a <b>Help</b> box explaining what it shows.
         </p>
     </div>
     <div class="section">

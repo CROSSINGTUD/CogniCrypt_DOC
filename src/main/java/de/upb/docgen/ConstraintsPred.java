@@ -127,8 +127,13 @@ public class ConstraintsPred {
 
                 List<String> resList = new ArrayList<>();
 
-                int iterationCount = 0;
-                for (String methodStr : methodsList) {
+                // methodsList and valueList are strictly parallel (same edge/method
+                // traversal, parameter names vs. types), so the type signature must be
+                // taken at the CURRENT method's index. The previous code used a counter
+                // of matches found so far, which silently pulled an unrelated method's
+                // signature whenever a predicate matched non-contiguous methods.
+                for (int methodIndex = 0; methodIndex < methodsList.size(); methodIndex++) {
+                    String methodStr = methodsList.get(methodIndex);
 
                     // Find the exact parameter name match within the method signature.
                     String escapedPredicate = "\\b" + predicate + "\\b";
@@ -159,15 +164,18 @@ public class ConstraintsPred {
                                 if (extractParamStr.equals("_"))
                                     continue;
                                 String value = DTMap.get(extractParamStr);
-                                m = m.replace(extractParamStr, value);
+                                if (value != null) {
+                                    m = m.replace(extractParamStr, value);
+                                }
                             }
 
                             String methStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
                             List<String> splitMethList = Arrays.asList(methStr.split(" "));
                             String posStr = String.valueOf(splitMethList.indexOf(predicate));
-                            var2MethNameMap.put(predicate, replaceAnyType(valueList.get(iterationCount)));
+                            if (methodIndex < valueList.size()) {
+                                var2MethNameMap.put(predicate, replaceAnyType(valueList.get(methodIndex)));
+                            }
                             var2paraPosMap.put(predicate, posStr);
-                            iterationCount++;
                         }
                     }
                 }

@@ -6,8 +6,9 @@ from typing import Optional
 
 from openai import OpenAI
 
-from utils.gateway_rate_limit import wait_for_gateway_slot
+from utils.gateway_rate_limit import call_with_concurrency_backoff, wait_for_gateway_slot
 from utils.llm_env import (
+    client_kwargs,
     get_gateway_base_url,
     get_gateway_chat_model,
     get_openai_chat_model,
@@ -31,10 +32,10 @@ def _require_env(var_name: str) -> str:
 
 def _build_client(backend: str) -> OpenAI:
     if backend == "openai":
-        return OpenAI(api_key=_require_env("OPENAI_API_KEY"))
+        return OpenAI(api_key=_require_env("OPENAI_API_KEY"), **client_kwargs())
     api_key = _require_env("GATEWAY_API_KEY")
     base_url = get_gateway_base_url()
-    return OpenAI(api_key=api_key, base_url=base_url)
+    return OpenAI(api_key=api_key, base_url=base_url, **client_kwargs())
 
 
 def _resolve_chat_model(backend: str, cli_model: Optional[str]) -> str:
@@ -75,17 +76,17 @@ def build_insecure_prompt(rule: dict) -> str:
     return f'''
     You are a Java coding assistant.
 
-    Your task is to generate an **insecure** Java code example using the class `{rule['className']}`.
+    Your task is to generate an **insecure** Java code example using the class `{rule.get('className', 'the target class')}`.
     
     The CrySL rule below defines correct and secure usage. However, your goal is to create a code snippet that violates this rule while still being syntactically valid:
     
-    Objects: {rule['objects']}
-    Events: {rule['events']}
-    Order: {rule['order']}
-    Constraints: {rule['constraints']}
-    Requires: {rule['requires']}
-    Ensures: {rule['ensures']}
-    Forbidden Methods: {rule['forbidden']}
+    Objects: {rule.get('objects', 'N/A')}
+    Events: {rule.get('events', 'N/A')}
+    Order: {rule.get('order', 'N/A')}
+    Constraints: {rule.get('constraints', 'N/A')}
+    Requires: {rule.get('requires', 'N/A')}
+    Ensures: {rule.get('ensures', 'N/A')}
+    Forbidden Methods: {rule.get('forbidden', 'N/A')}
     
     Guidelines:
     - Use parameter values that are *not* listed as valid (e.g., for RSA key size, use 1024 or 2048 instead of 3072 or 4096).
@@ -106,8 +107,15 @@ def build_insecure_prompt(rule: dict) -> str:
 # CLI entrypoint: load rule JSON, build prompt, call LLM, print Java.
 def main():
     args = parse_args()
-    with open(args.json_path, "r", encoding="utf-8") as f:
-        rule = json.load(f)
+    try:
+        with open(args.json_path, "r", encoding="utf-8") as f:
+            rule = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Error in Insecure Code Generation: cannot read {args.json_path}: {exc}", file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(rule, dict):
+        print("Error in Insecure Code Generation: payload is not a JSON object.", file=sys.stderr)
+        sys.exit(1)
 
     # Decide secure or insecure (this script expects insecure by default)
     example_type = rule.get("exampleType", "insecure").lower()
@@ -127,14 +135,34 @@ def main():
 
     if args.backend == "gateway":
         wait_for_gateway_slot("chat.completions")
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-    )
+    try:
+        response = call_with_concurrency_backoff(
+            lambda: client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+            ),
+            "chat.completions",
+        )
+    except Exception as exc:
+        print(f"Error in Insecure Code Generation: request failed: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    # A refused or filtered completion has content=None; printing it would hand the
+    # Java pipeline the literal text "None" as if it were generated code.
+    choices = getattr(response, "choices", None) or []
+    message = getattr(choices[0], "message", None) if choices else None
+    content = getattr(message, "content", None) if message is not None else None
+    if not content or not content.strip():
+        print(
+            "Error in Insecure Code Generation: the model returned no content "
+            "(refused, filtered, or empty completion).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # Output generated Java code
-    print(response.choices[0].message.content)
+    print(content)
 
 
 # Standard entry guard for CLI usage.

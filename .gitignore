@@ -16,6 +16,7 @@ dotFSMs/
 .venv/
 sanitized_rules/
 temp_rules/
+llm/temp_example_*.json
 rag_cache/
 __pycache__/
 *.py[cod]

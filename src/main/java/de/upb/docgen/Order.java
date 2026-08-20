@@ -30,7 +30,10 @@ import crypto.rules.CrySLRule;
 
 public class Order {
 
-	private static final List<String> clauseNames = Arrays.asList("EVENTS", "ORDER", "OBJECTS", "FORBIDDEN");
+	// Every CrySL section header, not just the ones this class consumes: an omitted
+	// header made the parser append that section's lines into the previous bucket.
+	private static final List<String> clauseNames = Arrays.asList("SPEC", "EVENTS", "ORDER", "OBJECTS",
+			"FORBIDDEN", "CONSTRAINTS", "REQUIRES", "ENSURES", "NEGATES");
 	static Map<String, String> processedresultMap = new LinkedHashMap<>();
 	static Map<String, String> symbolMap = new LinkedHashMap<>();
 	static Map<String, String> objectMap = new LinkedHashMap<>();
@@ -465,10 +468,20 @@ public class Order {
 					i -= 2;
 				} else if (n.get(i).startsWith(symbolMap.get("|"))) {
 					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i));
-					fo.add(StringUtils.repeat("\t", identlevel) + n.get(i + 1) + n.get(i + 2));
+					// An event is always a (name, frequency) pair, but guard the second
+					// half anyway: a malformed ORDER clause (e.g. a trailing "|") leaves
+					// the name unpaired, and n.get(i + 2) used to read past the end.
+					StringBuilder alternative = new StringBuilder(n.get(i + 1));
+					if (i + 2 < n.size()) {
+						// Separator was missing here, rendering "getPrivate()has to be called once."
+						alternative.append(" ").append(n.get(i + 2));
+					}
+					fo.add(StringUtils.repeat("\t", identlevel) + alternative);
 					n.remove(i);
 					n.remove(i);
-					n.remove(i);
+					if (i < n.size()) {
+						n.remove(i);
+					}
 					i -= 2;
 				} else if (n.get(i).startsWith(symbolMap.get(")"))) {
 					// removing closing brackets and lowering the level
@@ -476,8 +489,13 @@ public class Order {
 						identlevel--;
 						n.remove(i);
 					}
-					// remove already processed sentences
-					if (n.size() > i && !n.get(i).startsWith(symbolMap.get("|"))) {
+					// Drop the group's trailing frequency phrase - decideSymbolOfBracket has
+					// already folded it into the opening "The next block ..." line, so it
+					// would otherwise render twice. ONLY an actual frequency phrase may be
+					// dropped: this used to delete whatever followed the closing bracket,
+					// which silently swallowed the next event (or the next group's header)
+					// whenever the group carried no *, + or ? suffix.
+					if (n.size() > i && isBracketFrequencyPhrase(n.get(i))) {
 						n.remove(i);
 					}
 					i -= 2;
@@ -497,6 +515,25 @@ public class Order {
 			fo.add(a);
 		}
 		return fo;
+	}
+
+	/**
+	 * True if the token is the frequency phrase a bracket group's *, + or ? suffix
+	 * produces (e.g. "can be called arbitary times."), as opposed to an event name or
+	 * the start of another group. Used to decide what may safely be discarded after a
+	 * closing bracket.
+	 */
+	private boolean isBracketFrequencyPhrase(String token) {
+		if (token == null) {
+			return false;
+		}
+		for (String suffix : new String[] { "*", "+", "?" }) {
+			String phrase = symbolMap.get(suffix);
+			if (phrase != null && !phrase.isEmpty() && token.startsWith(phrase)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -600,25 +637,29 @@ public class Order {
 	 * Merge tokens inside matching parentheses into a single token string.
 	 */
 	private List<String> connectBrackets(List<String> fo) {
-		StringBuilder sb = new StringBuilder();
 		List<String> connected = new ArrayList<>();
 
 		for (int i = 0; i < fo.size(); i++) {
 			if (fo.get(i).contains("(")) {
 
-				sb.setLength(0); // IMPORTANT: reset for each new bracket group
+				StringBuilder sb = new StringBuilder(); // IMPORTANT: reset for each new bracket group
 
-				int bracketcounter = 0;
+				// Track running depth token by token and stop as soon as it returns to
+				// zero, scoping the count to THIS group only. The previous version summed
+				// every "(" across the entire remaining token list before consuming, so
+				// a second bracket group later in the same ORDER clause inflated the
+				// counter and got silently merged into the first group's string.
+				int bracketDepth = 0;
 				int j = i;
 				for (; j < fo.size(); j++) {
-					bracketcounter += fo.get(j).chars().filter(ch -> ch == '(').count();
-				}
-				for (j = i; j < fo.size(); ++j) {
-					if (bracketcounter == 0) {
+					String token = fo.get(j);
+					bracketDepth += token.chars().filter(ch -> ch == '(').count();
+					bracketDepth -= token.chars().filter(ch -> ch == ')').count();
+					sb.append(token).append(" ");
+					if (bracketDepth <= 0) {
+						j++;
 						break;
 					}
-					bracketcounter -= fo.get(j).chars().filter(ch -> ch == ')').count();
-					sb.append(fo.get(j)).append(" ");
 				}
 				connected.add(sb.toString());
 				i = j - 1; // so that the outer for-loop's i++ moves to j (the next unprocessed token)
@@ -633,7 +674,9 @@ public class Order {
 
 class Event {
 	public String event;
-	public Map<String, String> methodIdentifierMap = new HashMap<>();
+	// LinkedHashMap (like every other map in this file) so an alias's "or"-joined
+	// method list renders in declaration order rather than hash-bucket order.
+	public Map<String, String> methodIdentifierMap = new LinkedHashMap<>();
 
 	/**
 	 * Create an event with the given label.

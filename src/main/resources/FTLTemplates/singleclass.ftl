@@ -520,7 +520,7 @@
 
 <button class="collapsible">Overview</button>
 <div class="content">
-    <div class="spoiler" id="spoiler" style="display:none">
+    <div class="spoiler" id="spoiler-overview" style="display:none">
         <p class="help"> Help is now displayed for the other sections!
         </p>
     </div>
@@ -531,22 +531,21 @@
 </div>
 <button class="collapsible">Order</button>
 <div class="content">
-    <div class="spoiler" id="spoiler" style="display:none">
+    <div class="spoiler" id="spoiler-order" style="display:none">
         <p class="help">Help:
             This section describes the secure order call sequences of ${rule.composedClassName}.
             Methods may contain an underscore(_) as a parameter.
             The underscore is a feature of CrySl to help writing CrySL rules for overloaded methods and not specify all overloaded methods in a CrySL rule.
             Conduct the <a target="_blank" rel="noopener noreferrer"
-                           href="https://docs.oracle.com/javase/8/docs/api/${rule.onlyLink}.html">JavaDoc</a> to see all parameters in detail.
+                           href="${rule.javaDocUrl}">JavaDoc</a> to see all parameters in detail.
         </p>
     </div>
     <p class="pre">${rule.numberOfMethods}
     </p>
     <pre style="overflow-x:auto"><#list rule.order as order>${order}
-        </#list>
-            </pre>
-    <#if booleanA>
-        <div class="spoiler" id="spoiler" style="display:none">
+</#list></pre>
+    <#if booleanA && booleanE>
+        <div class="spoiler" id="spoiler-graph" style="display:none">
             <p class="help">Help:
                 This section represents the order of the class as a state machine graph.
                 The most left node is always the Start node.
@@ -562,7 +561,7 @@
 </div>
 <button class="collapsible">Constraints</button>
 <div class="content">
-    <div class="spoiler" id="spoiler" style="display:none">
+    <div class="spoiler" id="spoiler-constraints" style="display:none">
         <p class="help">Help:
             This section describes the parameters, which have constraints or that require a predicate from another
             class.
@@ -595,7 +594,7 @@
 </div>
 <button class="collapsible">Predicates</button>
 <div class="content">
-    <div class="spoiler" id="spoiler" style="display:none">
+    <div class="spoiler" id="spoiler-predicates" style="display:none">
         <p class="help">Help:
             This section describes which Predicates the class ensures.
             Predicates are a construct from CrySL and allow to securely compose several classes depending on use cases.
@@ -603,19 +602,23 @@
             Predicates are ensured after specific method calls or after the method calls seen in the Order section.
         </p>
     </div>
-    <p class="pre" style="white-space: pre-line;"><#list rule.ensuresThisPredicates as etp>${etp}
-        </#list>
-        <#list rule.ensuresPredicates as ep>${ep}
-        </#list>
-        <#list rule.negatesPredicates as np>${np}
-        </#list>
+    <p class="pre" style="white-space: pre-line;"><#if rule.ensuresThisPredicates?has_content || rule.ensuresPredicates?has_content || rule.negatesPredicates?has_content>
+            <#list rule.ensuresThisPredicates as etp>${etp}
+            </#list>
+            <#list rule.ensuresPredicates as ep>${ep}
+            </#list>
+            <#list rule.negatesPredicates as np>${np}
+            </#list>
+        <#else>
+            There are no Predicates for this class.
+        </#if>
     </p>
 
 </div>
 <#if booleanC>
     <button class="collapsible">Requires Tree</button>
     <div class="content">
-        <div class="spoiler" id="spoiler" style="display:none">
+        <div class="spoiler" id="spoiler-requires-tree" style="display:none">
             <p class="help">Help:
                 This section displays the Requires Tree.
                 It displays the required predicate dependencies starting from ${rule.composedClassName}
@@ -662,7 +665,7 @@
     </div>
     <button class="collapsible">Ensures Tree</button>
     <div class="content">
-        <div class="spoiler" id="spoiler" style="display:none">
+        <div class="spoiler" id="spoiler-ensures-tree" style="display:none">
             <p class="help">Help:
                 This section displays the Ensures Tree.
                 It displays the ensured predicate dependencies starting from ${rule.composedClassName}
@@ -738,7 +741,10 @@
   #llm-md th { font-size: 0.95rem; line-height: 1.4; }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<#-- Pinned like the three scripts above: an unpinned jsDelivr path serves whatever is
+     latest, so a future major release could change marked.parse and silently break every
+     rendered explanation in already-published output. -->
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
 
 <#--<button class="collapsible">LLM Explanation in English</button>-->
 <#--<div class="content">-->
@@ -759,7 +765,7 @@
 <div class="content">
     <div class="spoiler" id="llm-spoiler" style="display:none">
         <p class="help">
-            Help: This explanation is generated by a Large Language Model (GPT-4o-mini) based on the CrySL rule for this class.
+            Help: This explanation is generated by a Large Language Model (backend: ${llmBackend}) based on the CrySL rule for this class.
             It gives a natural language summary of how to securely use the API.
         </p>
     </div>
@@ -870,7 +876,7 @@
 <div class="content">
     <div class="spoiler" id="llm-code-spoiler" style="display:none">
         <p class="help">
-            Help: These code examples are generated by a Large Language Model (GPT-4o-mini) based on the CrySL rule for this class.<br>
+            Help: These code examples are generated by a Large Language Model (backend: ${llmBackend}) based on the CrySL rule for this class.<br>
             The <b>secure example</b> shows correct usage of the API, while the <b>insecure example</b> demonstrates a misuse pattern.<br>
             These are automatically generated and should be reviewed before use in production.
         </p>
@@ -880,8 +886,7 @@
         <h4>Secure Example</h4>
         <div class="code-block-container">
             <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
-            <pre class="llm-code-block secure"><code class="language-java">${rule.secureExample?html}</code>
-            </pre>
+            <pre class="llm-code-block secure"><code class="language-java">${rule.secureExample?html}</code></pre>
         </div>
     <#else>
         <p><em>No secure example available for this rule.</em></p>
@@ -893,8 +898,7 @@
             <summary style="cursor:pointer; font-weight:bold;">Click to reveal insecure example</summary>
             <div class="code-block-container">
                 <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
-                <pre class="llm-code-block insecure"><code class="language-java">${rule.insecureExample?html}</code>
-                </pre>
+                <pre class="llm-code-block insecure"><code class="language-java">${rule.insecureExample?html}</code></pre>
             </div>
         </details>
     <#else>
@@ -905,7 +909,7 @@
 <#if booleanD>
     <button class="collapsible">CrySL Rule</button>
     <div class="content">
-        <div class="spoiler" id="spoiler" style="display:none">
+        <div class="spoiler" id="spoiler-crysl-rule" style="display:none">
             <p class="help">Help:
                 A CrySL rule consists always of the following sections:
                 <b>SPEC</b> defines the fully qualified name.
@@ -928,12 +932,10 @@
             </p>
         </div>
         <p class="pre" style="white-space: pre-line;">The CrySL rule on <a target="_blank" rel="noopener noreferrer"
-                                                                           href=https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl>Github</a>.
+                                                                           href="https://github.com/CROSSINGTUD/Crypto-API-Rules/blob/master/JavaCryptographicArchitecture/src/${rule.onlyRuleName}.crysl">Github</a>.
         </p>
         <#if rule.cryslRuleText?? && rule.cryslRuleText?has_content>
-            <pre class="pre" style="background:#f4f4f4;padding:1em;border-radius:8px;white-space:pre-wrap;">
-                ${rule.cryslRuleText?html}
-            </pre>
+            <pre class="pre" style="background:#f4f4f4;padding:1em;border-radius:8px;white-space:pre-wrap;">${rule.cryslRuleText?html}</pre>
         <#else>
             <p><em>Raw CrySL rule text not available.</em></p>
         </#if>
@@ -954,7 +956,11 @@
             } else {
                 content.style.display = "block";
                 // Ensure first descendants are visible when a tree section opens.
-                expandFirstTreeLevel();
+                // Scoped to this section: a global call here silently undid the
+                // user's manual collapses in every other tree on the page.
+                if (content.querySelector && content.querySelector("ul.tree")) {
+                    expandFirstTreeLevel(content);
+                }
             }
         });
     }
@@ -991,8 +997,9 @@
     }
 
     // Expand only the first descendants of each tree by default.
-    function expandFirstTreeLevel() {
-        var trees = document.querySelectorAll("ul.tree");
+    function expandFirstTreeLevel(scope) {
+        var root = scope || document;
+        var trees = root.querySelectorAll("ul.tree");
         for (var t = 0; t < trees.length; t++) {
             var rootLis = trees[t].children;
             for (var r = 0; r < rootLis.length; r++) {
@@ -1115,13 +1122,43 @@
         const codeBlock = button.nextElementSibling.querySelector('code');
         const text = codeBlock.innerText;
 
-        navigator.clipboard.writeText(text).then(() => {
-            button.innerText = 'Copied!';
-            setTimeout(() => { button.innerText = 'Copy'; }, 1500);
-        }).catch(err => {
-            console.error('Failed to copy code:', err);
-            button.innerText = 'Error';
-        });
+        function done(ok, err) {
+            if (ok) {
+                button.innerText = 'Copied!';
+                setTimeout(() => { button.innerText = 'Copy'; }, 1500);
+            } else {
+                console.error('Failed to copy code:', err);
+                button.innerText = 'Error';
+                setTimeout(() => { button.innerText = 'Copy'; }, 1500);
+            }
+        }
+
+        // navigator.clipboard only exists in secure contexts (https/localhost).
+        // These pages are normally opened over file://, where it is undefined and
+        // the call throws synchronously - so feature-detect and fall back.
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                navigator.clipboard.writeText(text).then(() => done(true), (err) => done(false, err));
+                return;
+            } catch (err) {
+                // fall through to the legacy path below
+            }
+        }
+
+        const helper = document.createElement('textarea');
+        helper.value = text;
+        helper.setAttribute('readonly', '');
+        helper.style.position = 'fixed';
+        helper.style.top = '-1000px';
+        document.body.appendChild(helper);
+        helper.select();
+        try {
+            done(document.execCommand('copy'), 'execCommand returned false');
+        } catch (err) {
+            done(false, err);
+        } finally {
+            document.body.removeChild(helper);
+        }
     }
 
     function expandAllTrees(scope) {
@@ -1171,12 +1208,27 @@
         }
     }
 
+    <#if booleanA && booleanE>
     var dotString = `
         ${stateMachine}
 `;
 
-    d3.select("#graph").graphviz()
+    // Two non-obvious requirements, both needed for the diagram to render at all:
+    //
+    // 1. wasmFolder() must be set WITHOUT a trailing slash. @hpcc-js/wasm 0.3.11 builds the
+    //    URL as (folder || scriptDir) + "/" + "graphvizlib.wasm", and scriptDir already ends
+    //    in "/", so the default yields ".../dist//graphvizlib.wasm" - which 404s and, being a
+    //    404, carries no CORS header either.
+    // 2. useWorker:false. The worker path re-derives the folder with vizURL.match(/.*\//),
+    //    which keeps the trailing slash and reintroduces the same broken URL, overriding
+    //    whatever was set on the main thread.
+    //
+    // With both applied the graph renders over http:// and file:// alike.
+    window["@hpcc-js/wasm"].wasmFolder("https://unpkg.com/@hpcc-js/wasm@0.3.11/dist");
+
+    d3.select("#graph").graphviz({useWorker: false})
         .renderDot(dotString);
+    </#if>
 
     document.addEventListener("DOMContentLoaded", function() {
         const englishContainer = document.getElementById('llm-md-en');

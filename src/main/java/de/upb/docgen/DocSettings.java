@@ -124,6 +124,21 @@ public class DocSettings {
         return llmBackend;
     }
 
+    // Strictly parses an on/off toggle value; anything else is a usage error rather
+    // than being silently treated as "on".
+    private static boolean parseToggleValue(String arg, String prefix) {
+        String v = arg.substring(prefix.length()).trim().toLowerCase();
+        if (v.equals("on") || v.equals("true") || v.equals("1")) {
+            return true;
+        }
+        if (v.equals("off") || v.equals("false") || v.equals("0")) {
+            return false;
+        }
+        showErrorMessage(arg);
+        System.exit(255);
+        return false; // unreachable
+    }
+
     // Enforces value presence for flags that require an argument.
     private static String requireValue(String[] settings, int i, String flagName) {
     if (i + 1 >= settings.length) {
@@ -208,21 +223,18 @@ public class DocSettings {
                     break;
                 default:
                     if (settings[i].toLowerCase().startsWith("--llm=")) {
-                        String v = settings[i].substring("--llm=".length()).trim().toLowerCase();
-                        boolean master = !(v.equals("off") || v.equals("false") || v.equals("0"));
+                        boolean master = parseToggleValue(settings[i], "--llm=");
                         // Master applies unless overridden later by specific flags (order of args matters)
                         genLllmExplanations = master;
                         genLlmExamples = master;
                         break;
                     }
                     if (settings[i].toLowerCase().startsWith("--llm-explanations=")) {
-                        String v = settings[i].substring("--llm-explanations=".length()).trim().toLowerCase();
-                        genLllmExplanations = !(v.equals("off") || v.equals("false") || v.equals("0"));
+                        genLllmExplanations = parseToggleValue(settings[i], "--llm-explanations=");
                         break;
                     }
                     if (settings[i].toLowerCase().startsWith("--llm-examples=")) {
-                        String v = settings[i].substring("--llm-examples=".length()).trim().toLowerCase();
-                        genLlmExamples = !(v.equals("off") || v.equals("false") || v.equals("0"));
+                        genLlmExamples = parseToggleValue(settings[i], "--llm-examples=");
                         break;
                     }
                     if (settings[i].toLowerCase().startsWith("--llm-backend=")) {

@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,6 +6,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from dotenv import load_dotenv
 
+from utils.llm_env import env_or_fallback
 from utils.llm_utils import (
     clean_llm_output,
     collect_dependency_constraints,
@@ -37,6 +37,23 @@ class WriterCLIConfig:
     k_default: int = 6
 
 
+def extract_completion_text(resp) -> Optional[str]:
+    """
+    Pull the assistant text out of a chat completion, tolerating refusals.
+
+    A safety-filtered or otherwise empty completion has `message.content is None`
+    (and may even carry no choices at all); returning None here lets callers fail
+    cleanly instead of raising TypeError deeper in the pipeline.
+    """
+    choices = getattr(resp, "choices", None) or []
+    if not choices:
+        return None
+    message = getattr(choices[0], "message", None)
+    if message is None:
+        return None
+    return getattr(message, "content", None)
+
+
 def build_explanation_prompt(
     class_name: str,
     objects: str,
@@ -61,7 +78,7 @@ def build_explanation_prompt(
     """
     # Select backend-specific response tail instructions (UTF-8 line is optional).
     response_tail = (
-        fr"""Respond in **{explanation_language}** and be as precise as possible.\
+        fr"""Respond in **{explanation_language}** and be as precise as possible.
 Make sure that the response is in **utf-8** charset only."""
         if include_utf8_line
         else fr"""Respond in **{explanation_language}** and be as precise as possible."""
@@ -96,7 +113,7 @@ CRITICAL RULES:
 3. NO abstract variable names (like prePlainText, preCipherTextOffset) in explanations
 4. EVERYTHING must be explained in natural, conversational language
 5. Use concrete, meaningful examples that developers can relate to
-6. Focus on practical usage, not formal specifications\
+6. Focus on practical usage, not formal specifications
 7. Use any provided reference material ONLY to inform your understanding; do NOT quote it, cite it, or mention its existence in the output.
 
 Output Structure - Use these EXACT section headings (start with ## and no leading spaces):
@@ -200,27 +217,26 @@ The goal is to produce documentation that a developer can read like a tutorial, 
 
 
 def build_system_messages(rag_block: str) -> list[dict[str, str]]:
-    """Compose system-role messages, optionally including hidden RAG reference material."""
-    sys_msgs = [
-        {
-            "role": "system",
-            "content": (
-                "You are a patient teacher who excels at explaining complex technical concepts in simple, practical terms. "
-                "Use any reference material provided to interpret CrySL syntax precisely, but do NOT quote it, cite it, "
-                "or mention its existence in your final answer."
-            ),
-        }
-    ]
+    """
+    Compose the system-role message, optionally including hidden RAG reference material.
+
+    Returns a single system message rather than one per section. The UPB gateway rejects a
+    second system message with "System message must be at the beginning" (HTTP 400 wrapped
+    in a 500), which silently emptied every explanation when running against it. One system
+    message is accepted by every OpenAI-compatible backend, so both providers share it.
+    """
+    instructions = (
+        "You are a patient teacher who excels at explaining complex technical concepts in simple, practical terms. "
+        "Use any reference material provided to interpret CrySL syntax precisely, but do NOT quote it, cite it, "
+        "or mention its existence in your final answer."
+    )
 
     if rag_block:
-        sys_msgs.append(
-            {
-                "role": "system",
-                "content": "REFERENCE MATERIAL (do not quote, cite, or mention this explicitly):\n" + rag_block,
-            }
+        instructions += (
+            "\n\nREFERENCE MATERIAL (do not quote, cite, or mention this explicitly):\n" + rag_block
         )
 
-    return sys_msgs
+    return [{"role": "system", "content": instructions}]
 
 
 def process_rule_core(
@@ -322,6 +338,14 @@ def process_rule_core(
         print(f"LLM explanation error for {class_name}: {e}", file=sys.stderr)
         return None
 
+    if raw_out is None or not str(raw_out).strip():
+        print(
+            f"LLM explanation for {class_name} returned no content "
+            "(refused, filtered, or empty completion).",
+            file=sys.stderr,
+        )
+        return None
+
     cleaned = clean_llm_output(raw_out)
     print(cleaned)
     return cleaned
@@ -347,13 +371,15 @@ def run_writer_main(
     load_dotenv()
 
     # Resolve model defaults, optionally from provider-specific environment keys.
+    # env_or_fallback treats a present-but-blank variable as unset, so an empty
+    # GATEWAY_CHAT_MODEL= in .env falls back instead of becoming an empty model id.
     model_default = (
-        os.getenv(cli_config.model_env_var, cli_config.model_default)
+        env_or_fallback(cli_config.model_env_var, cli_config.model_default)
         if cli_config.model_env_var
         else cli_config.model_default
     )
     emb_model_default = (
-        os.getenv(cli_config.emb_model_env_var, cli_config.emb_model_default)
+        env_or_fallback(cli_config.emb_model_env_var, cli_config.emb_model_default)
         if cli_config.emb_model_env_var
         else cli_config.emb_model_default
     )
@@ -409,7 +435,7 @@ def run_writer_main(
     except Exception as e:
         print(f"[WARN] RAG disabled (index build/load failed): {e}", file=sys.stderr)
 
-    process_rule_fn(
+    result = process_rule_fn(
         str(crysl_full_path),
         language,
         client,
@@ -420,3 +446,10 @@ def run_writer_main(
         k=args.k,
         emb_model=args.emb_model,
     )
+
+    # Exit non-zero when nothing was produced. process_rule_core already reported the cause
+    # on stderr, but returning 0 with empty stdout made Java treat the failure as a valid
+    # (empty) explanation and cache it, so a run where every call failed still looked like
+    # a clean run. A non-zero exit makes runSidecar raise, which the per-rule handler logs.
+    if result is None or not str(result).strip():
+        sys.exit(1)

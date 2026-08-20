@@ -2,6 +2,7 @@ import os
 from typing import List
 import numpy as np
 from openai import OpenAI
+from utils.llm_env import client_kwargs
 from utils.rag_index_common import (
     DocChunk,
     EmbeddingIndex,
@@ -54,7 +55,7 @@ def build_pdf_index(pdf_path: str, cache_dir="rag_cache", emb_model="text-embedd
         save_cached_index(vec_p, ids_p, chunks_p, empty_embeddings, chunks)
         return idx, chunks
     # Build embeddings and FAISS index, then persist artifacts for later reuse.
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), **client_kwargs())
     embeddings = _embed_texts(client, [c.text for c in chunks], emb_model)
     idx = EmbeddingIndex()
     idx.build(embeddings, [c.id for c in chunks])

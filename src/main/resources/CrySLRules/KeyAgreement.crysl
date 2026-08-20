@@ -28,7 +28,7 @@ EVENTS
     
 	gs1: sharedSecretBuffer = generateSecret();
 	gs2: generateSecret(sharedSecretBuffer, offset);
-	GenSecretBuffer := gs1 | g2;
+	GenSecretBuffer := gs1 | gs2;
 	
 	gs3: sharedKey = generateSecret(symmetricKeyAlgorithm);
 	GenSecret := gs3 | GenSecretBuffer;

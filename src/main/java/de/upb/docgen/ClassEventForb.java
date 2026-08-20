@@ -38,6 +38,22 @@ public class ClassEventForb {
     }
 
     /**
+     * Full JavaDoc URL for a rule's class.
+     *
+     * <p>Not every documented class lives in the JDK: javax.servlet is Jakarta EE, and the
+     * Oracle JavaSE URL for it silently redirects to a generic landing page rather than
+     * 404ing, so it has to be routed separately.
+     */
+    public String getJavaDocUrl(CrySLRule rule) {
+        String className = rule.getClassName();
+        String path = className.replace(".", "/");
+        if (className.startsWith("javax.servlet.")) {
+            return "https://javaee.github.io/javaee-spec/javadocs/" + path + ".html";
+        }
+        return "https://docs.oracle.com/javase/8/docs/api/" + path + ".html";
+    }
+
+    /**
      * Render a JavaDoc link using the LinkToJavaDoc template.
      */
     public String getLink(CrySLRule rule) throws IOException {
@@ -47,6 +63,7 @@ public class ClassEventForb {
         Map<String, String> valuesMap = new HashMap<String, String>();
         valuesMap.put("ClassName", cName);
         valuesMap.put("ClassLink", link);
+        valuesMap.put("JavaDocUrl", getJavaDocUrl(rule));
 
         StringSubstitutor sub = new StringSubstitutor(valuesMap);
         return sub.replace(buff);
@@ -108,11 +125,13 @@ public class ClassEventForb {
         char[] buff4 = Utils.getTemplatesText("ForbiddenMethodClauseConAlt");
         StringBuilder sb = new StringBuilder();
         ArrayList<String> composedForbs = new ArrayList<>();
-        ArrayList<String> alternatives = new ArrayList<>();
         if (rule.getForbiddenMethods().size() > 0) {
             List<CrySLForbiddenMethod> forbMethods = rule.getForbiddenMethods();
             // For each forbidden method, resolve its name and alternatives into templates.
             for (CrySLForbiddenMethod forMethod : forbMethods) {
+                // Scoped per forbidden method: a shared list would leak one method's
+                // alternatives into the next method's "use X instead" suggestion.
+                ArrayList<String> alternatives = new ArrayList<>();
                 sb.setLength(0);
                 sb.append(resolveMethod(forMethod.getMethod()));
                 if (forMethod.getAlternatives().size() > 0) {

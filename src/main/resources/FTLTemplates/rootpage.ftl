@@ -8,7 +8,4 @@
         <frame src="navbar.html">
         <frame name="content" src="frontpage.html">
     </frameset>
-<body>
-
-</body>
 </html>

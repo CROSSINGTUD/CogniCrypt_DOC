@@ -2,7 +2,7 @@
   <configuration default="false" name="CrySLDoc Generation" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="de.upb.docgen.DocumentGeneratorMain" />
     <module name="DocGen" />
-    <option name="PROGRAM_PARAMETERS" value="--FTLtemplatesPath src/main/resources/FTLTemplates --reportPath Output --llm=on --llm-backend=openai" />
+    <option name="PROGRAM_PARAMETERS" value="--FTLtemplatesPath src/main/resources/FTLTemplates --reportPath Output --llm=off" />
     <option name="VM_PARAMETERS" value="-Dfile.encoding=UTF-8" />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />

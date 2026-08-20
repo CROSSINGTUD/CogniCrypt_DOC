@@ -46,8 +46,6 @@ public class ConstraintCryslnocallto {
 		List<ISLConstraint> constraintConList = rule.getConstraints().stream()
 				.filter(e -> e.getClass().getSimpleName().toString().contains("CrySLConstraint"))
 				.collect(Collectors.toList());
-		ArrayList<String> methds = new ArrayList<>();
-		ArrayList<String> valuesWhichHaveToBeUsedThen = new ArrayList<>();
 		ArrayList<CrySLMethod> crySLMethods = extractMethodsFromSmg(rule);
 		Entry<String, String> cryslObjectEntry;
 		if (constraintConList.size() > 0) {
@@ -62,6 +60,10 @@ public class ConstraintCryslnocallto {
 									&& "noCallTo".equals(((CrySLPredicate) crySLConstraint.getLeft()).getPredName())
 									&& crySLConstraint.getRight() instanceof CrySLValueConstraint) {
 								CrySLPredicate crySLPredicate = (CrySLPredicate) crySLConstraint.getLeft();
+								// Scoped per constraint: a shared list would splice an earlier
+								// noCallTo(...) constraint's methods into this one's sentence.
+								ArrayList<String> methds = new ArrayList<>();
+								ArrayList<String> valuesWhichHaveToBeUsedThen = new ArrayList<>();
 								// Collect method names referenced in noCallTo(...)
 								for (ICrySLPredicateParameter parameter : crySLPredicate.getParameters()) {
 									methds.add(FunctionUtils.getEventCrySLMethodValue((CrySLMethod) parameter));
@@ -88,8 +90,24 @@ public class ConstraintCryslnocallto {
 								}
 								List<String> extractedWithObject = new ArrayList<>();
 								StringBuilder sb = new StringBuilder();
+								Map<String, String> posInWordsMap = FunctionUtils.getPosWordMap(rule);
 								for (CrySLMethod method : getInstances) {
-									sb.append("first|");
+									// Ordinal of the constrained object within THIS method's
+									// parameter list. Previously hardcoded to "first", which
+									// silently misreported every constraint on a parameter
+									// that isn't in position 1.
+									int position = 0;
+									List<Entry<String, String>> methodParameters = method.getParameters();
+									for (int p = 0; p < methodParameters.size(); p++) {
+										if (cryslObjectEntry != null
+												&& methodParameters.get(p).getKey().equals(cryslObjectEntry.getKey())) {
+											position = p + 1;
+											break;
+										}
+									}
+									String positionKey = String.valueOf(position);
+									sb.append(posInWordsMap.getOrDefault(positionKey, positionKey));
+									sb.append("|");
 									sb.append(method.getMethodName());
 									sb.append("(");
 									ArrayList<String> tempForJoinParametersNames = new ArrayList<>();

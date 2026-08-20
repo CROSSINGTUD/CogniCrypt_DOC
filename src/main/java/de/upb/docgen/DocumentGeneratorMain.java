@@ -60,6 +60,18 @@ public class DocumentGeneratorMain {
         return txt.equals(unavailable) || txt.equals(disabled) || txt.startsWith(failedPrefix);
     }
 
+    /**
+     * True if a cached explanation is a placeholder rather than a real answer.
+     *
+     * <p>The explanation cache is keyed only by class and language, so without this a
+     * "disabled by flag" or "no explanation generated" placeholder written by an earlier
+     * run is served forever - even once explanations are enabled and a real one exists.
+     * The example cache has had an equivalent check all along; this is its counterpart.
+     */
+    private static boolean isRetryableExplanationPlaceholder(String content) {
+        return Utils.isRetryableExplanationPlaceholder(content);
+    }
+
     private static boolean isFailurePlaceholder(String content, boolean secure) {
         return isRetryablePlaceholder(content, secure);
     }
@@ -75,7 +87,8 @@ public class DocumentGeneratorMain {
         return "example unavailable";
     }
 
-    private static void writeCodegenFailureReport(File codeCacheDir, List<String> failures) throws IOException {
+    private static void writeCodegenFailureReport(File codeCacheDir, List<String> failures,
+            List<String> fullDetails) throws IOException {
         File report = new File(codeCacheDir, "llm_codegen_failures.txt");
         StringBuilder sb = new StringBuilder();
         sb.append("LLM code generation failure report").append(System.lineSeparator());
@@ -88,6 +101,18 @@ public class DocumentGeneratorMain {
                 sb.append("- ").append(failure).append(System.lineSeparator());
             }
         }
+
+        // The generated pages carry only a one-line summary, so the unabridged output -
+        // traceback, compiler diagnostics, the shaped CrySL contract - is kept here.
+        if (fullDetails != null && !fullDetails.isEmpty()) {
+            sb.append(System.lineSeparator());
+            sb.append("Full diagnostics").append(System.lineSeparator());
+            sb.append("================").append(System.lineSeparator());
+            for (String detail : fullDetails) {
+                sb.append(System.lineSeparator()).append(detail).append(System.lineSeparator());
+            }
+        }
+
         Files.writeString(report.toPath(), sb.toString());
         System.out.println("Codegen failure report: " + report.getPath());
     }
@@ -118,6 +143,29 @@ public class DocumentGeneratorMain {
 
 
             System.out.println("Reading CrySL Rules Done");
+
+            // Fail loudly instead of writing a fully-formed but empty documentation site.
+            if (rules.isEmpty()) {
+                String where = (docSettings.getRulesetPathDir() != null && !docSettings.getRulesetPathDir().trim().isEmpty())
+                        ? docSettings.getRulesetPathDir()
+                        : "the bundled CrySLRules resources";
+                throw new IOException("No CrySL rules were loaded from " + where
+                        + ". Check --rulesDir: nothing would be documented.");
+            }
+
+            // Two rule files describing the same class would silently overwrite each
+            // other's page and appear twice in the sidebar; keep the first, skip the rest.
+            Set<String> seenClassNames = new HashSet<>();
+            List<CrySLRule> uniqueRules = new ArrayList<>(rules.size());
+            for (CrySLRule ruleEntry : rules) {
+                if (seenClassNames.add(ruleEntry.getClassName())) {
+                    uniqueRules.add(ruleEntry);
+                } else {
+                    System.err.println("[WARN] Duplicate CrySL rule for " + ruleEntry.getClassName()
+                            + " - keeping the first definition and skipping this one.");
+                }
+            }
+            rules = uniqueRules;
             // Helpers to build composed documentation sections from CrySL rules.
             ClassEventForb cef = new ClassEventForb();
             ConstraintsVc valueconstraint = new ConstraintsVc();
@@ -144,83 +192,104 @@ public class DocumentGeneratorMain {
 
             // Create composed rules (all sections assembled for FreeMarker).
             List<CrySLRule> cryslRuleList = new ArrayList<>();
+            List<String> compositionFailures = new ArrayList<>();
             for (CrySLRule ruleEntry : rules) {
-                ComposedRule composedRule = new ComposedRule();
-                CrySLRule rule = ruleEntry;
-                // CrySL to .txt format (supports both: rules from disk OR bundled rules from JAR)
-                String fullClassName = rule.getClassName();
-                String simpleName = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+                // Per-rule isolation: one malformed rule must not abort the run and
+                // leave a half-populated output directory. A rule that throws is
+                // skipped entirely - it is never added to either list, so the two stay
+                // aligned and no partial page is written for it.
+                try {
+                    ComposedRule composedRule = new ComposedRule();
+                    CrySLRule rule = ruleEntry;
+                    // CrySL to .txt format (supports both: rules from disk OR bundled rules from JAR)
+                    String fullClassName = rule.getClassName();
+                    String simpleName = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
 
-                File cryslFile;
-                if (docSettings.getRulesetPathDir() != null && !docSettings.getRulesetPathDir().trim().isEmpty()) {
-                    // if user provided --rulesDir, read the .crysl from that directory
-                    cryslFile = new File(docSettings.getRulesetPathDir(), simpleName + ".crysl");
-                } else {
-                    // otherwise read bundled .crysl from the JAR
-                    cryslFile = CrySLReader.readRuleFromJarFile(simpleName);
+                    File cryslFile;
+                    if (docSettings.getRulesetPathDir() != null && !docSettings.getRulesetPathDir().trim().isEmpty()) {
+                        // if user provided --rulesDir, read the .crysl from that directory
+                        cryslFile = new File(docSettings.getRulesetPathDir(), simpleName + ".crysl");
+                    } else {
+                        // otherwise read bundled .crysl from the JAR
+                        cryslFile = CrySLReader.readRuleFromJarFile(simpleName);
+                    }
+
+                    if (cryslFile != null && cryslFile.exists()) {
+                        String ruleText = Files.readString(cryslFile.toPath());
+                        composedRule.setCryslRuleText("\n" + ruleText);
+                    } else {
+                        composedRule.setCryslRuleText("// CrySL file not found for: " + simpleName);
+                    }
+
+
+                    // Overview section
+                    String classname = rule.getClassName();
+                    // fully qualified name
+                    composedRule.setComposedClassName(classname);
+                    // Only rule name necessary for ftl Template
+                    composedRule.setOnlyRuleName(classname.substring(classname.lastIndexOf(".") + 1));
+                    // Set classname sentence
+                    composedRule.setComposedFullClass(cef.getFullClassName(rule));
+                    // Link to corresponding JavaDoc
+                    composedRule.setComposedLink(cef.getLink(rule));
+                    composedRule.setOnlyLink(cef.getLinkOnly(rule));
+                    composedRule.setJavaDocUrl(cef.getJavaDocUrl(rule));
+                    composedRule.setNumberOfMethods(cef.getEventNumbers(rule));
+
+                    // Order section
+                    composedRule.setOrder(or.runOrder(rule));
+
+                    //
+                    composedRule.setValueConstraints(valueconstraint.getConstraintsVc(rule));
+                    // create necessary Data structure to link required predicates of current crysl
+                    // rule
+                    Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap = Utils.mapPredicates(mapEnsures,
+                            mapRequires);
+                    // Pairing Dependency only by class name
+                    Map<String, Set<String>> singleReqToEns = Utils.toOnlyClassNames(singleRuleEnsuresMap);
+                    Set<String> ensuresForThisRule = singleReqToEns.get(composedRule.getComposedClassName());
+                    composedRule.setConstrainedPredicates(
+                            predicateconstraint.getConstraintsPred(rule, ensuresForThisRule, singleRuleEnsuresMap));
+                    // ConstraintsSection
+                    composedRule.setComparsionConstraints(comp.getConstriantsComp(rule));
+                    composedRule.setConstrainedValueConstraints(cryslvc.getConCryslVC(rule));
+                    composedRule.setNoCallToConstraints(nocall.getnoCalltoConstraint(rule));
+                    composedRule.setInstanceOfConstraints(instance.getInstanceof(rule));
+                    composedRule.setConstraintAndEncConstraints(enc.getConCryslandenc(rule));
+                    composedRule.setForbiddenMethods(cef.getForb(rule));
+                    //
+                    List<String> allConstraints = new ArrayList<>(composedRule.getComparsionConstraints());
+                    allConstraints.addAll(composedRule.getValueConstraints());
+                    allConstraints.addAll(composedRule.getConstrainedPredicates());
+                    allConstraints.addAll(composedRule.getConstrainedValueConstraints());
+                    allConstraints.addAll(composedRule.getNoCallToConstraints());
+                    allConstraints.addAll(composedRule.getInstanceOfConstraints());
+                    allConstraints.addAll(composedRule.getConstraintAndEncConstraints());
+                    allConstraints.addAll(composedRule.getForbiddenMethods());
+                    composedRule.setAllConstraints(allConstraints);
+
+                    // Predicates Section
+                    composedRule
+                            .setEnsuresThisPredicates(en.getEnsuresThis(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
+                    composedRule.setEnsuresPredicates(entwo.getEnsures(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
+                    composedRule.setNegatesPredicates(neg.getNegates(rule));
+                    composedRuleList.add(composedRule);
+
+                    cryslRuleList.add(rule);
+                } catch (Exception ruleFailure) {
+                    String failedClass = ruleEntry.getClassName();
+                    compositionFailures.add(failedClass + ": " + ruleFailure);
+                    System.err.println("[WARN] Skipping rule " + failedClass
+                            + " - composition failed: " + ruleFailure);
                 }
+            }
 
-                if (cryslFile != null && cryslFile.exists()) {
-                    String ruleText = Files.readString(cryslFile.toPath());
-                    composedRule.setCryslRuleText("\n" + ruleText);
-                } else {
-                    composedRule.setCryslRuleText("// CrySL file not found for: " + simpleName);
+            if (!compositionFailures.isEmpty()) {
+                System.err.println("[WARN] " + compositionFailures.size() + " of " + rules.size()
+                        + " rules were skipped because composition failed:");
+                for (String failure : compositionFailures) {
+                    System.err.println("       - " + failure);
                 }
-
-
-                // Overview section
-                String classname = rule.getClassName();
-                // fully qualified name
-                composedRule.setComposedClassName(classname);
-                // Only rule name necessary for ftl Template
-                composedRule.setOnlyRuleName(classname.substring(classname.lastIndexOf(".") + 1));
-                // Set classname sentence
-                composedRule.setComposedFullClass(cef.getFullClassName(rule));
-                // Link to corresponding JavaDoc
-                composedRule.setComposedLink(cef.getLink(rule));
-                composedRule.setOnlyLink(cef.getLinkOnly(rule));
-                composedRule.setNumberOfMethods(cef.getEventNumbers(rule));
-
-                // Order section
-                composedRule.setOrder(or.runOrder(rule));
-
-                //
-                composedRule.setValueConstraints(valueconstraint.getConstraintsVc(rule));
-                // create necessary Data structure to link required predicates of current crysl
-                // rule
-                Map<String, List<Map<String, List<String>>>> singleRuleEnsuresMap = Utils.mapPredicates(mapEnsures,
-                        mapRequires);
-                // Pairing Dependency only by class name
-                Map<String, Set<String>> singleReqToEns = Utils.toOnlyClassNames(singleRuleEnsuresMap);
-                Set<String> ensuresForThisRule = singleReqToEns.get(composedRule.getComposedClassName());
-                composedRule.setConstrainedPredicates(
-                        predicateconstraint.getConstraintsPred(rule, ensuresForThisRule, singleRuleEnsuresMap));
-                // ConstraintsSection
-                composedRule.setComparsionConstraints(comp.getConstriantsComp(rule));
-                composedRule.setConstrainedValueConstraints(cryslvc.getConCryslVC(rule));
-                composedRule.setNoCallToConstraints(nocall.getnoCalltoConstraint(rule));
-                composedRule.setInstanceOfConstraints(instance.getInstanceof(rule));
-                composedRule.setConstraintAndEncConstraints(enc.getConCryslandenc(rule));
-                composedRule.setForbiddenMethods(cef.getForb(rule));
-                //
-                List<String> allConstraints = new ArrayList<>(composedRule.getComparsionConstraints());
-                allConstraints.addAll(composedRule.getValueConstraints());
-                allConstraints.addAll(composedRule.getConstrainedPredicates());
-                allConstraints.addAll(composedRule.getConstrainedValueConstraints());
-                allConstraints.addAll(composedRule.getNoCallToConstraints());
-                allConstraints.addAll(composedRule.getInstanceOfConstraints());
-                allConstraints.addAll(composedRule.getConstraintAndEncConstraints());
-                allConstraints.addAll(composedRule.getForbiddenMethods());
-                composedRule.setAllConstraints(allConstraints);
-
-                // Predicates Section
-                composedRule
-                        .setEnsuresThisPredicates(en.getEnsuresThis(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
-                composedRule.setEnsuresPredicates(entwo.getEnsures(rule, Utils.mapPredicates(mapRequires, mapEnsures)));
-                composedRule.setNegatesPredicates(neg.getNegates(rule));
-                composedRuleList.add(composedRule);
-
-                cryslRuleList.add(rule);
             }
 
             // Build dependency trees for requires/ensures rendering.
@@ -249,10 +318,23 @@ public class DocumentGeneratorMain {
 //
 //        System.out.println("order: " + order);
 
+            // Pair the two lists by class name rather than by position. The loops below
+            // consumed composedRuleList.get(i) alongside cryslRuleList.get(i); that is the
+            // coupling that put the wrong state-machine diagram on 49 of 51 pages once an
+            // in-place sort reordered one of them. Nothing enforced the invariant, so it is
+            // removed here rather than relied upon.
+            Map<String, ComposedRule> composedByClassName = new HashMap<>();
+            for (ComposedRule composed : composedRuleList) {
+                composedByClassName.putIfAbsent(composed.getComposedClassName(), composed);
+            }
+
             // Verify dependency ordering and record rule-specific dependency list.
             for (int i = 0; i < cryslRuleList.size(); i++) {
                 CrySLRule rule = cryslRuleList.get(i);
-                ComposedRule composedRule = composedRuleList.get(i);
+                ComposedRule composedRule = composedByClassName.get(rule.getClassName());
+                if (composedRule == null) {
+                    continue; // rule was skipped during composition
+                }
                 String ruleName = rule.getClassName();
                 Map<String, Set<String>> sanitized =
                         GraphSanitizer.sanitize(onlyClassnamesEnsToReq, onlyClassnamesReqToEns, ruleName);
@@ -278,7 +360,10 @@ public class DocumentGeneratorMain {
             // Load (or write) explanation cache and attach to composed rules.
             for (int i = 0; i < cryslRuleList.size(); i++) {
                 CrySLRule rule = cryslRuleList.get(i);
-                ComposedRule composedRule = composedRuleList.get(i);
+                ComposedRule composedRule = composedByClassName.get(rule.getClassName());
+                if (composedRule == null) {
+                    continue; // rule was skipped during composition
+                }
 
                 String ruleName = rule.getClassName();
                 String fileSafeName = ruleName.replaceAll("[^a-zA-Z0-9.\\-]", "_");
@@ -304,13 +389,19 @@ public class DocumentGeneratorMain {
                         explanation = "LLM explanations disabled by flag.";
                     }
 
-                    if (!cacheFile.exists()) {
-                        Files.writeString(cacheFile.toPath(), explanation);
-                        System.out.println(fileName + " written.");
-                    } else {
-                        // Optional: refresh from disk to keep consistency
-                        explanation = Files.readString(cacheFile.toPath());
+                    String cachedExplanation = cacheFile.exists()
+                            ? Files.readString(cacheFile.toPath())
+                            : null;
+
+                    if (cachedExplanation != null && !isRetryableExplanationPlaceholder(cachedExplanation)) {
+                        // A real cached answer: reuse it.
+                        explanation = cachedExplanation;
                         System.out.println(fileName + " already exists.");
+                    } else {
+                        // Absent, or a placeholder from an earlier run - (re)write it so a
+                        // stale "disabled"/"not generated" marker cannot outlive its cause.
+                        Files.writeString(cacheFile.toPath(), explanation);
+                        System.out.println(fileName + (cachedExplanation == null ? " written." : " refreshed (was a placeholder)."));
                     }
 
                     explanationMap.put(lang, explanation);
@@ -325,10 +416,14 @@ public class DocumentGeneratorMain {
             File codeCacheDir = CachePathResolver.resolveCodeCacheDir(docSettings.getReportDirectory()).toFile();
             Files.createDirectories(codeCacheDir.toPath());
             List<String> codegenFailures = new ArrayList<>();
+            List<String> codegenFullDetails = new ArrayList<>();
 
             for (int i = 0; i < cryslRuleList.size(); i++) {
                 CrySLRule rule = cryslRuleList.get(i);
-                ComposedRule composedRule = composedRuleList.get(i);
+                ComposedRule composedRule = composedByClassName.get(rule.getClassName());
+                if (composedRule == null) {
+                    continue; // rule was skipped during composition
+                }
                 String ruleName = rule.getClassName().replaceAll("[^a-zA-Z0-9.\\-]", "_");
 
                 File secureFile = new File(codeCacheDir, ruleName + "_secure.txt");
@@ -356,13 +451,19 @@ public class DocumentGeneratorMain {
                             System.out.println(ruleName + "_insecure.txt contains placeholder; regenerating.");
                         }
                         try {
-                            CrySLToLLMGenerator.generateExample(List.of(composedRule), List.of(rule), docSettings.getLlmBackend());
+                            // Only ask for what is actually missing - regenerating both
+                            // types burned an API call whose result was then discarded.
+                            CrySLToLLMGenerator.generateExample(List.of(composedRule), List.of(rule),
+                                    docSettings.getLlmBackend(), secureNeedsGeneration, insecureNeedsGeneration);
                             generatedSecure = cleanLLMCodeBlock(
                                     composedRule.getSecureExample() != null ? composedRule.getSecureExample() : "");
                             generatedInsecure = cleanLLMCodeBlock(
                                     composedRule.getInsecureExample() != null ? composedRule.getInsecureExample() : "");
                         } catch (Exception e) {
-                            generationError = e.getMessage();
+                            // Full text goes to the failure report; only a short, path-free
+                            // summary is allowed anywhere near a generated page.
+                            codegenFullDetails.add(rule.getClassName() + ": " + e.getMessage());
+                            generationError = Utils.summarizeGenerationFailure(e.getMessage());
                         }
                     }
 
@@ -430,7 +531,7 @@ public class DocumentGeneratorMain {
                     }
                 }
             }
-            writeCodegenFailureReport(codeCacheDir, codegenFailures);
+            writeCodegenFailureReport(codeCacheDir, codegenFailures, codegenFullDetails);
 
             // Freemarker Setup and create cognicryptdoc html pages
             System.out.println("Setup Freemarker");

@@ -36,22 +36,49 @@ def normalized_content(path: Path) -> str:
     return text.strip()
 
 
+def _absolute(path_str: str) -> Path:
+    """Resolve like the Java side does, so both tools agree on relative paths."""
+    return Path(path_str).expanduser().absolute().resolve()
+
+
+def _resolve_override(override: str | None, flag: str) -> Path | None:
+    if override is None:
+        return None
+    if not override.strip():
+        # Explicitly passed but empty (e.g. an unset shell variable) - do not
+        # silently fall back to the report-path-derived directory.
+        raise ValueError(f"{flag} was given but is empty")
+    return _absolute(override)
+
+
 def resolve_code_cache_dir(report_path: str, cache_dir_override: str | None) -> Path:
-    if cache_dir_override:
-        return Path(cache_dir_override)
-    return Path(report_path) / "resources" / "code_cache"
+    override = _resolve_override(cache_dir_override, "--cache-dir")
+    if override is not None:
+        return override
+    return _absolute(report_path) / "resources" / "code_cache"
 
 
 def resolve_llm_cache_dir(report_path: str, llm_cache_dir_override: str | None) -> Path:
-    if llm_cache_dir_override:
-        return Path(llm_cache_dir_override)
-    return Path(report_path) / "resources" / "llm_cache"
+    override = _resolve_override(llm_cache_dir_override, "--llm-cache-dir")
+    if override is not None:
+        return override
+    return _absolute(report_path) / "resources" / "llm_cache"
 
 
 def collect_matching_files(cache_dir: Path, placeholders: set[str]) -> list[Path]:
     to_delete: list[Path] = []
+    cache_root = cache_dir.resolve()
     for path in sorted(cache_dir.rglob("*.txt")):
         if not path.is_file():
+            continue
+        # rglob follows symlinks; never delete through one that leaves the cache.
+        try:
+            resolved = path.resolve()
+        except OSError as exc:
+            print(f"[warn] Failed to resolve {path}: {exc}")
+            continue
+        if not resolved.is_relative_to(cache_root):
+            print(f"[warn] Skipping {path}: resolves outside {cache_root}")
             continue
         try:
             content = normalized_content(path)
@@ -89,18 +116,17 @@ def main() -> int:
         help="Print files that would be deleted, but do not delete them.",
     )
     parser.add_argument(
-        "--also-delete-cache-kept",
-        action="store_true",
-        help="Also delete files whose content is exactly: // cache-kept example",
-    )
-    parser.add_argument(
         "--also-delete-disabled-explanations",
         action="store_true",
         help="Also delete explanation-cache files whose content is exactly: LLM explanations disabled by flag.",
     )
     args = parser.parse_args()
 
-    code_cache_dir = resolve_code_cache_dir(args.report_path, args.cache_dir)
+    try:
+        code_cache_dir = resolve_code_cache_dir(args.report_path, args.cache_dir)
+    except ValueError as exc:
+        print(f"[error] {exc}")
+        return 1
     scan_targets: list[tuple[Path, set[str]]] = []
 
     if not code_cache_dir.is_dir():
@@ -110,13 +136,14 @@ def main() -> int:
             print(f"[error] Not a directory: {code_cache_dir}")
             return 1
     else:
-        code_placeholders = set(DEFAULT_CODE_PLACEHOLDERS)
-        if args.also_delete_cache_kept:
-            code_placeholders.add("// cache-kept example")
-        scan_targets.append((code_cache_dir, code_placeholders))
+        scan_targets.append((code_cache_dir, set(DEFAULT_CODE_PLACEHOLDERS)))
 
     if args.also_delete_disabled_explanations:
-        llm_cache_dir = resolve_llm_cache_dir(args.report_path, args.llm_cache_dir)
+        try:
+            llm_cache_dir = resolve_llm_cache_dir(args.report_path, args.llm_cache_dir)
+        except ValueError as exc:
+            print(f"[error] {exc}")
+            return 1
         if not llm_cache_dir.is_dir():
             print(f"[warn] Not a directory (skipping llm cache): {llm_cache_dir}")
         else:
@@ -134,15 +161,27 @@ def main() -> int:
         print("[info] No matching files found.")
         return 0
 
+    deleted = 0
+    failed = 0
     for path in to_delete:
         if args.dry_run:
             print(f"[dry-run] {path}")
-        else:
+            deleted += 1
+            continue
+        try:
             path.unlink()
-            print(f"[deleted] {path}")
+        except OSError as exc:
+            print(f"[warn] Failed to delete {path}: {exc}")
+            failed += 1
+            continue
+        deleted += 1
+        print(f"[deleted] {path}")
 
     action = "Would delete" if args.dry_run else "Deleted"
-    print(f"[done] {action} {len(to_delete)} file(s).")
+    print(f"[done] {action} {deleted} file(s).")
+    if failed:
+        print(f"[done] Failed to delete {failed} file(s).")
+        return 1
     return 0
 
 

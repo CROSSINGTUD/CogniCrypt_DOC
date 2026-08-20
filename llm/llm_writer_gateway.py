@@ -8,11 +8,13 @@ import numpy as np
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from utils.gateway_rate_limit import wait_for_gateway_slot
+from utils.gateway_rate_limit import call_with_concurrency_backoff, wait_for_gateway_slot
+from utils.llm_env import client_kwargs
 from utils.writer_core import (
     WriterCLIConfig,
     build_explanation_prompt,
     build_system_messages,
+    extract_completion_text,
     process_rule_core,
     run_writer_main,
 )
@@ -35,13 +37,29 @@ def get_gateway_client() -> OpenAI:
     if not api_key:
         raise RuntimeError("GATEWAY_API_KEY is not set.")
     base_url = os.getenv("GATEWAY_BASE_URL", DEFAULT_GATEWAY_BASE_URL)
-    return OpenAI(api_key=api_key, base_url=base_url)
+    return OpenAI(api_key=api_key, base_url=base_url, **client_kwargs())
 
 
-def _embed_texts(client: OpenAI, texts: List[str], model: str = "YOUR_EMBEDDING_MODEL") -> np.ndarray:
+PLACEHOLDER_EMB_MODEL = "YOUR_EMBEDDING_MODEL"
+
+
+def _require_emb_model(model: str) -> str:
+    """Reject the unfilled placeholder before it reaches the embeddings endpoint."""
+    resolved = (model or "").strip()
+    if not resolved or resolved == PLACEHOLDER_EMB_MODEL:
+        raise RuntimeError(
+            "GATEWAY_EMB_MODEL is not set (or pass --emb-model) for the gateway backend."
+        )
+    return resolved
+
+
+def _embed_texts(client: OpenAI, texts: List[str], model: str = PLACEHOLDER_EMB_MODEL) -> np.ndarray:
     """Return float32 embeddings for a list of strings using a gateway embedding model."""
+    model = _require_emb_model(model)
     wait_for_gateway_slot("embeddings")
-    resp = client.embeddings.create(model=model, input=texts)
+    resp = call_with_concurrency_backoff(
+        lambda: client.embeddings.create(model=model, input=texts), "embeddings"
+    )
     return np.asarray([d.embedding for d in resp.data], dtype="float32")
 
 
@@ -82,8 +100,13 @@ def make_rag_context(
     if not hasattr(idx, "index") or idx.index is None or not chunks:
         return ""
 
-    qvec = _embed_texts(client, [query_text], model=emb_model)[0]
-    hits = idx.search(qvec, k)
+    # RAG is best-effort: degrade to no context rather than aborting the whole run.
+    try:
+        qvec = _embed_texts(client, [query_text], model=emb_model)[0]
+        hits = idx.search(qvec, k)
+    except Exception as exc:
+        print(f"[WARN] RAG retrieval failed, continuing without context: {exc}", file=sys.stderr)
+        return ""
 
     def _normalize_pdf_text(s: str) -> str:
         return s.replace("\ufb01", "fi").replace("\ufb02", "fl").replace("\u00ad", "").strip()
@@ -142,13 +165,16 @@ def generate_explanation(
 
     sys_msgs = build_system_messages(rag_block)
     wait_for_gateway_slot("chat.completions")
-    resp = client.chat.completions.create(
-        model=model,
-        messages=sys_msgs + [{"role": "user", "content": prompt}],
-        temperature=0.3,
-        max_tokens=4000,
+    resp = call_with_concurrency_backoff(
+        lambda: client.chat.completions.create(
+            model=model,
+            messages=sys_msgs + [{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=4000,
+        ),
+        "chat.completions",
     )
-    return resp.choices[0].message.content
+    return extract_completion_text(resp)
 
 
 def process_rule(
@@ -160,7 +186,7 @@ def process_rule(
     idx=None,
     chunks=None,
     k: int = 6,
-    emb_model: str = "YOUR_EMBEDDING_MODEL",
+    emb_model: str = PLACEHOLDER_EMB_MODEL,
 ):
     """Run the shared single-rule pipeline with gateway-specific callbacks."""
     return process_rule_core(
@@ -217,7 +243,7 @@ def main():
         model_default="gwdg.qwen3-30b-a3b-instruct-2507",
         model_help="Gateway model to use for completions",
         pdf_default=PDF_PATH,
-        emb_model_default="YOUR_EMBEDDING_MODEL",
+        emb_model_default=PLACEHOLDER_EMB_MODEL,
         emb_model_help="Gateway embedding model for RAG queries",
         model_env_var="GATEWAY_CHAT_MODEL",
         emb_model_env_var="GATEWAY_EMB_MODEL",

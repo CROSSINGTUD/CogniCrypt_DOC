@@ -8,7 +8,9 @@ from typing import Dict, List, Tuple
 PROJECT_ROOT_DEFAULT = Path(__file__).resolve().parents[2]
 SANITIZED_DIR_DEFAULT = PROJECT_ROOT_DEFAULT / "llm" / "sanitized_rules"
 FILENAME_TEMPLATE_DEFAULT = "sanitized_rule_{fqcn}_{lang}.json"
-SANITIZED_DIR_DEFAULT.mkdir(parents=True, exist_ok=True)
+# No mkdir here: this module only reads sanitized rules, and the Java side creates
+# the directory before invoking the sidecar. Creating it at import time meant that
+# merely importing this module - for --help, a test, or an editor - wrote to disk.
 
 
 # Build the sanitized rule file path for a class/language pair.

@@ -38,7 +38,9 @@ public class PredicateTreeGenerator {
      * Recursively expand a dependency subtree while avoiding cycles and duplicates.
      */
     private static TreeNode<String> populatePredicateTree(TreeNode<String> firstChild, String nextInChain, Map<String, Set<String>> mappedClassNamePredicates, Set<String> visitedNodes) {
-        if (mappedClassNamePredicates.get(nextInChain).size() == 0) {
+        // A dependency naming a class with no rule of its own would otherwise NPE here.
+        Set<String> dependencies = mappedClassNamePredicates.get(nextInChain);
+        if (dependencies == null || dependencies.isEmpty()) {
             // Leaf node: no further dependencies to expand.
             return firstChild;
         }
@@ -46,19 +48,29 @@ public class PredicateTreeGenerator {
         // Track current path to detect circular dependencies.
         visitedNodes.add(nextInChain);
 
-        for (String child : mappedClassNamePredicates.get(nextInChain)) {
+        // Every skip below uses `continue`, never `return`. Returning would abandon the
+        // remaining siblings AND leave nextInChain in the shared visitedNodes set, which
+        // would then make every later root treat this class as already-visited and silently
+        // truncate its dependency tree. Both branches are currently unreachable, but the
+        // reasoning that makes them so lives outside this method.
+        for (String child : dependencies) {
             if (visitedNodes.contains(child)) {
                 // Circular dependency detected; skip expanding this edge.
                 continue;
             }
             if (firstChild.getData().equals(child)) {
-                return firstChild;
+                continue;
             }
+            boolean alreadyAChild = false;
             for (TreeNode children : firstChild.getChildren()) {
                 if (children.getData().equals(child)) {
                     // Avoid adding duplicate child nodes at this level.
-                    return firstChild;
+                    alreadyAChild = true;
+                    break;
                 }
+            }
+            if (alreadyAChild) {
+                continue;
             }
             TreeNode<String> childnode = new TreeNode<>(child);
             firstChild.addChild(childnode);

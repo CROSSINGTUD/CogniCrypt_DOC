@@ -82,7 +82,7 @@ public class ConstraintsVc {
             // Match constrained parameters to the methods they appear in and their position.
             for (String firstConVCStr : firstConVCList) {
                 for (String methodStr : methodsList) {
-                    if (methodStr.contains(firstConVCStr)) {
+                    if (FunctionUtils.hasParameterNamed(methodStr, firstConVCStr)) {
                         List<String> methList = new ArrayList<>();
                         methList.add(methodStr);
                         for (String m : methList) {
@@ -99,8 +99,12 @@ public class ConstraintsVc {
                             for (String extractParamStr : extractParamList) {
                                 if (extractParamStr.equals("_"))
                                     continue;
+                                // Only declared OBJECTS resolve to a type; anything else is
+                                // left as-is rather than passed as a null replacement.
                                 String value = DTMap.get(extractParamStr);
-                                m = m.replace(extractParamStr, value);
+                                if (value != null) {
+                                    m = m.replace(extractParamStr, value);
+                                }
                             }
                             String mStr = methodStr.replaceAll("[()]", " ").replaceAll(",", " ");
                             List<String> strList = Arrays.asList(mStr.split(" "));
